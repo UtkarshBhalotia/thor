@@ -19,9 +19,6 @@ const Common = StyleSheet.create({
     mt4: {
         marginTop: 4,
     },
-    mt6: {
-        marginTop: 6,
-    },
     mt5: {
         marginTop: 5,
     },
