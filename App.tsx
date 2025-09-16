@@ -1,131 +1,99 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
+ * Plugins
  */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect } from 'react';
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
+    ActivityIndicator,
+    Button,
+    LogBox,
+    StatusBar,
+    useColorScheme,
+    View,
 } from 'react-native';
+import { Provider } from 'react-redux';
+import { MenuProvider } from 'react-native-popup-menu';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+/**
+ * Components
+ */
+import SwitchNavigator from './src/components/switchNavigator';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+/**
+ * Utils
+ */
+import { isReadyRef, navigationRef } from './src/utils/rootNavigation';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Theme from './src/assets/css/theme';
+import ErrorBoundary from './src/components/ErrorBoundary';
+import { store } from './store';
+import Layout from './src/assets/css/layout';
+import useNotificationSetup from './src/hooks/useNotificationSetup';
+import { onScheduleNoti } from './src/utils/notifications';
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+const App = () => {
+    useNotificationSetup();
+    const colorScheme = useColorScheme();
+    useEffect(() => {
+        return () => {
+            (isReadyRef as any).current = false;
+        };
+    }, []);
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+    // const handleSchedule = () => {
+    //     const time = new Date(Date.now() + 10 * 1000); // 10 seconds from now
+    //     scheduleNotification('Reminder', 'This is your notification!', time);
+    // };
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+    LogBox.ignoreAllLogs();
 
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the reccomendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
-
-  return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
+    return (
+        <View style={{ marginTop: 100 }}>
+            <Button title="Schedule Notification" onPress={onScheduleNoti} />
         </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </View>
-  );
-}
+        // <Provider store={store}>
+        //     <MenuProvider>
+        //         <SafeAreaProvider>
+        //             <NavigationContainer
+        //                 ref={navigationRef}
+        //                 fallback={<ActivityIndicator />}
+        //                 onReady={() => {
+        //                     (isReadyRef as any).current = true;
+        //                 }}>
+        //                 <GestureHandlerRootView style={[Layout.viewHeight]}>
+        //                     {/* <BottomSheetModalProvider> */}
+        //                     <StatusBar
+        //                         hidden={false}
+        //                         barStyle={'dark-content'}
+        //                         backgroundColor={
+        //                             colorScheme === 'dark'
+        //                                 ? Theme.dark.colors.themeColor
+        //                                       .backgroundColor
+        //                                 : Theme.light.colors.themeColor
+        //                                       .backgroundColor
+        //                         }
+        //                     />
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+        //                     <SwitchNavigator />
+        //                     {/* </BottomSheetModalProvider> */}
+        //                 </GestureHandlerRootView>
+        //             </NavigationContainer>
+        //         </SafeAreaProvider>
+        //     </MenuProvider>
+        // </Provider>
+    );
+};
 
-export default App;
+const MainRender = () => {
+    return (
+        <ErrorBoundary>
+            <App />
+        </ErrorBoundary>
+    );
+};
+
+const MyApp = MainRender;
+
+export default MyApp;
