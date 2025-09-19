@@ -35,14 +35,7 @@ export function push(name: string, params: any) {
 export function replace(name: string, params: any) {
     if (isReadyRef.current && navigationRef.current) {
         // Perform navigation if the app has mounted
-        if (
-            navigationRef.current.getCurrentRoute()?.name === 'Dashboard' ||
-            navigationRef.current.getCurrentRoute()?.name === 'UnsavedVch'
-        ) {
-            navigationRef.current.navigate(name, params);
-        } else {
-            navigationRef.current.dispatch(StackActions.replace(name, params));
-        }
+        navigationRef.current.dispatch(StackActions.replace(name, params));
     } else {
         // You can decide what to do if the app hasn't mounted
         // You can ignore this, or add these actions to a queue you can call later
@@ -57,6 +50,15 @@ export function menu(name: string, params?: any) {
                 routes: [{ name: 'Dashboard' }, { name, params }],
             });
         }
+    }
+}
+
+export function resetToScreen(name: string, params?: any) {
+    if (isReadyRef.current && navigationRef.current) {
+        navigationRef.current.reset({
+            index: 0,
+            routes: [{ name, params }],
+        });
     }
 }
 

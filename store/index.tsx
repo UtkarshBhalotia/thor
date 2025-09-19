@@ -2,6 +2,7 @@ import { watch } from './action/rootAction';
 import createSagaMiddleware from 'redux-saga';
 import { applyMiddleware, createStore } from 'redux';
 import rootReducer from '../store/reducer/rootReducer';
+// @ts-ignore - react-navigation-redux-debouncer doesn't have types
 import navigationDebouncer from 'react-navigation-redux-debouncer';
 import ReduxPromise from 'redux-promise';
 

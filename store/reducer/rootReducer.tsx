@@ -1,8 +1,15 @@
-import { combineReducers } from 'redux';
+import { combineReducers, AnyAction } from 'redux';
 
-const appReducer = combineReducers({});
+// Create a placeholder reducer for now since we have an empty combineReducers
+const placeholderReducer = (state: any = {}, action: AnyAction) => {
+    return state;
+};
 
-const mainReducer = (state, action) => {
+const appReducer = combineReducers({
+    placeholder: placeholderReducer,
+});
+
+const mainReducer = (state: any, action: AnyAction) => {
     return appReducer(state, action);
 };
 
