@@ -23,9 +23,15 @@ import MainNavigator from './src/navigations/MainNavigator';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import Theme from './src/assets/css/theme';
 import Layout from './src/assets/css/layout';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
+import Toast, { ToastConfig } from 'react-native-toast-message';
+import ErrorToast from './src/components/ErrorToast';
 
 const App = () => {
     const colorScheme = useColorScheme();
+    const toastConfig: ToastConfig = {
+        mazuError: (props) => <ErrorToast {...props} />,
+    };
     useEffect(() => {
         return () => {
             (isReadyRef as any).current = false;
@@ -56,10 +62,13 @@ const App = () => {
                                               .backgroundColor
                                 }
                             />
-                            {/* <BottomSheetModalProvider> */}
-                            <MainNavigator />
-                            {/* </BottomSheetModalProvider> */}
+                            <KeyboardProvider>
+                                <BottomSheetModalProvider>
+                                    <MainNavigator />
+                                </BottomSheetModalProvider>
+                            </KeyboardProvider>
                         </GestureHandlerRootView>
+                        <Toast config={toastConfig} />
                     </NavigationContainer>
                 </SafeAreaProvider>
             </MenuProvider>

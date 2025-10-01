@@ -42,9 +42,11 @@ const Register = () => {
     } = useForm();
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const openStatePicker = () => {
+        console.log('Open state picker');
         stateSheetRef.current?.present();
     };
     const openCityPicker = () => {
+        console.log('Open city picker');
         citySheetRef.current?.present();
     };
 
@@ -57,8 +59,7 @@ const Register = () => {
             <StatusBar barStyle="dark-content" />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={insets.top}
-                style={{ flex: 1 }}>
+                keyboardVerticalOffset={insets.top}>
                 <ScrollView
                     contentContainerStyle={loginStyles.scrollContainer}
                     contentInsetAdjustmentBehavior="automatic"

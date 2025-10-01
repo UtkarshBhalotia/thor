@@ -1,0 +1,22 @@
+type TInputFieldProps = {
+    title: string;
+    placeholder?: string;
+    secureTextEntry?: boolean;
+    name?: string;
+    onChangeText?: (text: string) => void;
+    onBlurText?: () => void;
+    value?: string;
+    errorMsg?: string;
+    settingFormData?: () => void;
+    setValue?: any;
+    billSundryFormData?: TBillSundryFormDataObj;
+    required?: boolean;
+    maxlength?: number;
+    ischeckBoxReq?: boolean;
+    type?: 'default' | 'BSModal';
+    keyboard?: 'default' | 'number-pad' | 'numeric' | 'email-address';
+    autoFocus?: boolean;
+    isEditable: boolean;
+    onFocusText?: () => void;
+    placeholderTextColor?: string;
+};

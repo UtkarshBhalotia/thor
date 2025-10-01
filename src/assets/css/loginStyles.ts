@@ -22,6 +22,7 @@ export const loginStyles = StyleSheet.create({
         marginBottom: 4,
     },
     headerContainer: {
+        marginTop: 40,
         alignItems: 'center',
         marginBottom: 40,
     },
@@ -87,6 +88,13 @@ export const loginStyles = StyleSheet.create({
     },
     loginButton: {
         backgroundColor: '#5F60B9',
+        paddingVertical: 15,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    loginButtonDisabled: {
+        backgroundColor: '#E0E0E0',
         paddingVertical: 15,
         borderRadius: 12,
         alignItems: 'center',

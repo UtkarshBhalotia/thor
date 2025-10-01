@@ -583,6 +583,12 @@ const Common = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
     },
+    row: {
+        flexDirection: 'row',
+    },
+    viewHeight: {
+        flex: 1,
+    },
     topBorder: {
         borderTopColor: '#E0E0E0',
         borderTopWidth: 1,

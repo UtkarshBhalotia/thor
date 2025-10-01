@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import Toast from 'react-native-toast-message';
 
 export function hasDynamicIslandIphone() {
     try {
@@ -19,3 +20,45 @@ export function hasDynamicIslandIphone() {
         console.log(e);
     }
 }
+
+export const showToast = ({
+    type = 'info',
+    text1 = 'Something Went Wrong. Please Try Again Later.',
+    text2,
+    visibilityTime = 2000,
+    onPress,
+}: {
+    type?: 'success' | 'error' | 'info' | 'mazuSuccess';
+    text1?: string;
+    text2?: string;
+    visibilityTime?: number;
+    onPress?: () => void;
+} = {}) => {
+    // Platform.OS === "ios" ? Toast.show({ type }) : Toast.show({ ...params });
+    console.log({ type, text1 });
+    if (type === 'error') {
+        console.log('showToast error', text1);
+        Toast.show({
+            text1: text1,
+            type: 'mazuError',
+            text2,
+            visibilityTime,
+            onPress,
+            topOffset: 70,
+        });
+    } else {
+        Toast.show({
+            type,
+            text1,
+            text2,
+            visibilityTime,
+            onPress,
+            topOffset: 70,
+        });
+    }
+};
+
+export const Character_Limit = {
+    email: 64,
+    password: 20,
+};
