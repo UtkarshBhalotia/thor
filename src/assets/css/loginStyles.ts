@@ -24,13 +24,13 @@ export const loginStyles = StyleSheet.create({
     headerContainer: {
         marginTop: 40,
         alignItems: 'center',
-        marginBottom: 40,
+        marginBottom: 20,
     },
     title: {
         fontSize: 29,
         fontWeight: 'semibold',
         color: '#1C1F34',
-        marginBottom: 8,
+        // marginBottom: 8,
     },
     subtitle: {
         fontSize: 17,

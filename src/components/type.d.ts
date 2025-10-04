@@ -9,7 +9,7 @@ type TInputFieldProps = {
     errorMsg?: string;
     settingFormData?: () => void;
     setValue?: any;
-    billSundryFormData?: TBillSundryFormDataObj;
+    dropDownFormData?: TBillSundryFormDataObj;
     required?: boolean;
     maxlength?: number;
     ischeckBoxReq?: boolean;
@@ -19,4 +19,70 @@ type TInputFieldProps = {
     isEditable: boolean;
     onFocusText?: () => void;
     placeholderTextColor?: string;
+};
+
+type BSModalProps = {
+    bsModalRef: React.RefObject<BottomSheetModalMethods>;
+    isFlatList?: boolean;
+    footer?: React.JSX.Element;
+    children: React.JSX.Element | React.JSX.Element[];
+    index?: number;
+    snapPoints?: (number | string)[];
+    keyboardBlurBehavior?: 'none' | 'restore' | undefined;
+    inset?: 'top' | 'bottom';
+    keyboardBlurBehavior?: 'none' | 'restore';
+    enableContentPanningGesture?: boolean;
+    enableHandlePanningGesture?: boolean;
+    enableOverDrag?: boolean;
+    keyboardBehavior?: 'interactive' | 'extend' | 'fillParent' | undefined;
+    stackBehavior?: 'replace' | 'push' | undefined;
+    onCloseRequest?: () => void;
+    customBackButtonFn?: (() => void) | null;
+    scrollViewRef?: React.RefObject<ScrollView>;
+    customBackButtonFlag?: boolean;
+    bgGradientType?: 'no gradient' | 'purple' | 'blue' | 'pink';
+    customGradientColor?: string;
+    nonGradientBackGroundColor?: ColorValue;
+    handleStyle?: StyleProp<ViewStyle>;
+    headerTitle?: string;
+    headerStyle?: StyleProp<View>;
+    headerTitleTextStyle?: StyleProp<TextStyle>;
+    removeHeader?: boolean;
+    backButtonVisible?: boolean;
+    headerRightButtonComponent?: React.JSX.Element;
+    headerRightButtonTitle?: string;
+    headerRightButtonOnPress?: () => void;
+    headerRightButtonStyle?: StyleProp<View>;
+    headerRightButtonTextStyle?: StyleProp<TextStyle>;
+    scrollViewStyle?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>;
+    scrollViewContentContainerStyle?: StyleProp<
+        AnimatedStyle<StyleProp<ViewStyle>>
+    >;
+    backButtonType?: 'normal' | 'grey';
+    handleIndicatorColor?: 'default' | 'grey';
+    backdropComponent?: React.FC<BottomSheetBackdropProps> | null | undefined;
+    customHandleChangePosition?: (idx: number) => void;
+    backdropPressBehavior?: BackdropPressBehavior;
+    backdropOnPress?: () => void;
+    customOnDismiss?: () => void;
+    headerTitleBelowComponent?: React.JSX.Element;
+};
+
+type TSODDropDownProps = {
+    title: string;
+    placeholder?: string;
+    secureTextEntry?: boolean;
+    name?: string;
+    onChangeText?: (text: string) => void;
+    value?: string;
+    errorMsg?: string;
+    settingFormData?: () => void;
+    setValue?: any;
+    dropDownFormData?: TBillSundryFormDataObj;
+    required?: boolean;
+    maxlength?: number;
+    ischeckBoxReq?: boolean;
+    type: 'default' | 'BSModal';
+    disabled: boolean;
+    scrollRef?: React.RefObject<ScrollView>;
 };

@@ -61,4 +61,9 @@ export const showToast = ({
 export const Character_Limit = {
     email: 64,
     password: 20,
+    name: 50,
+    mobile: 10,
+    address: 200,
+    companyName: 100,
+    gstin: 15,
 };

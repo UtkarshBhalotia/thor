@@ -5,7 +5,16 @@ import {
     Pressable,
     TextInput,
     TouchableOpacity,
+    Image,
+    Alert,
 } from 'react-native';
+import {
+    launchImageLibrary,
+    launchCamera,
+    ImagePickerResponse,
+    MediaType,
+    PhotoQuality,
+} from 'react-native-image-picker';
 import {
     SafeAreaView,
     useSafeAreaInsets,
@@ -16,54 +25,475 @@ import {
     Platform,
     ScrollView,
 } from 'react-native';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, FormProvider } from 'react-hook-form';
 import Toast from 'react-native-toast-message';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { loginStyles } from '../../../assets/css/loginStyles';
 import { registerStyles } from '../../../assets/css/registerStyles';
+import SODTextInput from '../../../components/SODTextInput';
+import SODDropDown from '../../../components/SODDropDown';
+import { Character_Limit } from '../../../utils/common';
+import { regex_validation } from '../../../utils/regex';
+import Layout from '../../../assets/css/layout';
+import BSModal from '../../../components/BSModal';
 
 const Register = () => {
     const insets = useSafeAreaInsets();
     const [isPasswordSecure, setIsPasswordSecure] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [selectedState, setSelectedState] = useState<string | null>(null);
-    const [cities, setCities] = useState<string[]>([]);
-    const [citiesLoading, setCitiesLoading] = useState(false);
-    const [states, setStates] = useState<string[]>([]);
-    const [statesLoading, setStatesLoading] = useState(false);
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
 
-    const stateSheetRef = useRef<BottomSheetModal>(null);
-    const citySheetRef = useRef<BottomSheetModal>(null);
+    // Mobile verification states
+    const [isMobileVerified, setIsMobileVerified] = useState(false);
+    const [otpCode, setOtpCode] = useState('');
+    const [otpSending, setOtpSending] = useState(false);
+    const [otpVerifying, setOtpVerifying] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
+
+    // Document upload states
+    const [aadharFront, setAadharFront] = useState<string | null>(null);
+    const [aadharBack, setAadharBack] = useState<string | null>(null);
+    const [gstCertificate, setGstCertificate] = useState<string | null>(null);
+    const [panCard, setPanCard] = useState<string | null>(null);
+
+    // Modal refs
+    const otpModalRef = useRef<BottomSheetModal>(null);
+
+    // Sample data for dropdowns
+    const serviceTypes = [
+        'Consulting',
+        'Development',
+        'Design',
+        'Marketing',
+        'Support',
+    ];
+    const countries = ['India'];
+    const states = [
+        'Maharashtra',
+        'Karnataka',
+        'Tamil Nadu',
+        'Delhi',
+        'Gujarat',
+    ];
+    const cities = ['Mumbai', 'Bangalore', 'Chennai', 'Delhi', 'Ahmedabad'];
+
+    const formMethods = useForm({
+        defaultValues: {
+            name: '',
+            email: '',
+            password: '',
+            mobileNumber: '',
+            alternateMobileNumber: '',
+            address: '',
+            companyName: '',
+            gstin: '',
+            serviceType: '',
+            country: '',
+            state: '',
+            city: '',
+        },
+    });
+
     const {
         control,
         handleSubmit,
         formState: { errors },
-    } = useForm();
+        watch,
+        clearErrors,
+        trigger,
+        setValue,
+        getValues,
+    } = formMethods;
+
+    console.log('getValues', getValues());
+
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const openStatePicker = () => {
-        console.log('Open state picker');
-        stateSheetRef.current?.present();
+
+    // Watch all form values to check if mandatory fields are filled
+    const watchedValues = watch();
+
+    // Check if all mandatory fields are filled
+    const areMandatoryFieldsFilled = () => {
+        const mandatoryFields: (keyof typeof watchedValues)[] = [
+            'name',
+            'email',
+            'password',
+            'mobileNumber',
+            'address',
+            'companyName',
+            'serviceType',
+            'country',
+            'state',
+            'city',
+        ];
+
+        return mandatoryFields.every((field) => {
+            const value = watchedValues[field];
+            return value && value.trim() !== '';
+        });
     };
-    const openCityPicker = () => {
-        console.log('Open city picker');
-        citySheetRef.current?.present();
+
+    // Check if all form validations are passing (no errors)
+    const areAllValidationsPassing = () => {
+        return Object.keys(errors).length === 0;
+    };
+
+    // Check if all required documents are uploaded
+    const areDocumentsUploaded = () => {
+        const gstValue = watchedValues.gstin;
+        const hasGst = gstValue && gstValue.trim() !== '';
+
+        // Aadhar card (front and back) is always required
+        const aadharUploaded = aadharFront && aadharBack;
+
+        // GST certificate if GST is provided, otherwise PAN card
+        const additionalDocUploaded = hasGst ? gstCertificate : panCard;
+
+        return aadharUploaded && additionalDocUploaded;
+    };
+
+    // Check if signup button should be enabled
+    const isSignupEnabled =
+        areMandatoryFieldsFilled() &&
+        acceptTerms &&
+        areAllValidationsPassing() &&
+        isMobileVerified &&
+        areDocumentsUploaded();
+
+    // Mobile verification functions
+    const handleSendOTP = async () => {
+        const mobileNumber = watchedValues.mobileNumber;
+        if (!mobileNumber || !regex_validation('indiaMobile', mobileNumber)) {
+            Toast.show({
+                type: 'error',
+                text1: 'Invalid Mobile Number',
+                text2: 'Please enter a valid 10-digit mobile number',
+            });
+            return;
+        }
+
+        setOtpSending(true);
+        try {
+            // Simulate API call to send OTP
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+
+            setOtpSent(true);
+            setOtpCode('');
+
+            // Open the modal
+            otpModalRef.current?.present();
+
+            Toast.show({
+                type: 'success',
+                text1: 'OTP Sent',
+                text2: `OTP sent to ${mobileNumber}`,
+            });
+        } catch (error) {
+            Toast.show({
+                type: 'error',
+                text1: 'Failed to Send OTP',
+                text2: 'Please try again',
+            });
+        } finally {
+            setOtpSending(false);
+        }
+    };
+
+    const handleVerifyOTP = async () => {
+        if (!otpCode || otpCode.length !== 6) {
+            Toast.show({
+                type: 'error',
+                text1: 'Invalid OTP',
+                text2: 'Please enter a 6-digit OTP',
+            });
+            return;
+        }
+
+        setOtpVerifying(true);
+        try {
+            // Simulate API call to verify OTP
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+
+            // For demo purposes, accept any 6-digit OTP
+            if (otpCode.length === 6) {
+                setIsMobileVerified(true);
+                setOtpCode('');
+
+                // Close the modal
+                otpModalRef.current?.dismiss();
+
+                Toast.show({
+                    type: 'success',
+                    text1: 'Mobile Verified',
+                    text2: 'Your mobile number has been verified successfully',
+                });
+            } else {
+                throw new Error('Invalid OTP');
+            }
+        } catch (error) {
+            Toast.show({
+                type: 'error',
+                text1: 'Verification Failed',
+                text2: 'Invalid OTP. Please try again.',
+            });
+        } finally {
+            setOtpVerifying(false);
+        }
+    };
+
+    const handleResendOTP = async () => {
+        await handleSendOTP();
+    };
+
+    // Document upload functions
+    const handleDocumentUpload = (
+        documentType:
+            | 'aadharFront'
+            | 'aadharBack'
+            | 'gstCertificate'
+            | 'panCard',
+        setterFunction: (value: string | null) => void,
+    ) => {
+        Alert.alert(
+            'Upload Document',
+            'Choose an option',
+            [
+                {
+                    text: 'Camera',
+                    onPress: () => {
+                        const options = {
+                            mediaType: 'photo' as MediaType,
+                            includeBase64: false,
+                            maxHeight: 2000,
+                            maxWidth: 2000,
+                            quality: 0.8 as PhotoQuality,
+                        };
+
+                        launchCamera(
+                            options,
+                            (response: ImagePickerResponse) => {
+                                if (
+                                    response.didCancel ||
+                                    response.errorMessage
+                                ) {
+                                    return;
+                                }
+
+                                if (response.assets && response.assets[0]) {
+                                    setterFunction(
+                                        response.assets[0].uri || null,
+                                    );
+                                }
+                            },
+                        );
+                    },
+                },
+                {
+                    text: 'Gallery',
+                    onPress: () => {
+                        const options = {
+                            mediaType: 'photo' as MediaType,
+                            includeBase64: false,
+                            maxHeight: 2000,
+                            maxWidth: 2000,
+                            quality: 0.8 as PhotoQuality,
+                        };
+
+                        launchImageLibrary(
+                            options,
+                            (response: ImagePickerResponse) => {
+                                if (
+                                    response.didCancel ||
+                                    response.errorMessage
+                                ) {
+                                    return;
+                                }
+
+                                if (response.assets && response.assets[0]) {
+                                    setterFunction(
+                                        response.assets[0].uri || null,
+                                    );
+                                }
+                            },
+                        );
+                    },
+                },
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+            ],
+            { cancelable: true },
+        );
+    };
+
+    const handleRemoveDocument = (
+        documentType: string,
+        setterFunction: (value: string | null) => void,
+    ) => {
+        Alert.alert(
+            'Remove Document',
+            `Are you sure you want to remove this ${documentType}?`,
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Remove',
+                    style: 'destructive',
+                    onPress: () => {
+                        setterFunction(null);
+                    },
+                },
+            ],
+            { cancelable: true },
+        );
+    };
+
+    const handleProfilePhotoUpload = () => {
+        if (profileImage) {
+            // If photo exists, show options to change or remove
+            Alert.alert(
+                'Profile Photo',
+                'What would you like to do?',
+                [
+                    {
+                        text: 'Change Photo',
+                        onPress: () => showPhotoOptions(),
+                    },
+                    {
+                        text: 'Remove Photo',
+                        style: 'destructive',
+                        onPress: () => handleRemovePhoto(),
+                    },
+                    {
+                        text: 'Cancel',
+                        style: 'cancel',
+                    },
+                ],
+                { cancelable: true },
+            );
+        } else {
+            // If no photo, show upload options
+            showPhotoOptions();
+        }
+    };
+
+    const showPhotoOptions = () => {
+        Alert.alert(
+            'Upload Profile Photo',
+            'Choose an option',
+            [
+                {
+                    text: 'Camera',
+                    onPress: () => {
+                        const options = {
+                            mediaType: 'photo' as MediaType,
+                            includeBase64: false,
+                            maxHeight: 2000,
+                            maxWidth: 2000,
+                            quality: 0.8 as PhotoQuality,
+                        };
+
+                        launchCamera(
+                            options,
+                            (response: ImagePickerResponse) => {
+                                if (
+                                    response.didCancel ||
+                                    response.errorMessage
+                                ) {
+                                    return;
+                                }
+
+                                if (response.assets && response.assets[0]) {
+                                    setProfileImage(
+                                        response.assets[0].uri || null,
+                                    );
+                                }
+                            },
+                        );
+                    },
+                },
+                {
+                    text: 'Gallery',
+                    onPress: () => {
+                        const options = {
+                            mediaType: 'photo' as MediaType,
+                            includeBase64: false,
+                            maxHeight: 2000,
+                            maxWidth: 2000,
+                            quality: 0.8 as PhotoQuality,
+                        };
+
+                        launchImageLibrary(
+                            options,
+                            (response: ImagePickerResponse) => {
+                                if (
+                                    response.didCancel ||
+                                    response.errorMessage
+                                ) {
+                                    return;
+                                }
+
+                                if (response.assets && response.assets[0]) {
+                                    setProfileImage(
+                                        response.assets[0].uri || null,
+                                    );
+                                }
+                            },
+                        );
+                    },
+                },
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+            ],
+            { cancelable: true },
+        );
+    };
+
+    const handleRemovePhoto = () => {
+        Alert.alert(
+            'Remove Profile Photo',
+            'Are you sure you want to remove your profile photo?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Remove',
+                    style: 'destructive',
+                    onPress: () => {
+                        setProfileImage(null);
+                    },
+                },
+            ],
+            { cancelable: true },
+        );
     };
 
     const onSignupPress = async (data: any) => {
         console.log('Signup pressed:', data);
+        console.log('Profile image:', profileImage);
     };
 
     return (
-        <SafeAreaView style={loginStyles.container}>
+        <SafeAreaView style={loginStyles.container} edges={['top']}>
             <StatusBar barStyle="dark-content" />
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={insets.top}>
+                keyboardVerticalOffset={insets.top}
+                style={[Layout.viewHeight]}>
                 <ScrollView
                     contentContainerStyle={loginStyles.scrollContainer}
                     contentInsetAdjustmentBehavior="automatic"
                     contentInset={{ top: insets.top, bottom: insets.bottom }}
+                    showsVerticalScrollIndicator={false}
                     scrollIndicatorInsets={{
                         top: insets.top,
                         bottom: insets.bottom,
@@ -72,343 +502,1349 @@ const Register = () => {
                     keyboardDismissMode={
                         Platform.OS === 'ios' ? 'interactive' : 'on-drag'
                     }>
-                    {/* <View style={loginStyles.avatarContainer}>
-                        <Feather name="user" size={40} color="#FFFFFF" />
-                    </View> */}
                     <View style={loginStyles.headerContainer}>
-                        <Text style={loginStyles.title}>Hello User !</Text>
-                        <Text style={loginStyles.subtitle}>
-                            Signup For Better Experience
+                        <Text style={loginStyles.title}>
+                            Partner Registration
                         </Text>
                     </View>
 
-                    <Controller
-                        control={control}
-                        name="state"
-                        render={({ field: { value } }) => (
-                            <TouchableOpacity
-                                activeOpacity={0.8}
-                                onPress={openStatePicker}>
-                                <View
-                                    style={[
-                                        loginStyles.inputContainer,
-                                        { justifyContent: 'space-between' },
-                                    ]}>
-                                    <Text
-                                        style={[
-                                            loginStyles.input,
-                                            value
-                                                ? registerStyles.selectText
-                                                : registerStyles.selectPlaceholder,
-                                        ]}
-                                        numberOfLines={1}>
-                                        {value || 'Select State'}
-                                    </Text>
-                                    {/* <Feather
-                                        name="chevron-down"
-                                        size={20}
-                                        color="#8F8F8F"
-                                    /> */}
-                                </View>
-                            </TouchableOpacity>
-                        )}
-                    />
-
-                    <Controller
-                        control={control}
-                        name="city"
-                        render={({ field: { value } }) => (
-                            <TouchableOpacity
-                                activeOpacity={0.8}
-                                onPress={async () => {
-                                    if (!selectedState) {
-                                        Toast.show({
-                                            type: 'info',
-                                            text1: 'Please select a state first',
-                                        });
-                                        return;
-                                    }
-                                    // if (cities.length === 0) {
-                                    //     await fetchCitiesForState(
-                                    //         selectedState,
-                                    //     );
-                                    // }
-                                    openCityPicker();
-                                }}>
-                                <View
-                                    style={[
-                                        loginStyles.inputContainer,
-                                        { justifyContent: 'space-between' },
-                                    ]}>
-                                    <Text
-                                        style={[
-                                            loginStyles.input,
-                                            value
-                                                ? registerStyles.selectText
-                                                : registerStyles.selectPlaceholder,
-                                        ]}
-                                        numberOfLines={1}>
-                                        {value || 'Select City'}
-                                    </Text>
-                                    {/* <Feather
-                                        name="chevron-down"
-                                        size={20}
-                                        color="#8F8F8F"
-                                    /> */}
-                                </View>
-                            </TouchableOpacity>
-                        )}
-                    />
-
-                    <Controller
-                        control={control}
-                        name="fullName"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <View style={loginStyles.inputContainer}>
-                                <TextInput
-                                    style={loginStyles.input}
-                                    placeholder="Full Name"
-                                    placeholderTextColor="#8F8F8F"
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                />
-                                {/* <Feather
-                                    name="user"
-                                    size={20}
-                                    color="#8F8F8F"
-                                /> */}
-                            </View>
-                        )}
-                    />
-
-                    <Controller
-                        control={control}
-                        name="userName"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <View style={loginStyles.inputContainer}>
-                                <TextInput
-                                    style={loginStyles.input}
-                                    placeholder="User Name"
-                                    placeholderTextColor="#8F8F8F"
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                />
-                                {/* <Feather
-                                    name="user"
-                                    size={20}
-                                    color="#8F8F8F"
-                                /> */}
-                            </View>
-                        )}
-                    />
-
-                    <Controller
-                        control={control}
-                        name="email"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <View style={loginStyles.inputContainer}>
-                                <TextInput
-                                    style={loginStyles.input}
-                                    placeholder="Email"
-                                    placeholderTextColor="#8F8F8F"
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                />
-                                {/* <Feather
-                                    name="mail"
-                                    size={20}
-                                    color="#8F8F8F"
-                                /> */}
-                            </View>
-                        )}
-                    />
-
-                    <Controller
-                        control={control}
-                        name="password"
-                        render={({ field: { onChange, onBlur, value } }) => (
-                            <View style={loginStyles.inputContainer}>
-                                <TextInput
-                                    style={loginStyles.input}
-                                    placeholder="Password"
-                                    placeholderTextColor="#8F8F8F"
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    secureTextEntry={isPasswordSecure}
-                                />
-                                <TouchableOpacity
-                                    onPress={() =>
-                                        setIsPasswordSecure(!isPasswordSecure)
-                                    }>
-                                    {/* <Feather
-                                        name={
-                                            isPasswordSecure ? 'eye-off' : 'eye'
-                                        }
-                                        size={20}
-                                        color="#8F8F8F"
-                                    /> */}
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    />
-
-                    <TouchableOpacity
-                        style={loginStyles.signupButton}
-                        onPress={handleSubmit(onSignupPress)}
-                        disabled={submitting}>
-                        <Text style={loginStyles.loginButtonText}>
-                            {submitting ? 'PROCESSING...' : 'SIGNUP'}
+                    {/* Profile Photo Upload Section */}
+                    <View style={styles.profilePhotoContainer}>
+                        <Text style={styles.profilePhotoLabel}>
+                            Profile Photo {profileImage ? '(Optional)' : ''}
                         </Text>
-                    </TouchableOpacity>
-
-                    <View style={loginStyles.signupContainer}>
-                        <Text style={loginStyles.signupText}>
-                            Already have an account?
-                        </Text>
-                        <TouchableOpacity>
-                            <Pressable
-                                onPress={() => navigation.navigate('Login')}>
-                                <Text style={loginStyles.signupLink}>
-                                    Sign In
+                        <TouchableOpacity
+                            style={styles.profilePhotoButton}
+                            onPress={handleProfilePhotoUpload}
+                            activeOpacity={0.8}>
+                            {profileImage ? (
+                                <Image
+                                    source={{ uri: profileImage }}
+                                    style={styles.profileImage}
+                                    resizeMode="cover"
+                                />
+                            ) : (
+                                <View style={styles.profilePhotoPlaceholder}>
+                                    <Text style={styles.profilePhotoIcon}>
+                                        📷
+                                    </Text>
+                                    <Text style={styles.profilePhotoText}>
+                                        Add Photo
+                                    </Text>
+                                </View>
+                            )}
+                            <View style={styles.profilePhotoOverlay}>
+                                <Text style={styles.profilePhotoOverlayIcon}>
+                                    {profileImage ? '✏️' : '➕'}
                                 </Text>
-                            </Pressable>
+                            </View>
                         </TouchableOpacity>
+                        {profileImage && (
+                            <TouchableOpacity
+                                style={styles.removePhotoButton}
+                                onPress={handleRemovePhoto}
+                                activeOpacity={0.7}>
+                                <Text style={styles.removePhotoText}>
+                                    Remove Photo
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
+
+                    <FormProvider {...formMethods}>
+                        {/* Name Input */}
+                        <Controller
+                            control={control}
+                            name="name"
+                            rules={{
+                                required: 'Name is required',
+                                validate: (value) => {
+                                    if (!regex_validation('name', value)) {
+                                        return 'Please enter a valid name';
+                                    }
+                                    return true;
+                                },
+                            }}
+                            render={({
+                                field: { onChange, value, ref, onBlur },
+                                fieldState: { error },
+                            }) => (
+                                <SODTextInput
+                                    ref={ref}
+                                    title="name"
+                                    placeholder="Enter Full Name"
+                                    placeholderTextColor="#8F8F8F"
+                                    onChangeText={(text: string) => {
+                                        onChange(text);
+                                        clearErrors('name');
+                                    }}
+                                    onBlurText={() => {
+                                        trigger('name');
+                                    }}
+                                    value={value}
+                                    required={true}
+                                    errorMsg={error?.message}
+                                    name="name"
+                                    maxlength={Character_Limit.name}
+                                    keyboard={'default'}
+                                    isEditable={true}
+                                />
+                            )}
+                        />
+
+                        {/* Email Input */}
+                        <Controller
+                            control={control}
+                            name="email"
+                            rules={{
+                                required: 'Email is required',
+                                validate: (value) => {
+                                    if (!regex_validation('email', value)) {
+                                        return 'Please enter a valid email address';
+                                    }
+                                    return true;
+                                },
+                            }}
+                            render={({
+                                field: { onChange, value, ref, onBlur },
+                                fieldState: { error },
+                            }) => (
+                                <SODTextInput
+                                    ref={ref}
+                                    title="email"
+                                    placeholder="Enter Email"
+                                    placeholderTextColor="#8F8F8F"
+                                    onChangeText={(text: string) => {
+                                        onChange(text);
+                                        clearErrors('email');
+                                    }}
+                                    onBlurText={() => {
+                                        trigger('email');
+                                    }}
+                                    value={value}
+                                    required={true}
+                                    errorMsg={error?.message}
+                                    name="email"
+                                    maxlength={Character_Limit.email}
+                                    keyboard={'email-address'}
+                                    isEditable={true}
+                                />
+                            )}
+                        />
+
+                        {/* Password Input */}
+                        <Controller
+                            control={control}
+                            name="password"
+                            rules={{
+                                required: 'Password is required',
+                                validate: (value) => {
+                                    if (!regex_validation('password', value)) {
+                                        return 'Password must be at least 8 characters';
+                                    }
+                                    return true;
+                                },
+                            }}
+                            render={({
+                                field: { onChange, value, ref, onBlur },
+                                fieldState: { error },
+                            }) => (
+                                <View style={{ position: 'relative' }}>
+                                    <SODTextInput
+                                        ref={ref}
+                                        title="password"
+                                        placeholder="Enter Password"
+                                        placeholderTextColor="#8F8F8F"
+                                        onChangeText={(text: string) => {
+                                            onChange(text);
+                                            clearErrors('password');
+                                        }}
+                                        onBlurText={() => {
+                                            trigger('password');
+                                        }}
+                                        value={value}
+                                        required={true}
+                                        errorMsg={error?.message}
+                                        name="password"
+                                        maxlength={Character_Limit.password}
+                                        keyboard={'default'}
+                                        isEditable={true}
+                                        secureTextEntry={isPasswordSecure}
+                                    />
+                                    <TouchableOpacity
+                                        style={{
+                                            position: 'absolute',
+                                            right: 12,
+                                            top: '50%',
+                                            transform: [{ translateY: -15 }],
+                                            padding: 2,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                        }}
+                                        onPress={() =>
+                                            setIsPasswordSecure(
+                                                !isPasswordSecure,
+                                            )
+                                        }>
+                                        <Text style={{ color: '#8F8F8F' }}>
+                                            {isPasswordSecure ? '👁️' : '👁️‍🗨️'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        />
+
+                        {/* Mobile Number Input */}
+                        <Controller
+                            control={control}
+                            name="mobileNumber"
+                            rules={{
+                                required: 'Mobile number is required',
+                                validate: (value) => {
+                                    if (
+                                        !regex_validation('indiaMobile', value)
+                                    ) {
+                                        return 'Please enter a valid 10-digit mobile number';
+                                    }
+                                    return true;
+                                },
+                            }}
+                            render={({
+                                field: { onChange, value, ref, onBlur },
+                                fieldState: { error },
+                            }) => (
+                                <View>
+                                    <SODTextInput
+                                        ref={ref}
+                                        title="mobileNumber"
+                                        placeholder="Enter Mobile Number"
+                                        placeholderTextColor="#8F8F8F"
+                                        onChangeText={(text: string) => {
+                                            onChange(text);
+                                            clearErrors('mobileNumber');
+                                            // Reset verification status if mobile number changes
+                                            if (isMobileVerified) {
+                                                setIsMobileVerified(false);
+                                            }
+                                        }}
+                                        onBlurText={() => {
+                                            trigger('mobileNumber');
+                                        }}
+                                        value={value}
+                                        required={true}
+                                        errorMsg={error?.message}
+                                        name="mobileNumber"
+                                        maxlength={Character_Limit.mobile}
+                                        keyboard={'numeric'}
+                                        isEditable={true}
+                                    />
+
+                                    {/* Mobile Verification Section */}
+                                    {value &&
+                                        !error &&
+                                        regex_validation(
+                                            'indiaMobile',
+                                            value,
+                                        ) && (
+                                            <View
+                                                style={
+                                                    styles.mobileVerificationContainer
+                                                }>
+                                                {isMobileVerified ? (
+                                                    <View
+                                                        style={
+                                                            styles.verifiedContainer
+                                                        }>
+                                                        <Text
+                                                            style={
+                                                                styles.verifiedText
+                                                            }>
+                                                            ✓ Verified
+                                                        </Text>
+                                                        <Text
+                                                            style={
+                                                                styles.verifiedSubText
+                                                            }>
+                                                            Mobile number
+                                                            verified
+                                                            successfully
+                                                        </Text>
+                                                    </View>
+                                                ) : (
+                                                    <TouchableOpacity
+                                                        style={[
+                                                            styles.verifyButton,
+                                                            otpSending &&
+                                                                styles.verifyButtonDisabled,
+                                                        ]}
+                                                        onPress={handleSendOTP}
+                                                        disabled={otpSending}
+                                                        activeOpacity={0.7}>
+                                                        <Text
+                                                            style={[
+                                                                styles.verifyButtonText,
+                                                                otpSending &&
+                                                                    styles.verifyButtonTextDisabled,
+                                                            ]}>
+                                                            {otpSending
+                                                                ? 'Sending...'
+                                                                : 'Verify'}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                )}
+                                            </View>
+                                        )}
+                                </View>
+                            )}
+                        />
+
+                        {/* Alternate Mobile Number Input */}
+                        <Controller
+                            control={control}
+                            name="alternateMobileNumber"
+                            rules={{
+                                validate: (value) => {
+                                    if (
+                                        value &&
+                                        !regex_validation('indiaMobile', value)
+                                    ) {
+                                        return 'Please enter a valid 10-digit mobile number';
+                                    }
+                                    return true;
+                                },
+                            }}
+                            render={({
+                                field: { onChange, value, ref, onBlur },
+                                fieldState: { error },
+                            }) => (
+                                <SODTextInput
+                                    ref={ref}
+                                    title="alternateMobileNumber"
+                                    placeholder="Enter Alternate Mobile Number (Optional)"
+                                    placeholderTextColor="#8F8F8F"
+                                    onChangeText={(text: string) => {
+                                        onChange(text);
+                                        clearErrors('alternateMobileNumber');
+                                    }}
+                                    onBlurText={() => {
+                                        trigger('alternateMobileNumber');
+                                    }}
+                                    value={value}
+                                    required={false}
+                                    errorMsg={error?.message}
+                                    name="alternateMobileNumber"
+                                    maxlength={Character_Limit.mobile}
+                                    keyboard={'numeric'}
+                                    isEditable={true}
+                                />
+                            )}
+                        />
+
+                        {/* Address Input */}
+                        <Controller
+                            control={control}
+                            name="address"
+                            rules={{
+                                required: 'Address is required',
+                            }}
+                            render={({
+                                field: { onChange, value, ref, onBlur },
+                                fieldState: { error },
+                            }) => (
+                                <SODTextInput
+                                    ref={ref}
+                                    title="address"
+                                    placeholder="Enter Address"
+                                    placeholderTextColor="#8F8F8F"
+                                    onChangeText={(text: string) => {
+                                        onChange(text);
+                                        clearErrors('address');
+                                    }}
+                                    onBlurText={() => {
+                                        trigger('address');
+                                    }}
+                                    value={value}
+                                    required={true}
+                                    errorMsg={error?.message}
+                                    name="address"
+                                    maxlength={Character_Limit.address}
+                                    keyboard={'default'}
+                                    isEditable={true}
+                                />
+                            )}
+                        />
+
+                        {/* Company Name Input */}
+                        <Controller
+                            control={control}
+                            name="companyName"
+                            rules={{
+                                required: 'Company name is required',
+                            }}
+                            render={({
+                                field: { onChange, value, ref, onBlur },
+                                fieldState: { error },
+                            }) => (
+                                <SODTextInput
+                                    ref={ref}
+                                    title="companyName"
+                                    placeholder="Enter Company Name"
+                                    placeholderTextColor="#8F8F8F"
+                                    onChangeText={(text: string) => {
+                                        onChange(text);
+                                        clearErrors('companyName');
+                                    }}
+                                    onBlurText={() => {
+                                        trigger('companyName');
+                                    }}
+                                    value={value}
+                                    required={true}
+                                    errorMsg={error?.message}
+                                    name="companyName"
+                                    maxlength={Character_Limit.companyName}
+                                    keyboard={'default'}
+                                    isEditable={true}
+                                />
+                            )}
+                        />
+
+                        {/* GSTIN Input */}
+                        <Controller
+                            control={control}
+                            name="gstin"
+                            rules={{
+                                validate: (value) => {
+                                    if (
+                                        value &&
+                                        !regex_validation('gstin', value)
+                                    ) {
+                                        return 'Please enter a valid GSTIN';
+                                    }
+                                    return true;
+                                },
+                            }}
+                            render={({
+                                field: { onChange, value, ref, onBlur },
+                                fieldState: { error },
+                            }) => (
+                                <SODTextInput
+                                    ref={ref}
+                                    title="gstin"
+                                    placeholder="Enter GSTIN (Optional)"
+                                    placeholderTextColor="#8F8F8F"
+                                    onChangeText={(text: string) => {
+                                        onChange(text);
+                                        clearErrors('gstin');
+                                    }}
+                                    onBlurText={() => {
+                                        trigger('gstin');
+                                    }}
+                                    value={value}
+                                    required={false}
+                                    errorMsg={error?.message}
+                                    name="gstin"
+                                    maxlength={Character_Limit.gstin}
+                                    keyboard={'default'}
+                                    isEditable={true}
+                                />
+                            )}
+                        />
+
+                        {/* Service Type Dropdown */}
+                        <Controller
+                            control={control}
+                            name="serviceType"
+                            rules={{
+                                required: 'Service type is required',
+                            }}
+                            render={({
+                                field: { onChange, value },
+                                fieldState: { error },
+                            }) => (
+                                <SODDropDown
+                                    title="Service Type"
+                                    value={value || 'Select Service Type'}
+                                    required={true}
+                                    name="serviceType"
+                                    disabled={false}
+                                    type="BSModal"
+                                    //ischeckBoxReq={true}
+                                    errorMsg={error?.message}
+                                    dropDownFormData={serviceTypes}
+                                />
+                            )}
+                        />
+
+                        {/* Country Dropdown */}
+                        <Controller
+                            control={control}
+                            name="country"
+                            rules={{
+                                required: 'Country is required',
+                            }}
+                            render={({
+                                field: { onChange, value },
+                                fieldState: { error },
+                            }) => (
+                                <SODDropDown
+                                    title="Country"
+                                    value={value || 'Select Country'}
+                                    required={true}
+                                    name="country"
+                                    disabled={false}
+                                    type="BSModal"
+                                    errorMsg={error?.message}
+                                    dropDownFormData={countries}
+                                />
+                            )}
+                        />
+
+                        {/* State Dropdown */}
+                        <Controller
+                            control={control}
+                            name="state"
+                            rules={{
+                                required: 'State is required',
+                            }}
+                            render={({
+                                field: { onChange, value },
+                                fieldState: { error },
+                            }) => (
+                                <SODDropDown
+                                    title="State"
+                                    value={value || 'Select State'}
+                                    required={true}
+                                    name="state"
+                                    disabled={false}
+                                    type="BSModal"
+                                    errorMsg={error?.message}
+                                    dropDownFormData={states}
+                                />
+                            )}
+                        />
+
+                        {/* City Dropdown */}
+                        <Controller
+                            control={control}
+                            name="city"
+                            rules={{
+                                required: 'City is required',
+                            }}
+                            render={({
+                                field: { onChange, value },
+                                fieldState: { error },
+                            }) => (
+                                <SODDropDown
+                                    title="City"
+                                    value={value || 'Select City'}
+                                    required={true}
+                                    name="city"
+                                    disabled={false}
+                                    type="BSModal"
+                                    errorMsg={error?.message}
+                                    dropDownFormData={cities}
+                                />
+                            )}
+                        />
+
+                        {/* Address Proof Documents Section */}
+                        <View style={styles.documentsSection}>
+                            <Text style={styles.documentsSectionTitle}>
+                                Address Proof Documents
+                            </Text>
+                            <Text style={styles.documentsSectionSubtitle}>
+                                Please upload the required documents for
+                                verification
+                            </Text>
+
+                            {/* Aadhar Card Upload */}
+                            <View style={styles.documentUploadContainer}>
+                                <Text style={styles.documentTitle}>
+                                    Aadhar Card{' '}
+                                    <Text style={styles.required}>*</Text>
+                                </Text>
+                                <Text style={styles.documentSubtitle}>
+                                    Upload both front and back side of Aadhar
+                                    card
+                                </Text>
+
+                                <View style={styles.aadharUploadRow}>
+                                    {/* Aadhar Front */}
+                                    <View style={styles.documentUploadItem}>
+                                        <TouchableOpacity
+                                            style={styles.documentUploadButton}
+                                            onPress={() =>
+                                                handleDocumentUpload(
+                                                    'aadharFront',
+                                                    setAadharFront,
+                                                )
+                                            }
+                                            activeOpacity={0.8}>
+                                            {aadharFront ? (
+                                                <Image
+                                                    source={{
+                                                        uri: aadharFront,
+                                                    }}
+                                                    style={
+                                                        styles.documentPreview
+                                                    }
+                                                    resizeMode="cover"
+                                                />
+                                            ) : (
+                                                <View
+                                                    style={
+                                                        styles.documentPlaceholder
+                                                    }>
+                                                    <Text
+                                                        style={
+                                                            styles.documentIcon
+                                                        }>
+                                                        📄
+                                                    </Text>
+                                                    <Text
+                                                        style={
+                                                            styles.documentPlaceholderText
+                                                        }>
+                                                        Front
+                                                    </Text>
+                                                </View>
+                                            )}
+                                            <View
+                                                style={styles.documentOverlay}>
+                                                <Text
+                                                    style={
+                                                        styles.documentOverlayIcon
+                                                    }>
+                                                    {aadharFront ? '✏️' : '➕'}
+                                                </Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                        {aadharFront && (
+                                            <TouchableOpacity
+                                                style={
+                                                    styles.removeDocumentButton
+                                                }
+                                                onPress={() =>
+                                                    handleRemoveDocument(
+                                                        'Aadhar Front',
+                                                        setAadharFront,
+                                                    )
+                                                }
+                                                activeOpacity={0.7}>
+                                                <Text
+                                                    style={
+                                                        styles.removeDocumentText
+                                                    }>
+                                                    Remove
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+
+                                    {/* Aadhar Back */}
+                                    <View style={styles.documentUploadItem}>
+                                        <TouchableOpacity
+                                            style={styles.documentUploadButton}
+                                            onPress={() =>
+                                                handleDocumentUpload(
+                                                    'aadharBack',
+                                                    setAadharBack,
+                                                )
+                                            }
+                                            activeOpacity={0.8}>
+                                            {aadharBack ? (
+                                                <Image
+                                                    source={{ uri: aadharBack }}
+                                                    style={
+                                                        styles.documentPreview
+                                                    }
+                                                    resizeMode="cover"
+                                                />
+                                            ) : (
+                                                <View
+                                                    style={
+                                                        styles.documentPlaceholder
+                                                    }>
+                                                    <Text
+                                                        style={
+                                                            styles.documentIcon
+                                                        }>
+                                                        📄
+                                                    </Text>
+                                                    <Text
+                                                        style={
+                                                            styles.documentPlaceholderText
+                                                        }>
+                                                        Back
+                                                    </Text>
+                                                </View>
+                                            )}
+                                            <View
+                                                style={styles.documentOverlay}>
+                                                <Text
+                                                    style={
+                                                        styles.documentOverlayIcon
+                                                    }>
+                                                    {aadharBack ? '✏️' : '➕'}
+                                                </Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                        {aadharBack && (
+                                            <TouchableOpacity
+                                                style={
+                                                    styles.removeDocumentButton
+                                                }
+                                                onPress={() =>
+                                                    handleRemoveDocument(
+                                                        'Aadhar Back',
+                                                        setAadharBack,
+                                                    )
+                                                }
+                                                activeOpacity={0.7}>
+                                                <Text
+                                                    style={
+                                                        styles.removeDocumentText
+                                                    }>
+                                                    Remove
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Conditional Document Upload */}
+                            <View style={styles.documentUploadContainer}>
+                                {watchedValues.gstin &&
+                                watchedValues.gstin.trim() !== '' ? (
+                                    <>
+                                        <Text style={styles.documentTitle}>
+                                            GST Certificate{' '}
+                                            <Text style={styles.required}>
+                                                *
+                                            </Text>
+                                        </Text>
+                                        <Text style={styles.documentSubtitle}>
+                                            Upload GST certificate since GST
+                                            number is provided
+                                        </Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Text style={styles.documentTitle}>
+                                            PAN Card{' '}
+                                            <Text style={styles.required}>
+                                                *
+                                            </Text>
+                                        </Text>
+                                        <Text style={styles.documentSubtitle}>
+                                            Upload PAN card since no GST number
+                                            is provided
+                                        </Text>
+                                    </>
+                                )}
+
+                                <View style={styles.singleDocumentUpload}>
+                                    <TouchableOpacity
+                                        style={styles.documentUploadButton}
+                                        onPress={() =>
+                                            watchedValues.gstin &&
+                                            watchedValues.gstin.trim() !== ''
+                                                ? handleDocumentUpload(
+                                                      'gstCertificate',
+                                                      setGstCertificate,
+                                                  )
+                                                : handleDocumentUpload(
+                                                      'panCard',
+                                                      setPanCard,
+                                                  )
+                                        }
+                                        activeOpacity={0.8}>
+                                        {(
+                                            watchedValues.gstin &&
+                                            watchedValues.gstin.trim() !== ''
+                                                ? gstCertificate
+                                                : panCard
+                                        ) ? (
+                                            <Image
+                                                source={{
+                                                    uri:
+                                                        watchedValues.gstin &&
+                                                        watchedValues.gstin.trim() !==
+                                                            ''
+                                                            ? gstCertificate ||
+                                                              ''
+                                                            : panCard || '',
+                                                }}
+                                                style={styles.documentPreview}
+                                                resizeMode="cover"
+                                            />
+                                        ) : (
+                                            <View
+                                                style={
+                                                    styles.documentPlaceholder
+                                                }>
+                                                <Text
+                                                    style={styles.documentIcon}>
+                                                    {watchedValues.gstin &&
+                                                    watchedValues.gstin.trim() !==
+                                                        ''
+                                                        ? '🏢'
+                                                        : '💳'}
+                                                </Text>
+                                                <Text
+                                                    style={
+                                                        styles.documentPlaceholderText
+                                                    }>
+                                                    {watchedValues.gstin &&
+                                                    watchedValues.gstin.trim() !==
+                                                        ''
+                                                        ? 'GST Certificate'
+                                                        : 'PAN Card'}
+                                                </Text>
+                                            </View>
+                                        )}
+                                        <View style={styles.documentOverlay}>
+                                            <Text
+                                                style={
+                                                    styles.documentOverlayIcon
+                                                }>
+                                                {(
+                                                    watchedValues.gstin &&
+                                                    watchedValues.gstin.trim() !==
+                                                        ''
+                                                        ? gstCertificate
+                                                        : panCard
+                                                )
+                                                    ? '✏️'
+                                                    : '➕'}
+                                            </Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                    {(watchedValues.gstin &&
+                                    watchedValues.gstin.trim() !== ''
+                                        ? gstCertificate
+                                        : panCard) && (
+                                        <TouchableOpacity
+                                            style={styles.removeDocumentButton}
+                                            onPress={() =>
+                                                watchedValues.gstin &&
+                                                watchedValues.gstin.trim() !==
+                                                    ''
+                                                    ? handleRemoveDocument(
+                                                          'GST Certificate',
+                                                          setGstCertificate,
+                                                      )
+                                                    : handleRemoveDocument(
+                                                          'PAN Card',
+                                                          setPanCard,
+                                                      )
+                                            }
+                                            activeOpacity={0.7}>
+                                            <Text
+                                                style={
+                                                    styles.removeDocumentText
+                                                }>
+                                                Remove
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            </View>
+                        </View>
+
+                        {/* Terms and Conditions Checkbox */}
+                        <View style={styles.termsContainer}>
+                            <TouchableOpacity
+                                style={styles.checkboxContainer}
+                                onPress={() => setAcceptTerms(!acceptTerms)}
+                                activeOpacity={0.7}>
+                                <View
+                                    style={[
+                                        styles.checkbox,
+                                        acceptTerms && styles.checkboxChecked,
+                                    ]}>
+                                    {acceptTerms && (
+                                        <Text style={styles.checkmark}>✓</Text>
+                                    )}
+                                </View>
+                                <View style={styles.termsTextContainer}>
+                                    <Text style={styles.termsText}>
+                                        I accept the{' '}
+                                        <Text
+                                            style={styles.termsLink}
+                                            onPress={() => {
+                                                // Navigate to web view for terms and conditions
+                                                console.log(
+                                                    'Navigate to terms and conditions',
+                                                );
+                                            }}>
+                                            Terms and Conditions
+                                        </Text>
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        <TouchableOpacity
+                            style={[
+                                loginStyles.signupButton,
+                                !isSignupEnabled && styles.disabledButton,
+                            ]}
+                            onPress={handleSubmit(onSignupPress)}
+                            disabled={submitting || !isSignupEnabled}>
+                            <Text
+                                style={[
+                                    loginStyles.loginButtonText,
+                                    !isSignupEnabled &&
+                                        styles.disabledButtonText,
+                                ]}>
+                                {submitting ? 'PROCESSING...' : 'SIGNUP'}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <View style={loginStyles.signupContainer}>
+                            <Text style={loginStyles.signupText}>
+                                Already have an account?
+                            </Text>
+                            <TouchableOpacity>
+                                <Pressable
+                                    onPress={() =>
+                                        navigation.navigate('Login')
+                                    }>
+                                    <Text style={loginStyles.signupLink}>
+                                        Sign In
+                                    </Text>
+                                </Pressable>
+                            </TouchableOpacity>
+                        </View>
+                    </FormProvider>
                 </ScrollView>
             </KeyboardAvoidingView>
 
-            {/* <BottomSheetModal
-                ref={stateSheetRef}
-                snapPoints={stateSnapPoints}
-                enablePanDownToClose={false}
-                enableHandlePanningGesture={false}
-                enableContentPanningGesture={false}
-                enableOverDrag={false}
-                backdropComponent={renderBackdrop}
-                topInset={insets.top}
-                index={0}>
-                <View style={sheetStyles.sheetContainer}>
-                    <Text style={sheetStyles.sheetTitle}>Select State</Text>
-                    <BottomSheetFlatList
-                        data={states}
-                        keyExtractor={(item) => item}
-                        contentContainerStyle={{
-                            paddingBottom: insets.bottom + 24,
-                        }}
-                        initialNumToRender={16}
-                        maxToRenderPerBatch={16}
-                        windowSize={8}
-                        removeClippedSubviews={false}
-                        updateCellsBatchingPeriod={16}
-                        bounces={false}
-                        alwaysBounceVertical={false}
-                        overScrollMode="never"
-                        decelerationRate={0.6} // ⬅ slower scroll
-                        scrollEventThrottle={16}
-                        keyboardShouldPersistTaps="handled"
-                        renderItem={renderStateItem}
-                        ListFooterComponent={
-                            <View style={{ height: insets.bottom + 8 }} />
-                        }
-                        ListEmptyComponent={
-                            statesLoading ? (
-                                <View style={{ padding: 16 }}>
-                                    <Text
-                                        style={{
-                                            textAlign: 'center',
-                                            color: '#8F8F8F',
-                                        }}>
-                                        Loading states...
-                                    </Text>
-                                </View>
-                            ) : (
-                                <View style={{ padding: 16 }}>
-                                    <Text
-                                        style={{
-                                            textAlign: 'center',
-                                            color: '#8F8F8F',
-                                        }}>
-                                        No states found
-                                    </Text>
-                                </View>
-                            )
-                        }
-                    />
-                </View>
-            </BottomSheetModal> */}
-
-            {/* <BottomSheetModal
-                ref={citySheetRef}
-                snapPoints={citySnapPoints}
-                enablePanDownToClose={false}
-                enableHandlePanningGesture={false}
-                enableContentPanningGesture={false}
-                enableOverDrag={false}
-                backdropComponent={renderBackdrop}
-                topInset={insets.top}
-                index={0}>
-                <View style={sheetStyles.sheetContainer}>
-                    <Text style={sheetStyles.sheetTitle}>
-                        {selectedState
-                            ? `Cities in ${selectedState}`
-                            : 'Select City'}
+            {/* OTP Verification Modal */}
+            <BSModal
+                bsModalRef={otpModalRef}
+                index={0}
+                snapPoints={['40%']}
+                onCloseRequest={() => {
+                    setOtpCode('');
+                }}
+                headerTitle="Verify Mobile Number">
+                <View style={styles.otpModalContainer}>
+                    <Text style={styles.otpModalTitle}>
+                        Enter OTP sent to {watchedValues.mobileNumber}
                     </Text>
 
-                    <BottomSheetFlatList
-                        data={cities}
-                        keyExtractor={(item) => item}
-                        contentContainerStyle={{
-                            paddingBottom: insets.bottom + 24,
-                        }}
-                        initialNumToRender={24}
-                        maxToRenderPerBatch={24}
-                        windowSize={10}
-                        removeClippedSubviews={false}
-                        updateCellsBatchingPeriod={50}
-                        bounces={false}
-                        alwaysBounceVertical={false}
-                        overScrollMode="never"
-                        decelerationRate={0.6} // ⬅ slower scroll
-                        scrollEventThrottle={16}
-                        keyboardShouldPersistTaps="handled"
-                        renderItem={renderCityItem}
-                        ListFooterComponent={
-                            <View style={{ height: insets.bottom + 8 }} />
-                        }
-                        ListEmptyComponent={
-                            citiesLoading ? (
-                                <View style={{ padding: 16 }}>
-                                    <Text
-                                        style={{
-                                            textAlign: 'center',
-                                            color: '#8F8F8F',
-                                        }}>
-                                        Loading cities...
-                                    </Text>
-                                </View>
-                            ) : (
-                                <View style={{ padding: 16 }}>
-                                    <Text
-                                        style={{
-                                            textAlign: 'center',
-                                            color: '#8F8F8F',
-                                        }}>
-                                        No cities found
-                                    </Text>
-                                </View>
-                            )
-                        }
-                    />
+                    <View style={styles.otpInputContainer}>
+                        <TextInput
+                            style={styles.otpInput}
+                            value={otpCode}
+                            onChangeText={setOtpCode}
+                            placeholder="Enter 6-digit OTP"
+                            placeholderTextColor="#8F8F8F"
+                            keyboardType="numeric"
+                            maxLength={6}
+                            textAlign="center"
+                        />
+                    </View>
+
+                    <View style={styles.otpButtonContainer}>
+                        <TouchableOpacity
+                            style={[
+                                styles.otpButton,
+                                (!otpCode ||
+                                    otpCode.length !== 6 ||
+                                    otpVerifying) &&
+                                    styles.otpButtonDisabled,
+                            ]}
+                            onPress={handleVerifyOTP}
+                            disabled={
+                                !otpCode || otpCode.length !== 6 || otpVerifying
+                            }
+                            activeOpacity={0.7}>
+                            <Text
+                                style={[
+                                    styles.otpButtonText,
+                                    (!otpCode ||
+                                        otpCode.length !== 6 ||
+                                        otpVerifying) &&
+                                        styles.otpButtonTextDisabled,
+                                ]}>
+                                {otpVerifying ? 'Verifying...' : 'Verify OTP'}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.resendButton}
+                            onPress={handleResendOTP}
+                            disabled={otpSending}
+                            activeOpacity={0.7}>
+                            <Text
+                                style={[
+                                    styles.resendButtonText,
+                                    otpSending &&
+                                        styles.resendButtonTextDisabled,
+                                ]}>
+                                {otpSending ? 'Sending...' : 'Resend OTP'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </BottomSheetModal> */}
+            </BSModal>
         </SafeAreaView>
     );
+};
+
+const styles = {
+    profilePhotoContainer: {
+        alignItems: 'center' as const,
+        marginVertical: 10,
+        paddingHorizontal: 20,
+    },
+    profilePhotoLabel: {
+        fontSize: 16,
+        fontWeight: '600' as const,
+        color: '#333',
+        marginBottom: 15,
+        textAlign: 'center' as const,
+    },
+    profilePhotoButton: {
+        position: 'relative' as const,
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: '#F5F5F5',
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        borderStyle: 'dashed' as const,
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+        overflow: 'hidden' as const,
+    },
+    profileImage: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+    },
+    profilePhotoPlaceholder: {
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+    },
+    profilePhotoIcon: {
+        fontSize: 32,
+        marginBottom: 8,
+    },
+    profilePhotoText: {
+        fontSize: 12,
+        color: '#666',
+        fontWeight: '500' as const,
+    },
+    profilePhotoOverlay: {
+        position: 'absolute' as const,
+        bottom: 0,
+        right: 0,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#007AFF',
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+    },
+    profilePhotoOverlayIcon: {
+        fontSize: 14,
+        color: '#FFFFFF',
+    },
+    removePhotoButton: {
+        marginTop: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: '#FF3B30',
+        borderRadius: 20,
+        alignSelf: 'center' as const,
+    },
+    removePhotoText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '600' as const,
+        textAlign: 'center' as const,
+    },
+    termsContainer: {
+        marginVertical: 15,
+        paddingHorizontal: 20,
+    },
+    checkboxContainer: {
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderWidth: 2,
+        borderColor: '#8F8F8F',
+        borderRadius: 4,
+        marginRight: 12,
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+        backgroundColor: '#FFFFFF',
+    },
+    checkboxChecked: {
+        backgroundColor: '#007AFF',
+        borderColor: '#007AFF',
+    },
+    checkmark: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: 'bold' as const,
+    },
+    termsTextContainer: {
+        flex: 1,
+    },
+    termsText: {
+        fontSize: 14,
+        color: '#333333',
+        lineHeight: 20,
+    },
+    termsLink: {
+        color: '#007AFF',
+        textDecorationLine: 'underline' as const,
+        fontWeight: '600' as const,
+    },
+    disabledButton: {
+        backgroundColor: '#CCCCCC',
+        opacity: 0.6,
+    },
+    disabledButtonText: {
+        color: '#666666',
+    },
+    // Mobile verification styles
+    mobileVerificationContainer: {
+        marginTop: 10,
+        paddingHorizontal: 20,
+    },
+    verifiedContainer: {
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
+        backgroundColor: '#E8F5E8',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: '#4CAF50',
+    },
+    verifiedText: {
+        color: '#4CAF50',
+        fontSize: 14,
+        fontWeight: '600' as const,
+        marginRight: 8,
+    },
+    verifiedSubText: {
+        color: '#4CAF50',
+        fontSize: 12,
+        flex: 1,
+    },
+    verifyButton: {
+        backgroundColor: '#007AFF',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 6,
+        alignSelf: 'flex-start' as const,
+    },
+    verifyButtonDisabled: {
+        backgroundColor: '#CCCCCC',
+        opacity: 0.6,
+    },
+    verifyButtonText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600' as const,
+    },
+    verifyButtonTextDisabled: {
+        color: '#666666',
+    },
+    // OTP Modal styles
+    otpModalContainer: {
+        padding: 20,
+        alignItems: 'center' as const,
+    },
+    otpModalTitle: {
+        fontSize: 16,
+        fontWeight: '600' as const,
+        color: '#333333',
+        textAlign: 'center' as const,
+        marginBottom: 20,
+        lineHeight: 22,
+    },
+    otpInputContainer: {
+        width: '100%' as const,
+        marginBottom: 20,
+    },
+    otpInput: {
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        borderRadius: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        fontSize: 18,
+        fontWeight: '600' as const,
+        backgroundColor: '#FFFFFF',
+        color: '#333333',
+    },
+    otpButtonContainer: {
+        width: '100%' as const,
+        gap: 12,
+    },
+    otpButton: {
+        backgroundColor: '#007AFF',
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center' as const,
+    },
+    otpButtonDisabled: {
+        backgroundColor: '#CCCCCC',
+        opacity: 0.6,
+    },
+    otpButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '600' as const,
+    },
+    otpButtonTextDisabled: {
+        color: '#666666',
+    },
+    resendButton: {
+        backgroundColor: 'transparent',
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center' as const,
+        borderWidth: 1,
+        borderColor: '#007AFF',
+    },
+    resendButtonText: {
+        color: '#007AFF',
+        fontSize: 16,
+        fontWeight: '600' as const,
+    },
+    resendButtonTextDisabled: {
+        color: '#CCCCCC',
+        borderColor: '#CCCCCC',
+    },
+    // Document upload styles
+    documentsSection: {
+        marginVertical: 20,
+        paddingHorizontal: 20,
+        backgroundColor: '#F8F9FA',
+        borderRadius: 12,
+        paddingVertical: 16,
+    },
+    documentsSectionTitle: {
+        fontSize: 18,
+        fontWeight: '600' as const,
+        color: '#333333',
+        marginBottom: 4,
+    },
+    documentsSectionSubtitle: {
+        fontSize: 14,
+        color: '#666666',
+        marginBottom: 16,
+        lineHeight: 20,
+    },
+    documentUploadContainer: {
+        marginBottom: 20,
+    },
+    documentTitle: {
+        fontSize: 16,
+        fontWeight: '600' as const,
+        color: '#333333',
+        marginBottom: 4,
+    },
+    documentSubtitle: {
+        fontSize: 13,
+        color: '#666666',
+        marginBottom: 12,
+        lineHeight: 18,
+    },
+    required: {
+        color: '#FF3B30',
+        fontWeight: 'bold' as const,
+    },
+    aadharUploadRow: {
+        flexDirection: 'row' as const,
+        justifyContent: 'space-between' as const,
+        gap: 12,
+    },
+    documentUploadItem: {
+        flex: 1,
+        alignItems: 'center' as const,
+    },
+    singleDocumentUpload: {
+        alignItems: 'center' as const,
+    },
+    documentUploadButton: {
+        position: 'relative' as const,
+        width: 120,
+        height: 80,
+        borderRadius: 8,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        borderStyle: 'dashed' as const,
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+        overflow: 'hidden' as const,
+        marginBottom: 8,
+    },
+    documentPreview: {
+        width: 120,
+        height: 80,
+        borderRadius: 6,
+    },
+    documentPlaceholder: {
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+    },
+    documentIcon: {
+        fontSize: 24,
+        marginBottom: 4,
+    },
+    documentPlaceholderText: {
+        fontSize: 12,
+        color: '#666666',
+        fontWeight: '500' as const,
+        textAlign: 'center' as const,
+    },
+    documentOverlay: {
+        position: 'absolute' as const,
+        bottom: 4,
+        right: 4,
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#007AFF',
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+        borderWidth: 1,
+        borderColor: '#FFFFFF',
+    },
+    documentOverlayIcon: {
+        fontSize: 12,
+        color: '#FFFFFF',
+    },
+    removeDocumentButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        backgroundColor: '#FF3B30',
+        borderRadius: 12,
+        alignSelf: 'center' as const,
+    },
+    removeDocumentText: {
+        color: '#FFFFFF',
+        fontSize: 11,
+        fontWeight: '600' as const,
+        textAlign: 'center' as const,
+    },
 };
 
 export default Register;
