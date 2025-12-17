@@ -2,27 +2,10 @@ name: Build Android
 
 # Trigger this workflow manually or on version tags
 on:
-  # Allow manual trigger from GitHub Actions UI
-  # workflow_dispatch:
-  #   inputs:
-  #     build_type:
-  #       description: 'Build type'
-  #       required: true
-  #       default: 'debug'
-  #       type: choice
-  #       options:
-  #         - debug
-  #         - release
-  
-  # # Automatically trigger on version tags (e.g., v1.0.0)
-  # push:
-  #   tags:
-  #     - 'v*'
-
-    push:
+  push:
     branches:
       - CI_CD_Integration_Testing
-    pull_request:
+  pull_request:
     branches:
       - '**'
 
