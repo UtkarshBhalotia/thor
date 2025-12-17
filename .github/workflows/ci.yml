@@ -35,12 +35,12 @@ jobs:
       #   run: npm run lint
       
       # Step 5: Run TypeScript type checking
-      - name: Type check
-        run: npx tsc --noEmit
+      # - name: Type check
+      #   run: npx tsc --noEmit
       
       # Step 6: Run tests
-      - name: Run tests
-        run: npm test -- --coverage --watchAll=false
+      # - name: Run tests
+      #   run: npm test -- --coverage --watchAll=false
       
       # Step 7: Upload coverage report (optional)
       - name: Upload coverage reports

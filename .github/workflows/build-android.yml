@@ -1,0 +1,127 @@
+name: Build Android
+
+# Trigger this workflow manually or on version tags
+on:
+  # Allow manual trigger from GitHub Actions UI
+  # workflow_dispatch:
+  #   inputs:
+  #     build_type:
+  #       description: 'Build type'
+  #       required: true
+  #       default: 'debug'
+  #       type: choice
+  #       options:
+  #         - debug
+  #         - release
+  
+  # # Automatically trigger on version tags (e.g., v1.0.0)
+  # push:
+  #   tags:
+  #     - 'v*'
+
+    push:
+    branches:
+      - CI_CD_Integration_Testing
+    pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      # Step 3: Set up Java (required for Android builds)
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+      
+      # Step 4: Install Node dependencies
+      - name: Install dependencies
+        run: npm ci
+      
+      # Step 5: Cache Gradle dependencies
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      
+      # Step 6: Make gradlew executable
+      - name: Make gradlew executable
+        run: chmod +x android/gradlew
+      
+      # Step 7: Set up release keystore (for release builds)
+      # - name: Set up release keystore
+      #   if: github.event.inputs.build_type == 'release' || startsWith(github.ref, 'refs/tags/')
+      #   run: |
+      #     echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+      #   continue-on-error: true
+      
+      # Step 8: Build Debug APK (default)
+      - name: Build Debug APK
+        if: github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == ''
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
+      
+      # Step 9: Build Release APK (when release is selected)
+      # - name: Build Release APK
+      #   if: github.event.inputs.build_type == 'release' || startsWith(github.ref, 'refs/tags/')
+      #   env:
+      #     ANDROID_KEYSTORE_FILE: release.keystore
+      #     ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      #     ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      #     ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      #   run: |
+      #     cd android
+      #     ./gradlew assembleRelease --no-daemon
+      
+      # Step 11: Upload Debug APK as artifact
+      - name: Upload Debug APK
+        if: github.event.inputs.build_type == 'debug' || github.event.inputs.build_type == ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+      
+      # Step 12: Upload Release APK as artifact
+      # - name: Upload Release APK
+      #   if: github.event.inputs.build_type == 'release' || startsWith(github.ref, 'refs/tags/')
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: app-release
+      #     path: android/app/build/outputs/apk/release/app-release.apk
+      #     retention-days: 90
+      
+      # Step 13: Create GitHub Release (only for version tags)
+      # - name: Create Release
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: |
+      #       android/app/build/outputs/apk/release/app-release.apk
+      #     draft: false
+      #     prerelease: false
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
