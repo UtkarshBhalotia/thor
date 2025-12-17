@@ -5,6 +5,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import WelcomeToSOD from '../components/WelcomeToSOD';
 import Login from '../modules/gettingStarted/login';
 import Register from '../modules/gettingStarted/register';
+import Dashboard from '../modules/dashboard';
+import Booking from '../modules/booking';
+import Wallet from '../modules/wallet';
+import Profile from '../modules/profile';
 
 const MainNavigator = () => {
     const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -25,6 +29,26 @@ const MainNavigator = () => {
                 <Stack.Screen
                     name="Register"
                     component={Register}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="Dashboard"
+                    component={Dashboard}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="Booking"
+                    component={Booking}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="Wallet"
+                    component={Wallet}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="Profile"
+                    component={Profile}
                     options={{ headerShown: false }}
                 />
             </Stack.Group>

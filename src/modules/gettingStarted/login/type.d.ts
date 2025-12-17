@@ -13,6 +13,7 @@ interface IUserLoginActionConditionParam<
 type TUserLoginParam = {
     email: string;
     password: string;
+    callBack: () => void;
 };
 
 interface IResponseParam {

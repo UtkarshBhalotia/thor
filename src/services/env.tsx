@@ -13,6 +13,7 @@ export const BaseUrl = BASE_ENV[ENV].API_HOST;
 
 const apiListing = {
     loginUrl: `${BaseUrl}ValidateMobileUser`,
+    walletBalanceUrl: `${BaseUrl}GetVendorBalance`,
 };
 
 const projectEnv = {

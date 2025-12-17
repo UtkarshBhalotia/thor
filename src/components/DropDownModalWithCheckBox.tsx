@@ -23,7 +23,7 @@ const DropDownModalWithCheckBox = (props: {
 }) => {
     const { setValue, getValues, watch } = useFormContext();
 
-    const previousBillArray = watch('previousBill');
+    const previousServiceArray = watch('previousService');
 
     const renderItem = ({ item, index }: any) => {
         return (
@@ -38,33 +38,43 @@ const DropDownModalWithCheckBox = (props: {
                     Common.mr5,
                 ]}
                 onPress={() => {
-                    setValue(
-                        `previousBill.${index}.isChecked`,
+                    // Create a new array with updated checkbox state
+                    const updatedArray = [...previousServiceArray];
+                    updatedArray[index] = {
+                        ...updatedArray[index],
+                        isChecked: !item.isChecked,
+                    };
+
+                    // Update the form with the new array
+                    setValue('previousService', updatedArray);
+
+                    // Calculate count from checked items
+                    const checkedCount = updatedArray.filter(
+                        (serviceItem: any) => serviceItem.isChecked,
+                    ).length;
+                    console.log(
+                        'Updated count:',
+                        checkedCount,
+                        'for item:',
+                        item.name,
+                        'isChecked:',
                         !item.isChecked,
                     );
-                    const countVal = getValues('count');
-                    setValue(
-                        'count',
-                        !item.isChecked ? countVal - 1 : countVal + 1,
+                    setValue('count', checkedCount);
+
+                    // Update first selected name
+                    const firstChecked = updatedArray.find(
+                        (serviceItem: any) => serviceItem.isChecked,
                     );
-                    setValue(`firstSelectedName`, '');
-                    for (let i = 0; i < previousBillArray.length; i++) {
-                        if (previousBillArray[i].isChecked) {
-                            setValue(
-                                `firstSelectedName`,
-                                previousBillArray[i].name,
-                            );
-                            break;
-                        }
-                    }
-                    // closeBSModal(props.dropDownModalRef);
-                    // props.setDropDownModal(false);
+                    setValue(
+                        'firstSelectedName',
+                        firstChecked ? firstChecked.name : '',
+                    );
                 }}>
                 {item.isChecked
                     ? commonIcons('CheckedCheckbox')
                     : commonIcons('UnCheckedCheckbox')}
 
-                {/* {svgs('common_svg', 'UnCheckedCheckbox')} */}
                 <Text style={[SODText.MazuFS17, Common.ml10]}>{item.name}</Text>
             </TouchableOpacity>
         );
@@ -80,13 +90,13 @@ const DropDownModalWithCheckBox = (props: {
                 closeBSModal(props.dropDownModalRef),
                     props.setDropDownModal(false);
             }}
-            headerTitle={`Bill Sundry ${props.title}`}
+            headerTitle={`Select Service ${props.title}`}
             bgGradientType="blue"
             isFlatList={true}
             scrollViewStyle={{ backgroundColor: undefined }}>
             <BottomSheetView style={{ flex: 1 }}>
                 <BottomSheetFlatList
-                    data={previousBillArray}
+                    data={previousServiceArray}
                     renderItem={renderItem}
                     enableFooterMarginAdjustment={true}
                     initialNumToRender={15}

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -79,6 +79,18 @@ const Register = () => {
     ];
     const cities = ['Mumbai', 'Bangalore', 'Chennai', 'Delhi', 'Ahmedabad'];
 
+    // Sample data for checkbox dropdown
+    const serviceTypesWithCheckbox = [
+        { name: 'Consultation Fee', isChecked: false },
+        { name: 'Travel Expense', isChecked: false },
+        { name: 'Material Cost', isChecked: false },
+        { name: 'Service Charge', isChecked: false },
+        { name: 'Processing Fee', isChecked: false },
+        { name: 'Documentation Fee', isChecked: false },
+        { name: 'Inspection Fee', isChecked: false },
+        { name: 'Handling Charge', isChecked: false },
+    ];
+
     const formMethods = useForm({
         defaultValues: {
             name: '',
@@ -93,6 +105,9 @@ const Register = () => {
             country: '',
             state: '',
             city: '',
+            previousService: serviceTypesWithCheckbox,
+            count: 0,
+            firstSelectedName: '',
         },
     });
 
@@ -108,6 +123,15 @@ const Register = () => {
     } = formMethods;
 
     console.log('getValues', getValues());
+
+    // Initialize count when component mounts
+    useEffect(() => {
+        const initialCount = serviceTypesWithCheckbox.filter(
+            (item: any) => item.isChecked,
+        ).length;
+        console.log('Initial count set to:', initialCount);
+        setValue('count', initialCount);
+    }, []);
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -131,7 +155,7 @@ const Register = () => {
 
         return mandatoryFields.every((field) => {
             const value = watchedValues[field];
-            return value && value.trim() !== '';
+            return value && typeof value === 'string' && value.trim() !== '';
         });
     };
 
@@ -949,31 +973,146 @@ const Register = () => {
                                 />
                             )}
                         />
-
-                        {/* Service Type Dropdown */}
+                        {/* Select Service Type Dropdown with Checkbox */}
                         <Controller
                             control={control}
-                            name="serviceType"
-                            rules={{
-                                required: 'Service type is required',
-                            }}
+                            name="firstSelectedName"
                             render={({
                                 field: { onChange, value },
                                 fieldState: { error },
-                            }) => (
-                                <SODDropDown
-                                    title="Service Type"
-                                    value={value || 'Select Service Type'}
-                                    required={true}
-                                    name="serviceType"
-                                    disabled={false}
-                                    type="BSModal"
-                                    //ischeckBoxReq={true}
-                                    errorMsg={error?.message}
-                                    dropDownFormData={serviceTypes}
-                                />
-                            )}
+                            }) => {
+                                // Calculate display value based on count
+                                const getDisplayValue = () => {
+                                    const count = watchedValues.count || 0;
+                                    if (count === 0) {
+                                        return 'Service Types';
+                                    } else if (count === 1) {
+                                        return (
+                                            watchedValues.firstSelectedName ||
+                                            '1 service selected'
+                                        );
+                                    } else {
+                                        return `${count} services selected`;
+                                    }
+                                };
+
+                                return (
+                                    <SODDropDown
+                                        title="Service Types"
+                                        value={getDisplayValue()}
+                                        required={false}
+                                        name="serviceTypes"
+                                        disabled={false}
+                                        type="BSModal"
+                                        ischeckBoxReq={true}
+                                        errorMsg={error?.message}
+                                        dropDownFormData={
+                                            serviceTypesWithCheckbox
+                                        }
+                                    />
+                                );
+                            }}
                         />
+
+                        {/* Selected Service Types Display */}
+                        {watchedValues.previousService &&
+                            watchedValues.count > 0 && (
+                                <View style={styles.selectedItemsContainer}>
+                                    <Text style={styles.selectedItemsTitle}>
+                                        Selected Service Types (
+                                        {watchedValues.count})
+                                    </Text>
+                                    <View style={styles.selectedItemsList}>
+                                        {watchedValues.previousService
+                                            .filter(
+                                                (item: any) => item.isChecked,
+                                            )
+                                            .map((item: any, index: number) => (
+                                                <View
+                                                    key={index}
+                                                    style={styles.selectedItem}>
+                                                    <Text
+                                                        style={
+                                                            styles.selectedItemText
+                                                        }>
+                                                        {item.name}
+                                                    </Text>
+                                                    <TouchableOpacity
+                                                        style={
+                                                            styles.removeItemButton
+                                                        }
+                                                        onPress={() => {
+                                                            const updatedItems =
+                                                                [
+                                                                    ...watchedValues.previousService,
+                                                                ];
+                                                            const itemIndex =
+                                                                updatedItems.findIndex(
+                                                                    (
+                                                                        serviceItem: any,
+                                                                    ) =>
+                                                                        serviceItem.name ===
+                                                                        item.name,
+                                                                );
+                                                            if (
+                                                                itemIndex !== -1
+                                                            ) {
+                                                                updatedItems[
+                                                                    itemIndex
+                                                                ].isChecked =
+                                                                    false;
+                                                                setValue(
+                                                                    'previousService',
+                                                                    updatedItems,
+                                                                );
+
+                                                                // Calculate count from checked items
+                                                                const checkedCount =
+                                                                    updatedItems.filter(
+                                                                        (
+                                                                            serviceItem: any,
+                                                                        ) =>
+                                                                            serviceItem.isChecked,
+                                                                    ).length;
+                                                                console.log(
+                                                                    'Remove item - Updated count:',
+                                                                    checkedCount,
+                                                                    'for item:',
+                                                                    item.name,
+                                                                );
+                                                                setValue(
+                                                                    'count',
+                                                                    checkedCount,
+                                                                );
+
+                                                                // Update first selected name
+                                                                const firstChecked =
+                                                                    updatedItems.find(
+                                                                        (
+                                                                            serviceItem: any,
+                                                                        ) =>
+                                                                            serviceItem.isChecked,
+                                                                    );
+                                                                setValue(
+                                                                    'firstSelectedName',
+                                                                    firstChecked
+                                                                        ? firstChecked.name
+                                                                        : '',
+                                                                );
+                                                            }
+                                                        }}>
+                                                        <Text
+                                                            style={
+                                                                styles.removeItemText
+                                                            }>
+                                                            ×
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            ))}
+                                    </View>
+                                </View>
+                            )}
 
                         {/* Country Dropdown */}
                         <Controller
@@ -1844,6 +1983,55 @@ const styles = {
         fontSize: 11,
         fontWeight: '600' as const,
         textAlign: 'center' as const,
+    },
+    // Selected items display styles
+    selectedItemsContainer: {
+        marginVertical: 15,
+        paddingHorizontal: 20,
+        backgroundColor: '#F8F9FA',
+        borderRadius: 12,
+        paddingVertical: 16,
+    },
+    selectedItemsTitle: {
+        fontSize: 16,
+        fontWeight: '600' as const,
+        color: '#333333',
+        marginBottom: 12,
+    },
+    selectedItemsList: {
+        flexDirection: 'row' as const,
+        flexWrap: 'wrap' as const,
+        gap: 8,
+    },
+    selectedItem: {
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
+        backgroundColor: '#E3F2FD',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#2196F3',
+    },
+    selectedItemText: {
+        fontSize: 14,
+        color: '#1976D2',
+        fontWeight: '500' as const,
+        marginRight: 8,
+    },
+    removeItemButton: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: '#FF5722',
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+    },
+    removeItemText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: 'bold' as const,
+        lineHeight: 16,
     },
 };
 

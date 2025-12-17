@@ -33,13 +33,13 @@ function* UserAuth_login_Api(param: TUserLoginParam) {
             data: dataObj,
         });
         console.log('response', response);
-        yield UserAuth_login_Api_Response(response);
+        yield UserAuth_login_Api_Response(response, param.callBack);
     } catch (error) {
         console.log('UserAuth_login_Api error', error);
     }
 }
 
-function* UserAuth_login_Api_Response(response: IResponseParam) {
+function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
     try {
         if (response && response.body) {
             const responseData = response.body;
@@ -66,6 +66,17 @@ function* UserAuth_login_Api_Response(response: IResponseParam) {
                         profileLocked: userData.ProfileLocked,
                         validateGST: userData.ValidateGST,
                     };
+
+                    callBack();
+
+                    showToast({
+                        type: 'success',
+                        text1: 'Login Successfully',
+                        visibilityTime: 2000,
+                    });
+
+
+
                     console.log('Extracted User Info:', userInfo);
                 } else {
                     console.log('No user data found');

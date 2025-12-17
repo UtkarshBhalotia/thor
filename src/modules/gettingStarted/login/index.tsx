@@ -68,8 +68,16 @@ const Login = (props: any) => {
         return false;
     }, [email_watch, password_watch, errors.email, errors.password]);
 
-    const onLoginPress = async (data: any) => {
-        props.loginActions('UserAuth_Login_Api', data);
+    const onLoginPress = async (data: {
+        email: string;
+        password: string;
+    }) => {
+        props.loginActions('UserAuth_Login_Api', {
+            ...data,
+            callBack: () => {
+                navigation.navigate('Dashboard');
+            }
+        });
     };
 
     return (
