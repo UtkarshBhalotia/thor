@@ -1,0 +1,51 @@
+name: CI - Lint and Test
+
+# Trigger this workflow on push to main branches and on all pull requests
+on:
+  push:
+    branches:
+      - CI_CD_Integration_Testing
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  lint-and-test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+      
+      # Step 4: Run ESLint
+      # - name: Run linter
+      #   run: npm run lint
+      
+      # Step 5: Run TypeScript type checking
+      - name: Type check
+        run: npx tsc --noEmit
+      
+      # Step 6: Run tests
+      - name: Run tests
+        run: npm test -- --coverage --watchAll=false
+      
+      # Step 7: Upload coverage report (optional)
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          fail_ci_if_error: false
+        continue-on-error: true
