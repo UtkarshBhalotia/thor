@@ -30,6 +30,7 @@ const apiListing = {
     forgotPasswordUrl: `${BaseUrl}ForgotPasswordForVendor`,
     getReportForVendorUrl: `${BaseUrl}GetWorkReportForVendor`,
     getLeadDetailByLeadIdForVendorUrl: `${BaseUrl}GetLeadDetailsByLeadIDForVendor`,
+    acceptLeadByVendorUrl: `${BaseUrl}AcceptLeadByVendor`,
 };
 
 const projectEnv = {
