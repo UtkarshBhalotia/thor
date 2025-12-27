@@ -1,17 +1,19 @@
 import React from 'react';
-import {
-    View,
-    Text,
-    ScrollView,
-    Alert,
-} from 'react-native';
+import { View, Text, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { profileStyles } from '../../assets/css/profileStyles';
 import ProfileMenuItem from './components/ProfileMenuItem';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import {
+    CommonActions,
+    NavigationProp,
+    useNavigation,
+} from '@react-navigation/native';
+import { removeItem, STORAGE_KEYS } from '../../utils/storage';
+import { useDispatch } from 'react-redux';
 
 const Profile = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const dispatch = useDispatch();
 
     // Sample data - replace with actual data from API/Redux
     const userProfile = {
@@ -46,13 +48,19 @@ const Profile = () => {
                 {
                     text: 'Logout',
                     style: 'destructive',
-                    onPress: () => {
-                        // Implement logout logic
-                        console.log('Logging out...');
-                        navigation.navigate('Login');
+                    onPress: async () => {
+                        await removeItem(STORAGE_KEYS.USER_INFO);
+                        await removeItem(STORAGE_KEYS.AUTH_TOKEN);
+                        dispatch({ type: 'GLOBAL_RESET' });
+                        navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: 'Login' }],
+                            }),
+                        );
                     },
                 },
-            ]
+            ],
         );
     };
 
@@ -73,7 +81,7 @@ const Profile = () => {
                         console.log('Deleting account...');
                     },
                 },
-            ]
+            ],
         );
     };
 
@@ -81,8 +89,7 @@ const Profile = () => {
         <SafeAreaView style={profileStyles.container} edges={['top']}>
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={profileStyles.scrollContent}
-            >
+                contentContainerStyle={profileStyles.scrollContent}>
                 {/* Profile Header */}
                 <View style={profileStyles.profileHeader}>
                     {/* Avatar */}
@@ -93,12 +100,16 @@ const Profile = () => {
                     </View>
 
                     {/* User Name */}
-                    <Text style={profileStyles.userName}>{userProfile.name}</Text>
+                    <Text style={profileStyles.userName}>
+                        {userProfile.name}
+                    </Text>
 
                     {/* Rating */}
                     <View style={profileStyles.ratingContainer}>
                         <Text style={{ fontSize: 16 }}>⭐</Text>
-                        <Text style={profileStyles.ratingText}>{userProfile.rating}</Text>
+                        <Text style={profileStyles.ratingText}>
+                            {userProfile.rating}
+                        </Text>
                     </View>
 
                     {/* Member Since */}
@@ -109,24 +120,36 @@ const Profile = () => {
                     {/* Location */}
                     <View style={profileStyles.locationContainer}>
                         <Text style={{ fontSize: 14 }}>📍</Text>
-                        <Text style={profileStyles.locationText}>{userProfile.location}</Text>
+                        <Text style={profileStyles.locationText}>
+                            {userProfile.location}
+                        </Text>
                     </View>
 
                     {/* Stats Row */}
                     <View style={profileStyles.statsRow}>
                         <View style={profileStyles.statItem}>
-                            <Text style={profileStyles.statLabel}>Services Delivered</Text>
+                            <Text style={profileStyles.statLabel}>
+                                Services Delivered
+                            </Text>
                             <Text style={profileStyles.statValue}>
                                 {userProfile.servicesDelivered} service
                             </Text>
                         </View>
                         <View style={profileStyles.statItem}>
-                            <Text style={profileStyles.statLabel}>Type of Servicemen</Text>
-                            <Text style={profileStyles.statValue}>{userProfile.serviceType}</Text>
+                            <Text style={profileStyles.statLabel}>
+                                Type of Servicemen
+                            </Text>
+                            <Text style={profileStyles.statValue}>
+                                {userProfile.serviceType}
+                            </Text>
                         </View>
                         <View style={profileStyles.statItem}>
-                            <Text style={profileStyles.statLabel}>No. of Experience</Text>
-                            <Text style={profileStyles.statValue}>{userProfile.experience}</Text>
+                            <Text style={profileStyles.statLabel}>
+                                No. of Experience
+                            </Text>
+                            <Text style={profileStyles.statValue}>
+                                {userProfile.experience}
+                            </Text>
                         </View>
                     </View>
                 </View>
@@ -153,7 +176,9 @@ const Profile = () => {
 
                 {/* Other Details Section */}
                 <View style={profileStyles.section}>
-                    <Text style={profileStyles.sectionTitle}>Other Details</Text>
+                    <Text style={profileStyles.sectionTitle}>
+                        Other Details
+                    </Text>
                     <ProfileMenuItem
                         icon="📱"
                         title="App Setting"

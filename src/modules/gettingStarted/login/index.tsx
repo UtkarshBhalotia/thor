@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
-    TextInput,
     TouchableOpacity,
-    Pressable,
-    ActivityIndicator,
+    StatusBar,
+    Keyboard,
 } from 'react-native';
 
 import { Platform } from 'react-native';
@@ -29,6 +28,7 @@ import { regex_validation } from '../../../utils/regex';
 import { commonIcons } from '../../../assets/svg';
 import BSModal from '../../../components/BSModal';
 import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import LinearGradient from 'react-native-linear-gradient';
 
 const Login = (props: any) => {
     const insets = useSafeAreaInsets();
@@ -73,152 +73,186 @@ const Login = (props: any) => {
         return false;
     }, [email_watch, password_watch, errors.email, errors.password]);
 
-    const onLoginPress = async (data: {
-        email: string;
-        password: string;
-    }) => {
-
+    const onLoginPress = async (data: { email: string; password: string }) => {
         props.loginActions('UserAuth_Login_Api', {
             ...data,
             callBack: () => {
                 navigation.navigate('HomeTabs');
-            }
+            },
         });
     };
 
     return (
-        <SafeAreaView style={loginStyles.container} edges={['top']}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={insets.top}
-                style={[Layout.viewHeight]}>
-                <View style={loginStyles.headerContainer}>
-                    <Text style={loginStyles.title}>
-                        Login to App!
-                    </Text>
-                </View>
+        <View style={loginStyles.container}>
+            <StatusBar barStyle="dark-content" backgroundColor="#29B6D1" />
+            <LinearGradient
+                colors={['#29B6D1', '#7DD4E4', '#FFFFFF', '#FFFFFF']}
+                style={loginStyles.gradientBackground}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}>
+                {/* Background decorative circles */}
+                <View style={loginStyles.backgroundCircle1} />
+                <View style={loginStyles.backgroundCircle2} />
 
-                <FormProvider {...formMethods}>
-                    {/* Email Input */}
-                    <Controller
-                        control={control}
-                        name="email"
-                        rules={{
-                            required: 'Email is required',
-                            validate: (value = 'ruhienterprises01@gmail.com') => {
-                                if (!regex_validation('email', value)) {
-                                    return 'Please enter a valid email address';
-                                }
-                                return true;
-                            },
-                        }}
-                        render={({
-                            field: { onChange, value, ref, onBlur },
-                            fieldState: { error },
-                        }) => (
-                            <>
-                                <SODTextInput
-                                    ref={ref}
-                                    title="email"
-                                    placeholder="Enter Email"
-                                    placeholderTextColor="#8F8F8F"
-                                    onChangeText={(text: string) => {
-                                        onChange(text);
-                                        clearErrors('email');
-                                    }}
-                                    onBlurText={() => {
-                                        // Trigger validation when user leaves email field
-                                        trigger('email');
-                                    }}
-                                    value={value}
-                                    required={true}
-                                    errorMsg={error?.message}
-                                    name="email"
-                                    maxlength={Character_Limit.email}
-                                    keyboard={'email-address'}
-                                    isEditable={true}
-                                    autoFocus={true}
-                                />
-                            </>
-                        )}
-                    />
-
-                    {/* Password Input */}
-                    <Controller
-                        control={control}
-                        name="password"
-                        rules={{ required: 'Password is required' }}
-                        render={({
-                            field: { onChange, value, ref, onBlur },
-                            fieldState: { error },
-                        }) => (
-                            <>
-                                <View style={{ position: 'relative' }}>
-                                    <SODTextInput
-                                        ref={ref}
-                                        title="password"
-                                        placeholder="Enter Password"
-                                        placeholderTextColor="#8F8F8F"
-                                        onChangeText={(text: string) => {
-                                            onChange(text);
-                                            clearErrors('password');
-                                        }}
-                                        onBlurText={() => {
-                                            // Trigger validation when user leaves password field
-                                            trigger('password');
-                                        }}
-                                        value={value}
-                                        required={true}
-                                        errorMsg={error?.message}
-                                        name="password"
-                                        maxlength={Character_Limit.password}
-                                        keyboard={'default'}
-                                        isEditable={true}
-                                        secureTextEntry={isPasswordSecure}
-                                    />
-                                    <TouchableOpacity
-                                        style={{
-                                            position: 'absolute',
-                                            right: 12,
-                                            top: '50%',
-                                            transform: [{ translateY: -15 }],
-                                            padding: 2,
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                        }}
-                                        onPress={() =>
-                                            setIsPasswordSecure(
-                                                !isPasswordSecure,
-                                            )
-                                        }>
-                                        {isPasswordSecure
-                                            ? commonIcons('eye_closed')
-                                            : commonIcons('eye_open')}
-                                    </TouchableOpacity>
-                                </View>
-                            </>
-                        )}
-                    />
-
-                    <View style={loginStyles.optionsContainer}>
-                        <TouchableOpacity onPress={() => forgotPasswordModalRef.current?.present()}>
-                            <Text style={loginStyles.forgotPasswordText}>
-                                Forgot Password?
-                            </Text>
-                        </TouchableOpacity>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    keyboardVerticalOffset={insets.top}
+                    style={[Layout.viewHeight]}>
+                    {/* Header */}
+                    <View style={loginStyles.headerContainer}>
+                        <Text style={loginStyles.title}>SOD Partner APP</Text>
+                        <Text style={loginStyles.subtitle}>
+                            Service On Doors
+                        </Text>
                     </View>
 
-                    <TouchableOpacity
-                        style={
-                            disableFn()
-                                ? loginStyles.loginButtonDisabled
-                                : loginStyles.loginButton
-                        }
-                        disabled={disableFn()}
-                        onPress={handleSubmit(onLoginPress)}>
-                        <Text style={loginStyles.loginButtonText}>LOGIN</Text>
-                    </TouchableOpacity>
+                    {/* Form Card */}
+                    <View style={loginStyles.formCard}>
+                        <Text style={loginStyles.formTitle}>Welcome Back!</Text>
 
+                        <FormProvider {...formMethods}>
+                            {/* Email Input */}
+                            <Controller
+                                control={control}
+                                name="email"
+                                rules={{
+                                    required: 'Email is required',
+                                    validate: (
+                                        value = 'ruhienterprises01@gmail.com',
+                                    ) => {
+                                        if (!regex_validation('email', value)) {
+                                            return 'Please enter a valid email address';
+                                        }
+                                        return true;
+                                    },
+                                }}
+                                render={({
+                                    field: { onChange, value, ref, onBlur },
+                                    fieldState: { error },
+                                }) => (
+                                    <>
+                                        <SODTextInput
+                                            ref={ref}
+                                            title="email"
+                                            placeholder="Enter Email"
+                                            placeholderTextColor="#8F8F8F"
+                                            onChangeText={(text: string) => {
+                                                onChange(text);
+                                                clearErrors('email');
+                                            }}
+                                            onBlurText={() => {
+                                                // Trigger validation when user leaves email field
+                                                trigger('email');
+                                            }}
+                                            value={value}
+                                            required={true}
+                                            errorMsg={error?.message}
+                                            name="email"
+                                            maxlength={Character_Limit.email}
+                                            keyboard={'email-address'}
+                                            isEditable={true}
+                                            autoFocus={true}
+                                        />
+                                    </>
+                                )}
+                            />
+
+                            {/* Password Input */}
+                            <Controller
+                                control={control}
+                                name="password"
+                                rules={{ required: 'Password is required' }}
+                                render={({
+                                    field: { onChange, value, ref, onBlur },
+                                    fieldState: { error },
+                                }) => (
+                                    <>
+                                        <View style={{ position: 'relative' }}>
+                                            <SODTextInput
+                                                ref={ref}
+                                                title="password"
+                                                placeholder="Enter Password"
+                                                placeholderTextColor="#8F8F8F"
+                                                onChangeText={(
+                                                    text: string,
+                                                ) => {
+                                                    onChange(text);
+                                                    clearErrors('password');
+                                                }}
+                                                onBlurText={() => {
+                                                    // Trigger validation when user leaves password field
+                                                    trigger('password');
+                                                }}
+                                                value={value}
+                                                required={true}
+                                                errorMsg={error?.message}
+                                                name="password"
+                                                maxlength={
+                                                    Character_Limit.password
+                                                }
+                                                keyboard={'default'}
+                                                isEditable={true}
+                                                secureTextEntry={
+                                                    isPasswordSecure
+                                                }
+                                            />
+                                            <TouchableOpacity
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: 12,
+                                                    top: '50%',
+                                                    transform: [
+                                                        { translateY: -15 },
+                                                    ],
+                                                    padding: 2,
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                }}
+                                                onPress={() =>
+                                                    setIsPasswordSecure(
+                                                        !isPasswordSecure,
+                                                    )
+                                                }>
+                                                {isPasswordSecure
+                                                    ? commonIcons('eye_closed')
+                                                    : commonIcons('eye_open')}
+                                            </TouchableOpacity>
+                                        </View>
+                                    </>
+                                )}
+                            />
+
+                            {/* Forgot Password - Right aligned under password */}
+                            <View style={loginStyles.optionsContainer}>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        Keyboard.dismiss();
+                                        forgotPasswordModalRef.current?.present();
+                                    }}>
+                                    <Text
+                                        style={loginStyles.forgotPasswordText}>
+                                        Forgot Password?
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Login Button */}
+                            <TouchableOpacity
+                                style={
+                                    disableFn()
+                                        ? loginStyles.loginButtonDisabled
+                                        : loginStyles.loginButton
+                                }
+                                disabled={disableFn()}
+                                onPress={handleSubmit(onLoginPress)}>
+                                <Text style={loginStyles.loginButtonText}>
+                                    LOGIN
+                                </Text>
+                            </TouchableOpacity>
+                        </FormProvider>
+                    </View>
+
+                    {/* Sign Up Link */}
                     <View style={loginStyles.signupContainer}>
                         <Text style={loginStyles.signupText}>
                             Don't have an account?
@@ -230,17 +264,18 @@ const Login = (props: any) => {
                             <Text style={loginStyles.signupLink}>Sign Up</Text>
                         </TouchableOpacity>
                     </View>
-                </FormProvider>
-            </KeyboardAvoidingView>
+                </KeyboardAvoidingView>
+            </LinearGradient>
 
             <BSModal
                 bsModalRef={forgotPasswordModalRef}
                 headerTitle="Forgot Password"
-                snapPoints={['40%']}
-            >
+                snapPoints={['40%']}>
                 <View style={loginStyles.bottomSheetContent}>
                     <View style={{ marginBottom: 20 }}>
-                        <Text style={loginStyles.inputLabel}>Mobile Number</Text>
+                        <Text style={loginStyles.inputLabel}>
+                            Mobile Number
+                        </Text>
                         <BottomSheetTextInput
                             style={loginStyles.amountInput}
                             placeholder="Enter mobile number"
@@ -252,15 +287,19 @@ const Login = (props: any) => {
                     <TouchableOpacity
                         style={loginStyles.continueButton}
                         onPress={() => {
-                            console.log('Continuing with mobile:', forgotPasswordMobile);
+                            console.log(
+                                'Continuing with mobile:',
+                                forgotPasswordMobile,
+                            );
                             forgotPasswordModalRef.current?.dismiss();
-                        }}
-                    >
-                        <Text style={loginStyles.continueButtonText}>Continue</Text>
+                        }}>
+                        <Text style={loginStyles.continueButtonText}>
+                            Continue
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </BSModal>
-        </SafeAreaView>
+        </View>
     );
 };
 

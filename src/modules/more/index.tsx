@@ -3,11 +3,14 @@ import { View, Text, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moreStyles } from '../../assets/css/moreStyles';
 import ProfileMenuItem from '../profile/components/ProfileMenuItem';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { CommonActions, NavigationProp, useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useDispatch } from 'react-redux';
+import { removeItem, STORAGE_KEYS } from '../../utils/storage';
 
 const More = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const dispatch = useDispatch();
 
     const handleAction = (title: string) => {
         Alert.alert(title, `Functionality for ${title} coming soon.`);
@@ -22,9 +25,16 @@ const More = () => {
                 {
                     text: 'Logout',
                     style: 'destructive',
-                    onPress: () => {
-                        console.log('Logging out...');
-                        navigation.navigate('Login');
+                    onPress: async () => {
+                        await removeItem(STORAGE_KEYS.USER_INFO);
+                        await removeItem(STORAGE_KEYS.AUTH_TOKEN);
+                        dispatch({ type: 'GLOBAL_RESET' });
+                        navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: 'Login' }],
+                            })
+                        );
                     },
                 },
             ]

@@ -11,6 +11,9 @@ import Profile from '../modules/profile';
 import More from '../modules/more';
 import Onboarding from '../modules/gettingStarted/onboarding';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { getItem, STORAGE_KEYS } from '../utils/storage';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -36,7 +39,9 @@ const HomeTabs = () => {
                         iconName = focused ? 'menu' : 'menu-outline';
                     }
 
-                    return <Ionicons name={iconName} size={size} color={color} />;
+                    return (
+                        <Ionicons name={iconName} size={size} color={color} />
+                    );
                 },
                 tabBarActiveTintColor: '#4A90E2',
                 tabBarInactiveTintColor: '#8E8E93',
@@ -52,8 +57,7 @@ const HomeTabs = () => {
                     fontSize: 12,
                     fontWeight: '600',
                 },
-            })}
-        >
+            })}>
             <Tab.Screen
                 name="Home"
                 component={Dashboard}
@@ -85,12 +89,33 @@ const HomeTabs = () => {
 
 const MainNavigator = () => {
     const [showWelcomeScreen, setShowWelcomeScreen] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
+    const dispatch = useDispatch();
+    const globalState = useSelector((state: RootState) => state.globalState);
+    const userExists = !!globalState?.userId;
 
-    if (showWelcomeScreen)
+    React.useEffect(() => {
+        const checkUser = async () => {
+            const userInfo = await getItem(STORAGE_KEYS.USER_INFO);
+            console.log(userInfo, 'userInfo');
+
+            if (userInfo) {
+                dispatch({
+                    type: 'GLOBAL_STATE_MUTATE',
+                    value: userInfo,
+                });
+            }
+            setIsLoading(false);
+        };
+        checkUser();
+    }, [dispatch]);
+
+    if (showWelcomeScreen || isLoading)
         return <WelcomeToSOD setShowWelcomeScreen={setShowWelcomeScreen} />;
 
     return (
-        <Stack.Navigator>
+        <Stack.Navigator
+            initialRouteName={userExists ? 'HomeTabs' : 'Onboarding'}>
             <Stack.Group>
                 <Stack.Screen
                     name="Onboarding"

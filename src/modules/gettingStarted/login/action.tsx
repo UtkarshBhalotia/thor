@@ -4,6 +4,7 @@ import projectEnv from '../../../services/env';
 import { clientPostHandler } from '../../../services/request';
 import { showToast } from '../../../utils/common';
 import { globalReducer_dispatch } from '../../../../store/reducer/mainTypedReducer';
+import { setItem, STORAGE_KEYS } from '../../../utils/storage';
 
 export function* conditionActions<T extends TUserLoginConditionParamActionName>(
     param: IUserLoginActionConditionParam<T>,
@@ -80,6 +81,9 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                         type: 'GLOBAL_STATE_MUTATE',
                         value: userInfo,
                     })
+
+                    // Save user info to AsyncStorage for persistence
+                    yield setItem(STORAGE_KEYS.USER_INFO, userInfo);
 
                     callBack();
 

@@ -22,6 +22,7 @@ const apiListing = {
     getAllDeniedLeadForVendorUrl: `${BaseUrl}GetAllDeniedLeadForVendor`,
     getAllCompletedLeadForVendorUrl: `${BaseUrl}GetAllCompletedLeadForVendor`,
     getAllComplaintLeadForVendorUrl: `${BaseUrl}GetAllReComplaintLeadForVendor`,
+    forgotPasswordUrl: `${BaseUrl}ForgotPasswordForVendor`,
 };
 
 const projectEnv = {

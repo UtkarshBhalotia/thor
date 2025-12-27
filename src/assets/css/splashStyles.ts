@@ -1,11 +1,116 @@
 import { Dimensions, StyleSheet } from 'react-native';
 
-const width = Dimensions.get('window').width;
+const { width, height } = Dimensions.get('window');
 
 export const splashStyles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#F8FBFC',
+    },
+    gradient: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+    },
+    backgroundCircle1: {
+        position: 'absolute',
+        width: width * 1.5,
+        height: width * 1.5,
+        borderRadius: width * 0.75,
+        backgroundColor: 'rgba(41, 182, 209, 0.12)',
+        top: -width * 0.5,
+        left: -width * 0.25,
+    },
+    backgroundCircle2: {
+        position: 'absolute',
+        width: width * 1.2,
+        height: width * 1.2,
+        borderRadius: width * 0.6,
+        backgroundColor: 'rgba(41, 182, 209, 0.08)',
+        bottom: -width * 0.4,
+        right: -width * 0.3,
+    },
+    backgroundCircle3: {
+        position: 'absolute',
+        width: width * 0.8,
+        height: width * 0.8,
+        borderRadius: width * 0.4,
+        backgroundColor: 'rgba(41, 182, 209, 0.06)',
+        top: height * 0.3,
+        left: -width * 0.2,
+    },
+    content: {
+        alignItems: 'center',
+        zIndex: 10,
+    },
+    logoContainer: {
+        width: 140,
+        height: 140,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 32,
+    },
+    logoImage: {
+        width: 130,
+        height: 130,
+        shadowColor: '#29B6D1',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
+    },
+    brandName: {
+        fontSize: 28,
+        fontWeight: '700',
+        color: '#1A2B3C',
+        letterSpacing: 2,
+        marginBottom: 12,
+        textShadowColor: 'rgba(41, 182, 209, 0.3)',
+        textShadowOffset: { width: 0, height: 2 },
+        textShadowRadius: 8,
+    },
+    tagline: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#29B6D1',
+        letterSpacing: 3,
+        textTransform: 'uppercase',
+    },
+    loaderContainer: {
+        position: 'absolute',
+        bottom: height * 0.12,
+        alignItems: 'center',
+    },
+    loaderTrack: {
+        width: 180,
+        height: 3,
+        backgroundColor: 'rgba(41, 182, 209, 0.2)',
+        borderRadius: 2,
+        overflow: 'hidden',
+    },
+    loaderBar: {
+        height: '100%',
+        backgroundColor: '#29B6D1',
+        borderRadius: 2,
+    },
+    versionText: {
+        marginTop: 16,
+        fontSize: 12,
+        color: 'rgba(26, 43, 60, 0.4)',
+        letterSpacing: 1,
+    },
+    glowEffect: {
+        position: 'absolute',
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        backgroundColor: 'rgba(41, 182, 209, 0.15)',
+        top: '50%',
+        left: '50%',
+        marginTop: -100,
+        marginLeft: -100,
     },
 });
