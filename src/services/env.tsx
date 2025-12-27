@@ -13,6 +13,11 @@ export const BaseUrl = BASE_ENV[ENV].API_HOST;
 
 const apiListing = {
     loginUrl: `${BaseUrl}ValidateMobileUser`,
+    registerUrl: `${BaseUrl}InsertUserMaster`,
+    getStateListUrl: `${BaseUrl}GetAllActiveStateList`,
+    getCityListUrl: `${BaseUrl}GetAllActiveCityList`,
+    getAllCountryListUrl: `${BaseUrl}GetAllCountryList`,
+    getAllServiceTypeListUrl: `${BaseUrl}GetAllActiveServiceTypeList`,
     walletBalanceUrl: `${BaseUrl}GetVendorBalance`,
     totalSecurityDepositUrl: `${BaseUrl}GetTotalSecurityDepositeByVendorID`,
     getAllOngoingLeadForVendorUrl: `${BaseUrl}GetAllOngoingLeadForVendor`,
@@ -23,6 +28,8 @@ const apiListing = {
     getAllCompletedLeadForVendorUrl: `${BaseUrl}GetAllCompletedLeadForVendor`,
     getAllComplaintLeadForVendorUrl: `${BaseUrl}GetAllReComplaintLeadForVendor`,
     forgotPasswordUrl: `${BaseUrl}ForgotPasswordForVendor`,
+    getReportForVendorUrl: `${BaseUrl}GetWorkReportForVendor`,
+    getLeadDetailByLeadIdForVendorUrl: `${BaseUrl}GetLeadDetailsByLeadIDForVendor`,
 };
 
 const projectEnv = {

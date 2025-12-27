@@ -16,6 +16,9 @@ export function* conditionActions<T extends TUserLoginConditionParamActionName>(
         case 'UserAuth_Login_Api':
             yield UserAuth_login_Api(actionParam as TUserLoginParam);
             break;
+        case 'ForgotPassword_Api':
+            yield ForgotPassword_Api(actionParam as TUserForgotPasswordParam);
+            break;
         default:
             console.log('nothing to do at user Auth action');
     }
@@ -100,5 +103,66 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
         }
     } catch (error) {
         console.log('UserAuth_login_Api_Response error', error);
+    }
+}
+
+function* ForgotPassword_Api(param: TUserForgotPasswordParam) {
+    try {
+        const dataObj = {
+            MobileNo: param.MobileNo,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: `${projectEnv.forgotPasswordUrl}`,
+            data: dataObj,
+        });
+        yield ForgotPassword_Api_Response(response, param.callBack);
+    } catch (error) {
+        console.log('ForgotPassword_Api error', error);
+    }
+}
+
+function* ForgotPassword_Api_Response(response: IResponseParam, callBack?: () => void) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+            
+            if (responseData.d) {
+                const parsedData = typeof responseData.d === 'string' 
+                    ? JSON.parse(responseData.d) 
+                    : responseData.d;
+
+                if (parsedData.status === true || parsedData.Status === true || parsedData.d === 'Success') {
+                    showToast({
+                        type: 'success',
+                        text1: 'Password has been sent to your registered phone number.',
+                        visibilityTime: 2000,
+                    });
+
+                    if (callBack) {
+                        callBack();
+                    }
+                } else {
+                    const errorMessage = parsedData.message || parsedData.Message || 'Something went wrong. Please try again.';
+                    showToast({
+                        type: 'error',
+                        text1: errorMessage,
+                        visibilityTime: 2000,
+                    });
+                }
+            } else {
+                showToast({
+                    type: 'error',
+                    text1: 'Something went wrong. Please try again.',
+                    visibilityTime: 2000,
+                });
+            }
+        }
+    } catch (error) {
+        console.log('ForgotPassword_Api_Response error', error);
+        showToast({
+            type: 'error',
+            text1: 'Something went wrong. Please try again.',
+            visibilityTime: 2000,
+        });
     }
 }

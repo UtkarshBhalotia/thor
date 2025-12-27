@@ -287,11 +287,16 @@ const Login = (props: any) => {
                     <TouchableOpacity
                         style={loginStyles.continueButton}
                         onPress={() => {
-                            console.log(
-                                'Continuing with mobile:',
-                                forgotPasswordMobile,
-                            );
-                            forgotPasswordModalRef.current?.dismiss();
+                            if (forgotPasswordMobile.trim() === '') {
+                                return;
+                            }
+                            props.loginActions('ForgotPassword_Api', {
+                                MobileNo: forgotPasswordMobile,
+                                callBack: () => {
+                                    forgotPasswordModalRef.current?.dismiss();
+                                    setForgotPasswordMobile('');
+                                },
+                            });
                         }}>
                         <Text style={loginStyles.continueButtonText}>
                             Continue
