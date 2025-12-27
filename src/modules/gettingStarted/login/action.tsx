@@ -1,8 +1,9 @@
-import { call, select } from 'redux-saga/effects';
+import { call, put, select } from 'redux-saga/effects';
 import { RootState } from '../../../../store';
 import projectEnv from '../../../services/env';
 import { clientPostHandler } from '../../../services/request';
 import { showToast } from '../../../utils/common';
+import { globalReducer_dispatch } from '../../../../store/reducer/mainTypedReducer';
 
 export function* conditionActions<T extends TUserLoginConditionParamActionName>(
     param: IUserLoginActionConditionParam<T>,
@@ -21,9 +22,7 @@ export function* conditionActions<T extends TUserLoginConditionParamActionName>(
 
 function* UserAuth_login_Api(param: TUserLoginParam) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
+
         const dataObj = {
             email: param.email,
             password: param.password,
@@ -41,12 +40,16 @@ function* UserAuth_login_Api(param: TUserLoginParam) {
 
 function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
     try {
+
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+
         if (response && response.body) {
             const responseData = response.body;
 
             if (responseData.d !== 'Wrong Username or Password') {
                 const parsedData = JSON.parse(responseData.d);
-                console.log(parsedData, 'parsedData');
 
                 if (parsedData.Table && parsedData.Table.length > 0) {
                     const userData = parsedData.Table[0];
@@ -67,17 +70,19 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                         validateGST: userData.ValidateGST,
                     };
 
-                    callBack();
-
                     showToast({
                         type: 'success',
                         text1: 'Login Successfully',
                         visibilityTime: 2000,
                     });
 
+                    yield put({
+                        type: 'GLOBAL_STATE_MUTATE',
+                        value: userInfo,
+                    })
 
+                    callBack();
 
-                    console.log('Extracted User Info:', userInfo);
                 } else {
                     console.log('No user data found');
                 }

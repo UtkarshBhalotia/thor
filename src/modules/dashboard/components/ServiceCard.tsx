@@ -3,127 +3,184 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { dashboardStyles } from '../../../assets/css/dashboardStyles';
 
 interface ServiceCardProps {
-    serviceId: string;
-    serviceName: string;
-    price: string;
-    discount: string;
-    status: 'Pending' | 'Accepted' | 'Completed';
-    dateTime: string;
-    location: string;
-    receivableAmount: string;
-    customerName: string;
-    isPackage?: boolean;
+    leadId: string;
+    leadNo: string;
+    leadType: string;
+    leadAmt: string;
+    leadStatus: string;
+    leadDate: string;
+    leadCity: string;
+    leadDescription: string;
+    leadBrand: string;
+    deniedReason?: string;
+    deniedDateStatus?: string;
+    completedDate?: string;
+    completedAmout?: string;
     onAccept?: () => void;
     onRefuse?: () => void;
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({
-    serviceId,
-    serviceName,
-    price,
-    discount,
-    status,
-    dateTime,
-    location,
-    receivableAmount,
-    customerName,
-    isPackage = false,
+    leadId,
+    leadNo,
+    leadType,
+    leadAmt,
+    leadStatus,
+    leadDate,
+    leadCity,
+    leadDescription,
+    leadBrand,
+    deniedReason,
+    deniedDateStatus,
+    completedDate,
+    completedAmout,
     onAccept,
     onRefuse,
 }) => {
-    // Get initials from customer name
-    const getInitials = (name: string) => {
-        const names = name.split(' ');
-        if (names.length >= 2) {
-            return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    // Get status badge styles
+    const getStatusStyles = () => {
+        const status = leadStatus?.trim();
+        switch (status) {
+            case 'NEW':
+            case 'New':
+                return {
+                    badge: { backgroundColor: '#E3F2FD' },
+                    text: { color: '#1976D2' },
+                };
+            case 'Ongoing':
+                return {
+                    badge: { backgroundColor: '#FFF3E0' },
+                    text: { color: '#F57C00' },
+                };
+            case 'Complaint':
+                return {
+                    badge: { backgroundColor: '#FFEBEE' },
+                    text: { color: '#D32F2F' },
+                };
+            case 'Completed':
+                return {
+                    badge: { backgroundColor: '#E8F5E9' },
+                    text: { color: '#388E3C' },
+                };
+            case 'Denied':
+                return {
+                    badge: { backgroundColor: '#F5F5F5' },
+                    text: { color: '#616161' },
+                };
+            case 'FollowUp':
+            case 'Follow Up':
+            case 'Follow-Up':
+                return {
+                    badge: { backgroundColor: '#F3E5F5' },
+                    text: { color: '#7B1FA2' },
+                };
+            default:
+                return {
+                    badge: { backgroundColor: '#F7F7FB' },
+                    text: { color: '#1C1F34' },
+                };
         }
-        return name.substring(0, 2).toUpperCase();
     };
+
+    const statusStyles = getStatusStyles();
 
     return (
         <View style={dashboardStyles.serviceCard}>
-            {/* Service Header */}
-            <View style={dashboardStyles.serviceHeader}>
-                <View style={dashboardStyles.serviceIdContainer}>
-                    <Text style={dashboardStyles.serviceId}>{serviceId}</Text>
-                    {isPackage && (
-                        <View style={dashboardStyles.packageBadge}>
-                            <Text style={dashboardStyles.packageText}>Package</Text>
-                        </View>
-                    )}
-                </View>
-            </View>
-
-            {/* Service Name */}
-            <Text style={dashboardStyles.serviceName}>{serviceName}</Text>
-
-            {/* Price */}
-            <View style={dashboardStyles.priceContainer}>
-                <Text style={dashboardStyles.servicePrice}>{price}</Text>
-                <Text style={dashboardStyles.discountText}>{discount}</Text>
-            </View>
-
-            {/* Service Details */}
+            {/* Status and Lead Number - Two columns in one row */}
             <View style={dashboardStyles.serviceDetailsRow}>
                 <View style={dashboardStyles.serviceDetailItem}>
                     <Text style={dashboardStyles.detailLabel}>Status</Text>
-                    <View style={[dashboardStyles.statusBadge, dashboardStyles.statusPending]}>
-                        <Text style={[dashboardStyles.statusText, dashboardStyles.statusTextPending]}>
-                            {status}
+                    <View style={[dashboardStyles.statusBadge, statusStyles.badge]}>
+                        <Text style={[dashboardStyles.statusText, statusStyles.text]}>
+                            {leadStatus}
                         </Text>
                     </View>
                 </View>
+                <View style={dashboardStyles.serviceDetailItem}>
+                    <Text style={dashboardStyles.detailLabel}>Lead No</Text>
+                    <Text style={dashboardStyles.detailValue}>{leadNo}</Text>
+                </View>
             </View>
 
+            {/* Service Type and Lead Amount - Two columns in one row */}
             <View style={dashboardStyles.serviceDetailsRow}>
                 <View style={dashboardStyles.serviceDetailItem}>
-                    <Text style={dashboardStyles.detailLabel}>Date & Time</Text>
-                    <Text style={dashboardStyles.detailValue}>{dateTime}</Text>
+                    <Text style={dashboardStyles.detailLabel}>Service Type</Text>
+                    <Text style={dashboardStyles.detailValue}>{leadType}</Text>
+                </View>
+                <View style={dashboardStyles.serviceDetailItem}>
+                    <Text style={dashboardStyles.detailLabel}>Lead Amount</Text>
+                    <Text style={dashboardStyles.detailValue}>₹ {leadAmt}</Text>
                 </View>
             </View>
 
+            {/* Brand and Lead Date - Two columns in one row */}
             <View style={dashboardStyles.serviceDetailsRow}>
                 <View style={dashboardStyles.serviceDetailItem}>
-                    <Text style={dashboardStyles.detailLabel}>Location</Text>
-                    <Text style={dashboardStyles.detailValue}>{location}</Text>
+                    <Text style={dashboardStyles.detailLabel}>Brand</Text>
+                    <Text style={dashboardStyles.detailValue}>{leadBrand}</Text>
+                </View>
+                <View style={dashboardStyles.serviceDetailItem}>
+                    <Text style={dashboardStyles.detailLabel}>Lead Date</Text>
+                    <Text style={dashboardStyles.detailValue}>{leadDate}</Text>
                 </View>
             </View>
 
+            {/* Denied Reason and Date - Two columns in one row */}
+            {leadStatus === 'Denied' && <View style={dashboardStyles.serviceDetailsRow}>
+                <View style={dashboardStyles.serviceDetailItem}>
+                    <Text style={dashboardStyles.detailLabel}>Denied Reason</Text>
+                    <Text style={dashboardStyles.detailValue}>{deniedReason}</Text>
+                </View>
+                <View style={dashboardStyles.serviceDetailItem}>
+                    <Text style={dashboardStyles.detailLabel}>Denied Date</Text>
+                    <Text style={dashboardStyles.detailValue}>{deniedDateStatus}</Text>
+                </View>
+            </View>}
+
+            {/* Completed Date and Amount - Two columns in one row */}
+            {leadStatus === 'Completed' && <View style={dashboardStyles.serviceDetailsRow}>
+                <View style={dashboardStyles.serviceDetailItem}>
+                    <Text style={dashboardStyles.detailLabel}>Completed Date</Text>
+                    <Text style={dashboardStyles.detailValue}>{completedDate}</Text>
+                </View>
+                <View style={dashboardStyles.serviceDetailItem}>
+                    <Text style={dashboardStyles.detailLabel}>Completed Amount</Text>
+                    <Text style={dashboardStyles.detailValue}>{completedAmout}</Text>
+                </View>
+            </View>}
+
+            {/* City and Description - Two columns in one row */}
             <View style={dashboardStyles.serviceDetailsRow}>
                 <View style={dashboardStyles.serviceDetailItem}>
-                    <Text style={dashboardStyles.detailLabel}>Receivable Amount</Text>
-                    <Text style={dashboardStyles.detailValue}>{receivableAmount}</Text>
+                    <Text style={dashboardStyles.detailLabel}>City</Text>
+                    <Text style={dashboardStyles.detailValue}>{leadCity}</Text>
+                </View>
+                <View style={dashboardStyles.serviceDetailItem}>
+                    <Text style={dashboardStyles.detailLabel}>Description</Text>
+                    <Text style={dashboardStyles.detailValue}>{leadDescription}</Text>
                 </View>
             </View>
 
-            {/* Customer Info */}
-            <View style={dashboardStyles.customerContainer}>
-                <View style={dashboardStyles.customerAvatar}>
-                    <Text style={dashboardStyles.customerAvatarText}>
-                        {getInitials(customerName)}
-                    </Text>
-                </View>
-                <View style={dashboardStyles.customerInfo}>
-                    <Text style={dashboardStyles.customerLabel}>Customer</Text>
-                    <Text style={dashboardStyles.customerName}>{customerName}</Text>
-                </View>
-            </View>
-
-            {/* Action Buttons */}
-            {status === 'Pending' && (
+            {/* Action Buttons - Only shown for Pending status */}
+            {leadStatus === 'New' && (
                 <View style={dashboardStyles.actionButtons}>
+
+                    <TouchableOpacity
+                        style={dashboardStyles.followUpButton}
+                        onPress={onAccept}>
+                        <Text style={dashboardStyles.followUpButtonText}>Accept</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity
                         style={dashboardStyles.refuseButton}
-                        onPress={onRefuse}
-                    >
+                        onPress={onRefuse}>
                         <Text style={dashboardStyles.refuseButtonText}>Refuse</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         style={dashboardStyles.acceptButton}
-                        onPress={onAccept}
-                    >
-                        <Text style={dashboardStyles.acceptButtonText}>Accept</Text>
-                    </TouchableOpacity>
+                        onPress={onAccept}>
+                        <Text style={dashboardStyles.acceptButtonText}>Completed</Text>
+                    </TouchableOpacity> */}
                 </View>
             )}
         </View>

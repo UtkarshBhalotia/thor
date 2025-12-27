@@ -202,4 +202,64 @@ export const walletStyles = StyleSheet.create({
         fontWeight: '600',
         color: '#1C1F34',
     },
+    // Recharge Button in Card
+    rechargeButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: -10,
+    },
+    walletRechargeButton: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.4)',
+    },
+    walletRechargeText: {
+        fontSize: 13,
+        color: '#FFFFFF',
+        fontWeight: '600',
+        marginLeft: 4,
+    },
+    walletRechargeIcon: {
+        marginRight: 2,
+    },
+    // Bottom Sheet Styles
+    bottomSheetContent: {
+        padding: 20,
+        backgroundColor: '#FFFFFF',
+    },
+    amountInputContainer: {
+        marginBottom: 20,
+    },
+    inputLabel: {
+        fontSize: 14,
+        color: '#8F8F8F',
+        marginBottom: 8,
+        fontWeight: '500',
+    },
+    amountInput: {
+        backgroundColor: '#F7F7FB',
+        borderRadius: 12,
+        padding: 15,
+        fontSize: 18,
+        color: '#1C1F34',
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    rechargeActionButton: {
+        backgroundColor: '#5F60B9',
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    rechargeActionButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });

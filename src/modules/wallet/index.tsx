@@ -1,95 +1,89 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
     ScrollView,
-    FlatList,
+    InteractionManager,
+    TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { walletStyles } from '../../assets/css/walletStyles';
-import PaymentHistoryCard, { PaymentStatus } from './components/PaymentHistoryCard';
+import PaymentHistoryCard from './components/PaymentHistoryCard';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { AppDispatch, RootState } from '../../../store';
+import { connect } from 'react-redux';
+import { walletActions_dispatch } from '../../../store/action/mainTypedAction';
+import BSModal from '../../components/BSModal';
+import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 
-interface PaymentHistory {
-    id: string;
-    serviceName: string;
-    amount: string;
-    bookingId: string;
-    paymentId: string;
-    methodType: string;
-    status: PaymentStatus;
-    customerName: string;
-}
-
-const Wallet = () => {
+const Wallet = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const rechargeModalRef = React.useRef<BottomSheetModal>(null);
+    const [rechargeAmount, setRechargeAmount] = useState('');
 
-    // Sample data - replace with actual data from API/Redux
-    const walletBalance = '$2,562.23';
+    // State management
+    const [walletBalance, setWalletBalance] = useState('');
+    const [rechargeHistory, setRechargeHistory] = useState<IRechargeHistoryItem[]>([]);
 
-    const paymentHistory: PaymentHistory[] = [
-        {
-            id: '1',
-            serviceName: 'Furnishing & carpentry',
-            amount: '$25.30',
-            bookingId: '#032',
-            paymentId: '#1520',
-            methodType: 'Wallet',
-            status: 'Paid',
-            customerName: 'Stella Milevski',
-        },
-        {
-            id: '2',
-            serviceName: 'Wall painting',
-            amount: '$10.45',
-            bookingId: '#032',
-            paymentId: '#1548',
-            methodType: 'Wallet',
-            status: 'Advance Paid',
-            customerName: 'Lynn Tanner',
-        },
-        {
-            id: '3',
-            serviceName: 'Chimney Sweeping',
-            amount: '$20.10',
-            bookingId: '#035',
-            paymentId: '#1560',
-            methodType: 'Wallet',
-            status: 'Paid',
-            customerName: 'Michael Knight',
-        },
-    ];
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            load();
+        });
+        return () => {
+            task.cancel();
+        };
+    }, []);
 
-    const handlePaymentPress = (payment: PaymentHistory) => {
-        console.log('Payment pressed:', payment.paymentId);
-        // Navigate to payment details screen
-        // navigation.navigate('PaymentDetails', { paymentId: payment.id });
+    const load = () => {
+        // Fetch wallet balance
+        props.walletActions('Wallet_Balance_Api', {
+            callBack: (balance: string) => {
+                setWalletBalance(balance);
+                // Fetch recharge history after wallet balance
+                props.walletActions('Get_Recharge_History_Api', {
+                    callBack: (data: IRechargeHistoryItem[]) => {
+                        console.log('Recharge history:', data);
+                        setRechargeHistory(data);
+                    }
+                });
+            }
+        });
     };
 
-    const renderPaymentCard = ({ item }: { item: PaymentHistory }) => (
-        <PaymentHistoryCard
-            serviceName={item.serviceName}
-            amount={item.amount}
-            bookingId={item.bookingId}
-            paymentId={item.paymentId}
-            methodType={item.methodType}
-            status={item.status}
-            customerName={item.customerName}
-            onPress={() => handlePaymentPress(item)}
-        />
-    );
+    const handleRecharge = () => {
+        console.log('Recharge amount:', rechargeAmount);
+        // Add your recharge logic here
+        rechargeModalRef.current?.dismiss();
+    };
+
+    // const handlePaymentPress = (recharge: IRechargeHistoryItem) => {
+    //     console.log('Recharge pressed:', recharge.RechargeID);
+    //     // Navigate to recharge details screen if needed
+    // };
 
     const renderEmptyList = () => (
         <View style={walletStyles.emptyContainer}>
-            <Text style={walletStyles.emptyText}>No payment history found</Text>
+            <Text style={walletStyles.emptyText}>No recharge history found</Text>
         </View>
     );
 
     return (
         <SafeAreaView style={walletStyles.container} edges={['top']}>
-            {/* Header */}
-            <View style={walletStyles.header}>
-                <Text style={walletStyles.headerTitle}>Wallet Balance</Text>
+            {/* Header with Back Button */}
+            <View style={[walletStyles.header, { flexDirection: 'row', alignItems: 'center' }]}>
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{
+                        padding: 8,
+                        marginRight: 12,
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}
+                >
+                    <Ionicons name="arrow-back" size={24} color="#000" />
+                </TouchableOpacity>
+                <Text style={walletStyles.headerTitle}>Recharge History</Text>
             </View>
 
             <ScrollView
@@ -98,36 +92,81 @@ const Wallet = () => {
             >
                 {/* Wallet Balance Card */}
                 <View style={walletStyles.balanceCard}>
-                    <Text style={walletStyles.balanceLabel}>Today's wallet bal.</Text>
-                    <Text style={walletStyles.balanceAmount}>{walletBalance}</Text>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <View>
+                            <Text style={walletStyles.balanceLabel}>Wallet Balance</Text>
+                            <Text style={walletStyles.balanceAmount}>₹ {walletBalance}</Text>
+                        </View>
+                        <TouchableOpacity
+                            style={walletStyles.walletRechargeButton}
+                            onPress={() => rechargeModalRef.current?.present()}
+                        >
+                            <Ionicons
+                                name="add-circle-outline"
+                                size={18}
+                                color="#FFFFFF"
+                                style={walletStyles.walletRechargeIcon}
+                            />
+                            <Text style={walletStyles.walletRechargeText}>Recharge Now</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
-                {/* Payment History Section */}
+                {/* Recharge History Section */}
                 <View style={walletStyles.sectionHeader}>
-                    <Text style={walletStyles.sectionTitle}>Payment History</Text>
+                    <Text style={walletStyles.sectionTitle}>Recharge History</Text>
                 </View>
 
-                {/* Payment History List */}
-                {paymentHistory.length > 0 ? (
-                    paymentHistory.map((item) => (
+                {/* Recharge History List */}
+                {rechargeHistory.length > 0 ? (
+                    rechargeHistory.map((item) => (
                         <PaymentHistoryCard
-                            key={item.id}
-                            serviceName={item.serviceName}
-                            amount={item.amount}
-                            bookingId={item.bookingId}
-                            paymentId={item.paymentId}
-                            methodType={item.methodType}
-                            status={item.status}
-                            customerName={item.customerName}
-                            onPress={() => handlePaymentPress(item)}
+                            key={item.TxnID}
+                            tranDate={item.Date}
+                            amount={`₹ ${item.Amount}`}
+                            remarks={item.Remarks}
+                            paymentId={item.TxnID}
                         />
                     ))
                 ) : (
                     renderEmptyList()
                 )}
             </ScrollView>
+
+            <BSModal
+                bsModalRef={rechargeModalRef}
+                headerTitle="Recharge Wallet"
+                snapPoints={['40%']}
+            >
+                <View style={walletStyles.bottomSheetContent}>
+                    <View style={walletStyles.amountInputContainer}>
+                        <Text style={walletStyles.inputLabel}>Enter Amount</Text>
+                        <BottomSheetTextInput
+                            style={walletStyles.amountInput}
+                            placeholder="₹ 0.00"
+                            keyboardType="numeric"
+                            value={rechargeAmount}
+                            onChangeText={setRechargeAmount}
+                        />
+                    </View>
+                    <TouchableOpacity
+                        style={walletStyles.rechargeActionButton}
+                        onPress={handleRecharge}
+                    >
+                        <Text style={walletStyles.rechargeActionButtonText}>Recharge</Text>
+                    </TouchableOpacity>
+                </View>
+            </BSModal>
         </SafeAreaView>
     );
 };
 
-export default Wallet;
+const mapStateToProps = (state: RootState) => ({
+    globalState: state.globalState,
+});
+
+const mapDispatchToProps = (dispatch: AppDispatch) => ({
+    walletActions: walletActions_dispatch(dispatch),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Wallet);

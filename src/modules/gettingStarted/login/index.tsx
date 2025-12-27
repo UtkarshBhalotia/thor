@@ -5,6 +5,7 @@ import {
     TextInput,
     TouchableOpacity,
     Pressable,
+    ActivityIndicator,
 } from 'react-native';
 
 import { Platform } from 'react-native';
@@ -26,16 +27,20 @@ import SODTextInput from '../../../components/SODTextInput';
 import { Character_Limit } from '../../../utils/common';
 import { regex_validation } from '../../../utils/regex';
 import { commonIcons } from '../../../assets/svg';
+import BSModal from '../../../components/BSModal';
+import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 
 const Login = (props: any) => {
     const insets = useSafeAreaInsets();
     const [isPasswordSecure, setIsPasswordSecure] = useState(true);
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const forgotPasswordModalRef = React.useRef<BottomSheetModal>(null);
+    const [forgotPasswordMobile, setForgotPasswordMobile] = useState('');
 
     const formMethods = useForm({
         defaultValues: {
-            email: '',
-            password: '',
+            email: 'ruhienterprises01@gmail.com',
+            password: '9472197062',
         },
     });
 
@@ -72,10 +77,11 @@ const Login = (props: any) => {
         email: string;
         password: string;
     }) => {
+
         props.loginActions('UserAuth_Login_Api', {
             ...data,
             callBack: () => {
-                navigation.navigate('Dashboard');
+                navigation.navigate('HomeTabs');
             }
         });
     };
@@ -88,7 +94,7 @@ const Login = (props: any) => {
                 style={[Layout.viewHeight]}>
                 <View style={loginStyles.headerContainer}>
                     <Text style={loginStyles.title}>
-                        Login to SOD Partner App!
+                        Login to App!
                     </Text>
                 </View>
 
@@ -99,7 +105,7 @@ const Login = (props: any) => {
                         name="email"
                         rules={{
                             required: 'Email is required',
-                            validate: (value) => {
+                            validate: (value = 'ruhienterprises01@gmail.com') => {
                                 if (!regex_validation('email', value)) {
                                     return 'Please enter a valid email address';
                                 }
@@ -195,7 +201,7 @@ const Login = (props: any) => {
                     />
 
                     <View style={loginStyles.optionsContainer}>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => forgotPasswordModalRef.current?.present()}>
                             <Text style={loginStyles.forgotPasswordText}>
                                 Forgot Password?
                             </Text>
@@ -226,6 +232,34 @@ const Login = (props: any) => {
                     </View>
                 </FormProvider>
             </KeyboardAvoidingView>
+
+            <BSModal
+                bsModalRef={forgotPasswordModalRef}
+                headerTitle="Forgot Password"
+                snapPoints={['40%']}
+            >
+                <View style={loginStyles.bottomSheetContent}>
+                    <View style={{ marginBottom: 20 }}>
+                        <Text style={loginStyles.inputLabel}>Mobile Number</Text>
+                        <BottomSheetTextInput
+                            style={loginStyles.amountInput}
+                            placeholder="Enter mobile number"
+                            keyboardType="phone-pad"
+                            value={forgotPasswordMobile}
+                            onChangeText={setForgotPasswordMobile}
+                        />
+                    </View>
+                    <TouchableOpacity
+                        style={loginStyles.continueButton}
+                        onPress={() => {
+                            console.log('Continuing with mobile:', forgotPasswordMobile);
+                            forgotPasswordModalRef.current?.dismiss();
+                        }}
+                    >
+                        <Text style={loginStyles.continueButtonText}>Continue</Text>
+                    </TouchableOpacity>
+                </View>
+            </BSModal>
         </SafeAreaView>
     );
 };

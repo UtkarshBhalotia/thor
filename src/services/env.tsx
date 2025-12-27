@@ -14,6 +14,14 @@ export const BaseUrl = BASE_ENV[ENV].API_HOST;
 const apiListing = {
     loginUrl: `${BaseUrl}ValidateMobileUser`,
     walletBalanceUrl: `${BaseUrl}GetVendorBalance`,
+    totalSecurityDepositUrl: `${BaseUrl}GetTotalSecurityDepositeByVendorID`,
+    getAllOngoingLeadForVendorUrl: `${BaseUrl}GetAllOngoingLeadForVendor`,
+    getAllRechargeListForVendorUrl: `${BaseUrl}GetAllRechargeListForVendor`,
+    getAllNewLeadForVendorUrl: `${BaseUrl}GetAllNewLeadForVendor`,
+    getAllFollowUpLeadForVendorUrl: `${BaseUrl}GetAllFollowupLeadForVendor`,
+    getAllDeniedLeadForVendorUrl: `${BaseUrl}GetAllDeniedLeadForVendor`,
+    getAllCompletedLeadForVendorUrl: `${BaseUrl}GetAllCompletedLeadForVendor`,
+    getAllComplaintLeadForVendorUrl: `${BaseUrl}GetAllReComplaintLeadForVendor`,
 };
 
 const projectEnv = {

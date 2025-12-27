@@ -8,7 +8,7 @@ export const dashboardStyles = StyleSheet.create({
     scrollContent: {
         paddingBottom: 30,
     },
-    
+
     // Header Section
     headerSection: {
         paddingHorizontal: 20,
@@ -351,5 +351,115 @@ export const dashboardStyles = StyleSheet.create({
         fontSize: 12,
         color: '#1C1F34',
         fontWeight: '500',
+    },
+
+    followUpButton: {
+        flex: 1,
+        backgroundColor: '#5F60B9',
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    followUpButtonText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    // Bottom Sheet Styles
+    bottomSheetContent: {
+        padding: 20,
+        backgroundColor: '#FFFFFF',
+    },
+    amountInputContainer: {
+        marginBottom: 20,
+    },
+    inputLabel: {
+        fontSize: 14,
+        color: '#8F8F8F',
+        marginBottom: 8,
+        fontWeight: '500',
+    },
+    amountInput: {
+        backgroundColor: '#F7F7FB',
+        borderRadius: 12,
+        padding: 15,
+        fontSize: 18,
+        color: '#1C1F34',
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    rechargeButton: {
+        backgroundColor: '#5F60B9',
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    rechargeButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    // Wallet Recharge Button
+    walletRechargeButton: {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.4)',
+    },
+    walletRechargeText: {
+        fontSize: 13,
+        color: '#FFFFFF',
+        fontWeight: '600',
+        marginLeft: 4,
+    },
+    walletRechargeIcon: {
+        marginRight: 2,
+    },
+    // Reports Section Styles
+    reportsContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: 20,
+        marginBottom: 20,
+        gap: 10,
+    },
+    reportCard: {
+        flex: 1,
+        backgroundColor: '#FFFFFF',
+        padding: 12,
+        borderRadius: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
+    },
+    reportIconContainer: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 8,
+    },
+    reportValue: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1C1F34',
+        marginBottom: 2,
+    },
+    reportLabel: {
+        fontSize: 10,
+        color: '#8F8F8F',
+        fontWeight: '500',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
     },
 });

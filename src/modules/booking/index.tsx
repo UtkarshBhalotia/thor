@@ -1,154 +1,147 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
     ScrollView,
     TouchableOpacity,
     FlatList,
+    InteractionManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { bookingStyles } from '../../assets/css/bookingStyles';
-import BookingCard, { BookingStatus } from './components/BookingCard';
+import ServiceCard from '../dashboard/components/ServiceCard';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { AppDispatch, RootState } from '../../../store';
+import { connect } from 'react-redux';
+import { bookingActions_dispatch } from '../../../store/action/mainTypedAction';
 
+type BookingStatus = 'New' | 'Ongoing' | 'Follow Up' | 'Denied' | 'Completed' | 'Complaint';
 type TabFilter = 'All' | BookingStatus;
 
-interface Booking {
-    id: string;
-    bookingId: string;
-    serviceName: string;
-    price: string;
-    discount?: string;
-    status: BookingStatus;
-    servicemenCount: string;
-    dateTime: string;
-    location?: string;
-    payment: string;
-    customerName: string;
-}
-
-const Booking = () => {
+const Booking = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const [activeTab, setActiveTab] = useState<TabFilter>('All');
+    const [activeTab, setActiveTab] = useState<TabFilter>('New');
+    const [assignedServices, setAssignedServices] = useState<any[]>([]);
 
-    // Sample booking data - replace with actual data from API/Redux
-    const allBookings: Booking[] = [
-        {
-            id: '1',
-            bookingId: '#58961',
-            serviceName: 'Curtain Cleaning',
-            price: '$22.00',
-            discount: '(10% off)',
-            status: 'Pending',
-            servicemenCount: '1 servicemen',
-            dateTime: '6 Aug, 2024 - 5:20 pm',
-            location: 'California - USA',
-            payment: '$30.23',
-            customerName: 'Stella Milevski',
-        },
-        {
-            id: '2',
-            bookingId: '#58962',
-            serviceName: 'House Hold Cook',
-            price: '$20.00',
-            discount: '(10% off)',
-            status: 'Accepted',
-            servicemenCount: '1 servicemen',
-            dateTime: '7 Aug, 2024 - 11:00 am',
-            location: 'California - USA',
-            payment: '$30.23',
-            customerName: 'Kate Tanner',
-        },
-        {
-            id: '3',
-            bookingId: '#58964',
-            serviceName: 'Hair Cutting & Spa',
-            price: '$30.00',
-            discount: '(10% off)',
-            status: 'Ongoing',
-            servicemenCount: '1 servicemen',
-            dateTime: '7 Aug, 2024 - 2:00 pm',
-            location: 'California - USA',
-            payment: '$30.23',
-            customerName: 'Jane Cooper',
-        },
-        {
-            id: '4',
-            bookingId: '#58966',
-            serviceName: 'Furnishing & Carpentry',
-            price: '$50.20',
-            status: 'Completed',
-            servicemenCount: '2 servicemen',
-            dateTime: '7 Aug, 2024 - 9:00 am',
-            location: 'California - USA',
-            payment: '$30.23',
-            customerName: 'Zain Dorwart',
-        },
-        {
-            id: '5',
-            bookingId: '#58968',
-            serviceName: 'Chimney Sweeping',
-            price: '$15.50',
-            status: 'Cancelled',
-            servicemenCount: '1 servicemen',
-            dateTime: '8 Aug, 2024 - 10:00 am',
-            payment: '$0.00',
-            customerName: 'Lynn Tanner',
-        },
-    ];
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            load(activeTab);
+        });
+        return () => {
+            task.cancel();
+        };
+    }, [activeTab]);
+
+    const load = (status: string) => {
+        props.bookingActions('Get_Leads_List_Api', {
+            status: status,
+            callBack: (data: any) => {
+                setAssignedServices(data);
+            }
+        });
+    };
 
     // Tab options
     const tabs: TabFilter[] = [
-        'All',
-        'Pending',
-        'Accepted',
+        'New',
         'Ongoing',
+        'Follow Up',
+        'Denied',
         'Completed',
-        'Cancelled',
+        'Complaint'
     ];
 
-    // Filter bookings based on active tab
-    const filteredBookings = useMemo(() => {
-        if (activeTab === 'All') {
-            return allBookings;
-        }
-        return allBookings.filter(booking => booking.status === activeTab);
-    }, [activeTab, allBookings]);
-
-    // Get count for each tab
+    // Get count for each tab (Note: This will only show count for loaded data, 
+    // maybe we need a separate count API or just match current list)
     const getTabCount = (tab: TabFilter) => {
-        if (tab === 'All') {
-            return allBookings.length;
+        if (tab === activeTab) {
+            return assignedServices.length;
         }
-        return allBookings.filter(booking => booking.status === tab).length;
+        // Since we are fetching per tab, we might not have counts for other tabs 
+        // unless we fetch them or have a separate summary API.
+        // For now, staying consistent with the request but noting this behavior.
+        return 0;
     };
 
-    const handleBookingPress = (booking: Booking) => {
-        console.log('Booking pressed:', booking.bookingId);
-        // Navigate to booking details screen
-        // navigation.navigate('BookingDetails', { bookingId: booking.id });
+    const handleAcceptService = (serviceId: string) => {
+        console.log('Accept service:', serviceId);
     };
 
-    const renderBookingCard = ({ item }: { item: Booking }) => (
-        <BookingCard
-            bookingId={item.bookingId}
-            serviceName={item.serviceName}
-            price={item.price}
-            discount={item.discount}
-            status={item.status}
-            servicemenCount={item.servicemenCount}
-            dateTime={item.dateTime}
-            location={item.location}
-            payment={item.payment}
-            customerName={item.customerName}
-            onPress={() => handleBookingPress(item)}
+    const handleRefuseService = (serviceId: string) => {
+        console.log('Refuse service:', serviceId);
+    };
+
+    const renderServiceCard = ({ item, index }: { item: any, index: number }) => (
+        <ServiceCard
+            key={index}
+            leadId={item.LeadID}
+            leadNo={item.LeadNo}
+            leadType={item.ServiceTypeName}
+            leadAmt={item.LeadAmount}
+            leadStatus={item.LeadStatus}
+            leadDate={item.LeadDate}
+            leadCity={item.CityName + ', ' + item.StateName}
+            leadDescription={item.Desc}
+            leadBrand={`${item.BrandName} (${item.ModelName})`}
+            deniedReason={item.Reason}
+            deniedDateStatus={`${item.DeniedDate} \ ${item.DeniedStatus}`}
+            completedDate={item.CompletedDate}
+            completedAmout={item.CustomerAmount}
+            onAccept={() => handleAcceptService(item.LeadID)}
+            onRefuse={() => handleRefuseService(item.LeadID)}
         />
     );
+
+    // Get tab styles based on status
+    const getTabStyles = (tab: TabFilter) => {
+        const isActive = activeTab === tab;
+        if (!isActive) return { tab: {}, text: {} };
+
+        switch (tab) {
+            case 'New':
+                return {
+                    tab: { backgroundColor: '#E3F2FD' },
+                    text: { color: '#1976D2' },
+                };
+            case 'Ongoing':
+                return {
+                    tab: { backgroundColor: '#FFF3E0' },
+                    text: { color: '#F57C00' },
+                };
+            case 'Complaint':
+                return {
+                    tab: { backgroundColor: '#FFEBEE' },
+                    text: { color: '#D32F2F' },
+                };
+            case 'Completed':
+                return {
+                    tab: { backgroundColor: '#E8F5E9' },
+                    text: { color: '#388E3C' },
+                };
+            case 'Denied':
+                return {
+                    tab: { backgroundColor: '#F5F5F5' },
+                    text: { color: '#616161' },
+                };
+            case 'Follow Up':
+                return {
+                    tab: { backgroundColor: '#F3E5F5' },
+                    text: { color: '#7B1FA2' },
+                };
+            case 'All':
+            default:
+                return {
+                    tab: bookingStyles.tabActive,
+                    text: bookingStyles.tabTextActive,
+                };
+        }
+    };
 
     const renderEmptyList = () => (
         <View style={bookingStyles.emptyContainer}>
             <Text style={bookingStyles.emptyText}>
-                No {activeTab === 'All' ? '' : activeTab.toLowerCase()} bookings found
+                No {activeTab === 'All' ? '' : activeTab.toLowerCase()} leads found
             </Text>
         </View>
     );
@@ -156,8 +149,19 @@ const Booking = () => {
     return (
         <SafeAreaView style={bookingStyles.container} edges={['top']}>
             {/* Header */}
-            <View style={bookingStyles.header}>
-                <Text style={bookingStyles.headerTitle}>All Booking</Text>
+            <View style={[bookingStyles.header, { flexDirection: 'row', alignItems: 'center' }]}>
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{
+                        padding: 8,
+                        marginRight: 12,
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}
+                >
+                    <Ionicons name="arrow-back" size={24} color="#000" />
+                </TouchableOpacity>
+                <Text style={bookingStyles.headerTitle}>Leads</Text>
             </View>
 
             {/* Tab Filter */}
@@ -170,24 +174,24 @@ const Booking = () => {
                 >
                     {tabs.map((tab) => {
                         const isActive = activeTab === tab;
-                        const count = getTabCount(tab);
+                        const tabStyles = getTabStyles(tab);
 
                         return (
                             <TouchableOpacity
                                 key={tab}
                                 style={[
                                     bookingStyles.tab,
-                                    isActive && bookingStyles.tabActive,
+                                    isActive && tabStyles.tab,
                                 ]}
                                 onPress={() => setActiveTab(tab)}
                             >
                                 <Text
                                     style={[
                                         bookingStyles.tabText,
-                                        isActive && bookingStyles.tabTextActive,
+                                        isActive && tabStyles.text,
                                     ]}
                                 >
-                                    {tab === 'All' ? `${tab} Booking` : `${tab} Booking`} ({count})
+                                    {tab === 'All' ? `${tab} Leads` : `${tab} Leads`} {isActive ? `(${assignedServices.length})` : ''}
                                 </Text>
                             </TouchableOpacity>
                         );
@@ -197,9 +201,9 @@ const Booking = () => {
 
             {/* Booking List */}
             <FlatList
-                data={filteredBookings}
-                renderItem={renderBookingCard}
-                keyExtractor={(item) => item.id}
+                data={assignedServices}
+                renderItem={renderServiceCard}
+                keyExtractor={(item, index) => item.LeadID || index.toString()}
                 contentContainerStyle={bookingStyles.listContainer}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={renderEmptyList}
@@ -208,4 +212,12 @@ const Booking = () => {
     );
 };
 
-export default Booking;
+const mapStateToProps = (state: RootState) => ({
+    globalState: state.globalState,
+});
+
+const mapDispatchToProps = (dispatch: AppDispatch) => ({
+    bookingActions: bookingActions_dispatch(dispatch),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Booking);

@@ -1,8 +1,16 @@
 export const GlobalInitialState: IGlobalInitialState = {
-    id: '',
+    userId: '',
     name: '',
     email: '',
-    token: '',
+    mobile: '',
+    companyName: '',
+    gstNo: '',
+    userType: '',
+    isActive: '',
+    fcmToken: '',
+    minRechargeAmount: '',
+    profileLocked: '',
+    validateGST: '',
 };
 
 export const GlobalReducer = (

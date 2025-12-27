@@ -166,4 +166,37 @@ export const loginStyles = StyleSheet.create({
         marginTop: -12,
         marginBottom: 12,
     },
+    // Bottom Sheet Styles for Forgot Password
+    bottomSheetContent: {
+        padding: 20,
+        backgroundColor: '#FFFFFF',
+    },
+    inputLabel: {
+        fontSize: 14,
+        color: '#8F8F8F',
+        marginBottom: 8,
+        fontWeight: '500',
+    },
+    amountInput: {
+        backgroundColor: '#F7F7FB',
+        borderRadius: 12,
+        padding: 15,
+        fontSize: 18,
+        color: '#1C1F34',
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        marginBottom: 20,
+    },
+    continueButton: {
+        backgroundColor: '#5F60B9',
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 10,
+    },
+    continueButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });

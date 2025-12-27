@@ -1,9 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { profileStyles } from '../../../assets/css/profileStyles';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 interface ProfileMenuItemProps {
     icon?: string;
+    ionicon?: string;
+    iconColor?: string;
     title: string;
     onPress?: () => void;
     isAlert?: boolean;
@@ -12,6 +15,8 @@ interface ProfileMenuItemProps {
 
 const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
     icon,
+    ionicon,
+    iconColor,
     title,
     onPress,
     isAlert = false,
@@ -24,6 +29,7 @@ const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
                 left: profileStyles.alertMenuItemLeft,
                 iconContainer: profileStyles.alertMenuIcon,
                 text: profileStyles.alertMenuItemText,
+                defaultIconColor: '#C50F1F',
             };
         }
         if (isLogout) {
@@ -32,6 +38,7 @@ const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
                 left: profileStyles.logoutMenuItemLeft,
                 iconContainer: profileStyles.logoutMenuIcon,
                 text: profileStyles.logoutMenuItemText,
+                defaultIconColor: '#FF9800',
             };
         }
         return {
@@ -39,6 +46,7 @@ const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
             left: profileStyles.menuItemLeft,
             iconContainer: profileStyles.menuIcon,
             text: profileStyles.menuItemText,
+            defaultIconColor: '#5F60B9',
         };
     };
 
@@ -52,7 +60,15 @@ const ProfileMenuItem: React.FC<ProfileMenuItemProps> = ({
         >
             <View style={styles.left}>
                 <View style={styles.iconContainer}>
-                    <Text style={{ fontSize: 18 }}>{icon || '📄'}</Text>
+                    {ionicon ? (
+                        <Ionicons
+                            name={ionicon}
+                            size={20}
+                            color={iconColor || styles.defaultIconColor}
+                        />
+                    ) : (
+                        <Text style={{ fontSize: 18 }}>{icon || '📄'}</Text>
+                    )}
                 </View>
                 <Text style={styles.text}>{title}</Text>
             </View>

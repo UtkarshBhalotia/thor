@@ -18,7 +18,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, onPress }) => {
             activeOpacity={onPress ? 0.7 : 1}
         >
             <Text style={dashboardStyles.statLabel}>{label}</Text>
-            <Text style={dashboardStyles.statValue}>{value}</Text>
+            <Text style={dashboardStyles.statValue}> ₹ {value}</Text>
         </CardComponent>
     );
 };

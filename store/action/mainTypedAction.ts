@@ -22,10 +22,40 @@ export const dashboardActions_dispatch =
             arg: TUserDashboardConditionParamActionParam<T>,
         ) => {
             dispatch({
-                type: 'UserDashboard_Actions',
+                type: 'Dashboard_Actions',
                 payload: { actionName, actionParam: arg } as {
                     actionName: T;
                     actionParam: TUserDashboardConditionParamActionParam<T>;
+                },
+            });
+        };
+
+export const walletActions_dispatch =
+    (dispatch: AppDispatch) =>
+        <T extends TWalletConditionParamActionName>(
+            actionName: T,
+            arg: TWalletConditionParamActionParam<T>,
+        ) => {
+            dispatch({
+                type: 'Wallet_Actions',
+                payload: { actionName, actionParam: arg } as {
+                    actionName: T;
+                    actionParam: TWalletConditionParamActionParam<T>;
+                },
+            });
+        };
+
+export const bookingActions_dispatch =
+    (dispatch: AppDispatch) =>
+        <T extends TUserBookingConditionParamActionName>(
+            actionName: T,
+            arg: TUserBookingConditionParamActionParam<T>,
+        ) => {
+            dispatch({
+                type: 'Leads_Actions',
+                payload: { actionName, actionParam: arg } as {
+                    actionName: T;
+                    actionParam: TUserBookingConditionParamActionParam<T>;
                 },
             });
         };

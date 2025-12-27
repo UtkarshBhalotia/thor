@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -12,61 +12,48 @@ import WalletCard from './components/WalletCard';
 import StatCard from './components/StatCard';
 import ServiceCard from './components/ServiceCard';
 import ReviewCard from './components/ReviewCard';
+import ReportCard from './components/ReportCard';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { AppDispatch, RootState } from '../../../store';
 import { connect } from 'react-redux';
+import { dashboardActions_dispatch } from '../../../store/action/mainTypedAction';
+import BSModal from '../../components/BSModal';
+import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 
-const Dashboard = () => {
+const Dashboard = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const rechargeModalRef = React.useRef<BottomSheetModal>(null);
+    const [rechargeAmount, setRechargeAmount] = useState('');
 
     // Sample data - replace with actual data from API/Redux
-    const providerName = 'John Williams';
-    const walletBalance = '$2,562.23';
+
+    const [walletBalance, setWalletBalance] = useState('');
+    const [totalSecurityDeposit, setTotalSecurityDeposit] = useState({ DepositeAmt: '', MaintenanceAmt: '' });
+    const [reportStats, setReportStats] = useState({ ongoing: 0, new: 0, revenue: 0 });
+    const [assignedServices, setAssignedServices] = useState([
+        {
+            LeadID: '',
+            LeadNo: '',
+            ServiceTypeName: '',
+            LeadStatus: '',
+            LeadDate: '',
+            BrandName: '',
+            ModelName: '',
+            Desc: '',
+            LeadAmount: '',
+            StateName: '',
+            CityName: '',
+            CustomerName: ''
+        },
+    ]);
+
 
     const stats = [
-        { label: "Today's service", value: 5 },
-        { label: 'Total Bookings', value: 50 },
-        { label: 'Total Earnings', value: '$350.60' },
+        // { label: "Wallet Balance", value: 5 },
+        { label: 'Security Deposit', value: totalSecurityDeposit.DepositeAmt },
+        { label: 'System Charges', value: totalSecurityDeposit.MaintenanceAmt },
     ];
 
-    const assignedServices = [
-        {
-            serviceId: '#58961',
-            serviceName: 'Curtain Cleaning',
-            price: '$22.00',
-            discount: '(10% off)',
-            status: 'Pending' as const,
-            dateTime: '6 Aug, 2024 - 5:20 pm',
-            location: 'California - USA',
-            receivableAmount: '$30.23',
-            customerName: 'Stella Milevski',
-            isPackage: true,
-        },
-        {
-            serviceId: '#58962',
-            serviceName: 'House Hold Cook',
-            price: '$20.00',
-            discount: '(10% off)',
-            status: 'Pending' as const,
-            dateTime: '7 Aug, 2024 - 11:00 am',
-            location: 'California - USA',
-            receivableAmount: '$30.23',
-            customerName: 'Kate Tanner',
-            isPackage: false,
-        },
-        {
-            serviceId: '#58964',
-            serviceName: 'Hair Cutting & Spa',
-            price: '$30.00',
-            discount: '(10% off)',
-            status: 'Pending' as const,
-            dateTime: '7 Aug, 2024 - 2:00 pm',
-            location: 'California - USA',
-            receivableAmount: '$30.23',
-            customerName: 'Willie Tanner',
-            isPackage: false,
-        },
-    ];
 
     const reviews = [
         {
@@ -102,8 +89,50 @@ const Dashboard = () => {
     }, []);
 
     const load = () => {
-        console.log('Loading dashboard data...');
+        props.dashboardActions('Wallet_Balance_Api', {
+            callBack: (wB: any) => {
+                setWalletBalance(wB);
+                props.dashboardActions('Total_Security_Deposit_Api', {
+                    callBack: (data: any) => {
+                        setTotalSecurityDeposit(data);
+                        fetchReportData();
+                        props.dashboardActions('Get_OnGoing_Services_List_Api', {
+                            callBack: (data: any) => {
+                                setAssignedServices(data);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    };
 
+    const fetchReportData = () => {
+        // Fetch ongoing count
+        props.dashboardActions('Get_OnGoing_Services_List_Api', {
+            callBack: (data: any[]) => {
+                const ongoingCount = data.length;
+                // Fetch new leads count
+                props.dashboardActions('Get_New_Leads_List_Api', {
+                    callBack: (newData: any[]) => {
+                        const newCount = newData.length;
+                        // Fetch completed leads for revenue (Today's revenue)
+                        props.dashboardActions('Get_Completed_Services_List_Api', {
+                            callBack: (compData: any[]) => {
+                                // Simple revenue calculation (sum of LeadAmount or similar)
+                                // Filter for today if possible, or just sum the list if it's already filtered by API
+                                const revenue = compData.reduce((acc, lead) => acc + (parseFloat(lead.CustomerAmount) || 0), 0);
+                                setReportStats({
+                                    ongoing: ongoingCount,
+                                    new: newCount,
+                                    revenue: revenue
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
     };
 
     const handleAcceptService = (serviceId: string) => {
@@ -116,6 +145,12 @@ const Dashboard = () => {
         // Add your refuse logic here
     };
 
+    const handleRecharge = () => {
+        console.log('Recharge amount:', rechargeAmount);
+        // Add your recharge logic here
+        rechargeModalRef.current?.dismiss();
+    };
+
     return (
         <SafeAreaView style={dashboardStyles.container} edges={['top']}>
             <ScrollView
@@ -126,12 +161,7 @@ const Dashboard = () => {
                 <View style={dashboardStyles.headerSection}>
                     <Text style={dashboardStyles.greetingText}>Hello, there !!</Text>
                     <View style={dashboardStyles.providerContainer}>
-                        <Text style={dashboardStyles.providerName}>{providerName}</Text>
-                        <TouchableOpacity>
-                            <Text style={dashboardStyles.providerDetailsLink}>
-                                Your provider details
-                            </Text>
-                        </TouchableOpacity>
+                        <Text style={dashboardStyles.providerName}>{props.globalState.name}</Text>
                     </View>
                 </View>
 
@@ -139,6 +169,17 @@ const Dashboard = () => {
                 <WalletCard
                     balance={walletBalance}
                     onPress={() => navigation.navigate('Wallet')}
+                    onRechargePress={() => rechargeModalRef.current?.present()}
+                />
+
+                {/* Today's Report */}
+                <View style={dashboardStyles.sectionHeader}>
+                    <Text style={dashboardStyles.sectionTitle}>Today's Report</Text>
+                </View>
+                <ReportCard
+                    ongoing={reportStats.ongoing}
+                    newLeads={reportStats.new}
+                    revenue={reportStats.revenue}
                 />
 
                 {/* Quick Stats */}
@@ -150,13 +191,13 @@ const Dashboard = () => {
                             value={stat.value}
                             onPress={() => {
                                 // Navigate to respective screens
-                                if (stat.label === 'Total Bookings') {
-                                    navigation.navigate('Booking');
-                                } else if (stat.label === 'Total Earnings') {
-                                    navigation.navigate('Wallet');
-                                } else {
-                                    console.log('Stat pressed:', stat.label);
-                                }
+                                // if (stat.label === 'Total Bookings') {
+                                //     navigation.navigate('Booking');
+                                // } else if (stat.label === 'Total Earnings') {
+                                //     navigation.navigate('Wallet');
+                                // } else {
+                                //     console.log('Stat pressed:', stat.label);
+                                // }
                             }}
                         />
                     ))}
@@ -164,7 +205,7 @@ const Dashboard = () => {
 
                 {/* Assigned Service List */}
                 <View style={dashboardStyles.sectionHeader}>
-                    <Text style={dashboardStyles.sectionTitle}>Assigned service list</Text>
+                    <Text style={dashboardStyles.sectionTitle}>Ongoing Services List</Text>
                     <TouchableOpacity onPress={() => navigation.navigate('Booking')}>
                         <Text style={dashboardStyles.viewAllLink}>View all</Text>
                     </TouchableOpacity>
@@ -173,23 +214,22 @@ const Dashboard = () => {
                 {assignedServices.map((service, index) => (
                     <ServiceCard
                         key={index}
-                        serviceId={service.serviceId}
-                        serviceName={service.serviceName}
-                        price={service.price}
-                        discount={service.discount}
-                        status={service.status}
-                        dateTime={service.dateTime}
-                        location={service.location}
-                        receivableAmount={service.receivableAmount}
-                        customerName={service.customerName}
-                        isPackage={service.isPackage}
-                        onAccept={() => handleAcceptService(service.serviceId)}
-                        onRefuse={() => handleRefuseService(service.serviceId)}
+                        leadId={service.LeadID}
+                        leadNo={service.LeadNo}
+                        leadType={service.ServiceTypeName}
+                        leadAmt={service.LeadAmount}
+                        leadStatus={service.LeadStatus as 'Ongoing'}
+                        leadDate={service.LeadDate}
+                        leadCity={service.CityName + ', ' + service.StateName}
+                        leadDescription={service.Desc}
+                        leadBrand={`${service.BrandName} (${service.ModelName})`}
+                        onAccept={() => handleAcceptService(service.LeadID)}
+                        onRefuse={() => handleRefuseService(service.LeadID)}
                     />
                 ))}
 
                 {/* Reviews Section */}
-                <View style={dashboardStyles.sectionHeader}>
+                {/* <View style={dashboardStyles.sectionHeader}>
                     <Text style={dashboardStyles.sectionTitle}>Reviews</Text>
                     <TouchableOpacity>
                         <Text style={dashboardStyles.viewAllLink}>View all</Text>
@@ -205,8 +245,33 @@ const Dashboard = () => {
                         reviewText={review.reviewText}
                         serviceName={review.serviceName}
                     />
-                ))}
+                ))} */}
             </ScrollView>
+
+            <BSModal
+                bsModalRef={rechargeModalRef}
+                headerTitle="Recharge Wallet"
+                snapPoints={['40%']}
+            >
+                <View style={dashboardStyles.bottomSheetContent}>
+                    <View style={dashboardStyles.amountInputContainer}>
+                        <Text style={dashboardStyles.inputLabel}>Enter Amount</Text>
+                        <BottomSheetTextInput
+                            style={dashboardStyles.amountInput}
+                            placeholder="₹ 0.00"
+                            keyboardType="numeric"
+                            value={rechargeAmount}
+                            onChangeText={setRechargeAmount}
+                        />
+                    </View>
+                    <TouchableOpacity
+                        style={dashboardStyles.rechargeButton}
+                        onPress={handleRecharge}
+                    >
+                        <Text style={dashboardStyles.rechargeButtonText}>Recharge</Text>
+                    </TouchableOpacity>
+                </View>
+            </BSModal>
         </SafeAreaView>
     );
 };
@@ -216,7 +281,8 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
+    dashboardActions: dashboardActions_dispatch(dispatch),
     // loginActions_dispatch: loginActions_dispatch(dispatch),
 });
 
-export default connect(mapStateToProps)(Dashboard);
+export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
