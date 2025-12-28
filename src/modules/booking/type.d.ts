@@ -1,4 +1,4 @@
-type TUserBookingConditionParamActionName = 'Get_Leads_List_Api';
+type TUserBookingConditionParamActionName = 'Get_Leads_List_Api' | 'Get_Lead_Detail_By_LeadId_Api';
 
 interface IUserBookingActionConditionParam<
     T extends TUserBookingConditionParamActionName,
@@ -15,6 +15,12 @@ type TUserGetLeadsListParam = {
     callBack: (data: any) => void;
 };
 
+type TUserGetLeadDetailByLeadIdParam = {
+    leadId: string;
+    callBack: (data: any) => void;
+};
+
 type TUserBookingConditionParamActionParam<T extends TUserBookingConditionParamActionName> =
     T extends 'Get_Leads_List_Api' ? TUserGetLeadsListParam :
+    T extends 'Get_Lead_Detail_By_LeadId_Api' ? TUserGetLeadDetailByLeadIdParam :
     never;

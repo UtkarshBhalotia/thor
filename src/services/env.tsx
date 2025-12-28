@@ -1,4 +1,4 @@
-export const ENV: 'dev' | 'prod' = 'prod';
+export const ENV: 'dev' | 'prod' = 'dev';
 
 export const BASE_ENV = {
     dev: {

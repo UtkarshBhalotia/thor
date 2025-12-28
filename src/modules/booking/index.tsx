@@ -16,7 +16,13 @@ import { AppDispatch, RootState } from '../../../store';
 import { connect } from 'react-redux';
 import { bookingActions_dispatch } from '../../../store/action/mainTypedAction';
 
-type BookingStatus = 'New' | 'Ongoing' | 'Follow Up' | 'Denied' | 'Completed' | 'Complaint';
+type BookingStatus =
+    | 'New'
+    | 'Ongoing'
+    | 'Follow Up'
+    | 'Denied'
+    | 'Completed'
+    | 'Complaint';
 type TabFilter = 'All' | BookingStatus;
 
 const Booking = (props: any) => {
@@ -38,7 +44,7 @@ const Booking = (props: any) => {
             status: status,
             callBack: (data: any) => {
                 setAssignedServices(data);
-            }
+            },
         });
     };
 
@@ -49,16 +55,16 @@ const Booking = (props: any) => {
         'Follow Up',
         'Denied',
         'Completed',
-        'Complaint'
+        'Complaint',
     ];
 
-    // Get count for each tab (Note: This will only show count for loaded data, 
+    // Get count for each tab (Note: This will only show count for loaded data,
     // maybe we need a separate count API or just match current list)
     const getTabCount = (tab: TabFilter) => {
         if (tab === activeTab) {
             return assignedServices.length;
         }
-        // Since we are fetching per tab, we might not have counts for other tabs 
+        // Since we are fetching per tab, we might not have counts for other tabs
         // unless we fetch them or have a separate summary API.
         // For now, staying consistent with the request but noting this behavior.
         return 0;
@@ -72,7 +78,23 @@ const Booking = (props: any) => {
         console.log('Refuse service:', serviceId);
     };
 
-    const renderServiceCard = ({ item, index }: { item: any, index: number }) => (
+    const handleCustomerDetailsClick = (
+        leadId: string,
+        callBack: (data: any) => void,
+    ) => {
+        props.bookingActions('Get_Lead_Detail_By_LeadId_Api', {
+            leadId: leadId,
+            callBack: callBack,
+        });
+    };
+
+    const renderServiceCard = ({
+        item,
+        index,
+    }: {
+        item: any;
+        index: number;
+    }) => (
         <ServiceCard
             key={index}
             leadId={item.LeadID}
@@ -88,8 +110,13 @@ const Booking = (props: any) => {
             deniedDateStatus={`${item.DeniedDate} \ ${item.DeniedStatus}`}
             completedDate={item.CompletedDate}
             completedAmout={item.CustomerAmount}
+            customerName={item.CustomerName}
+            customerMobile={item.MobileNo}
+            customerAddress={item.Address}
+            acceptLeadDate={item.AcceptDate}
             onAccept={() => handleAcceptService(item.LeadID)}
             onRefuse={() => handleRefuseService(item.LeadID)}
+            onCustomerDetailsClick={handleCustomerDetailsClick}
         />
     );
 
@@ -141,7 +168,8 @@ const Booking = (props: any) => {
     const renderEmptyList = () => (
         <View style={bookingStyles.emptyContainer}>
             <Text style={bookingStyles.emptyText}>
-                No {activeTab === 'All' ? '' : activeTab.toLowerCase()} leads found
+                No {activeTab === 'All' ? '' : activeTab.toLowerCase()} leads
+                found
             </Text>
         </View>
     );
@@ -149,16 +177,19 @@ const Booking = (props: any) => {
     return (
         <SafeAreaView style={bookingStyles.container} edges={['top']}>
             {/* Header */}
-            <View style={[bookingStyles.header, { flexDirection: 'row', alignItems: 'center' }]}>
+            <View
+                style={[
+                    bookingStyles.header,
+                    { flexDirection: 'row', alignItems: 'center' },
+                ]}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={{
                         padding: 8,
                         marginRight: 12,
                         justifyContent: 'center',
-                        alignItems: 'center'
-                    }}
-                >
+                        alignItems: 'center',
+                    }}>
                     <Ionicons name="arrow-back" size={24} color="#000" />
                 </TouchableOpacity>
                 <Text style={bookingStyles.headerTitle}>Leads</Text>
@@ -170,8 +201,7 @@ const Booking = (props: any) => {
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={bookingStyles.tabScrollContent}
-                    style={bookingStyles.tabScrollView}
-                >
+                    style={bookingStyles.tabScrollView}>
                     {tabs.map((tab) => {
                         const isActive = activeTab === tab;
                         const tabStyles = getTabStyles(tab);
@@ -183,15 +213,18 @@ const Booking = (props: any) => {
                                     bookingStyles.tab,
                                     isActive && tabStyles.tab,
                                 ]}
-                                onPress={() => setActiveTab(tab)}
-                            >
+                                onPress={() => setActiveTab(tab)}>
                                 <Text
                                     style={[
                                         bookingStyles.tabText,
                                         isActive && tabStyles.text,
-                                    ]}
-                                >
-                                    {tab === 'All' ? `${tab} Leads` : `${tab} Leads`} {isActive ? `(${assignedServices.length})` : ''}
+                                    ]}>
+                                    {tab === 'All'
+                                        ? `${tab} Leads`
+                                        : `${tab} Leads`}{' '}
+                                    {isActive
+                                        ? `(${assignedServices.length})`
+                                        : ''}
                                 </Text>
                             </TouchableOpacity>
                         );

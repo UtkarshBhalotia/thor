@@ -1,9 +1,15 @@
-type TUserDashboardConditionParamActionName = 'Wallet_Balance_Api' | 'Total_Security_Deposit_Api' | 'Get_OnGoing_Services_List_Api' | 'Get_New_Leads_List_Api' | 'Get_Completed_Services_List_Api';
+type TUserDashboardConditionParamActionName =
+    | 'Wallet_Balance_Api'
+    | 'Total_Security_Deposit_Api'
+    | 'Get_OnGoing_Services_List_Api'
+    | 'Get_New_Leads_List_Api'
+    | 'Get_Completed_Services_List_Api'
+    | 'Get_Lead_Detail_By_LeadId_Api';
 
 interface IUserDashboardActionConditionParam<
     T extends TUserDashboardConditionParamActionName,
 > {
-    type: 'UserAuth_Actions';
+    type: 'Dashboard_Actions';
     payload: {
         actionName: T;
         actionParam: TUserDashboardConditionParamActionParam<T>;
@@ -26,13 +32,26 @@ type TUserGetCompletedServicesListParam = {
     callBack: (data: any) => void;
 };
 
-type TUserDashboardConditionParamActionParam<T extends TUserDashboardConditionParamActionName> =
-    T extends 'Wallet_Balance_Api' ? TUserWalletBalanceParam :
-    T extends 'Total_Security_Deposit_Api' ? TUserTotalSecurityDepositParam :
-    T extends 'Get_OnGoing_Services_List_Api' ? TUserGetOnGoingServicesListParam :
-    T extends 'Get_New_Leads_List_Api' ? TUserGetNewLeadsListParam :
-    T extends 'Get_Completed_Services_List_Api' ? TUserGetCompletedServicesListParam :
-    never;
+type TUserGetLeadDetailByLeadIdParam = {
+    leadId: string;
+    callBack: (data: any) => void;
+};
+
+type TUserDashboardConditionParamActionParam<
+    T extends TUserDashboardConditionParamActionName,
+> = T extends 'Wallet_Balance_Api'
+    ? TUserWalletBalanceParam
+    : T extends 'Total_Security_Deposit_Api'
+    ? TUserTotalSecurityDepositParam
+    : T extends 'Get_OnGoing_Services_List_Api'
+    ? TUserGetOnGoingServicesListParam
+    : T extends 'Get_New_Leads_List_Api'
+    ? TUserGetNewLeadsListParam
+    : T extends 'Get_Completed_Services_List_Api'
+    ? TUserGetCompletedServicesListParam
+    : T extends 'Get_Lead_Detail_By_LeadId_Api'
+    ? TUserGetLeadDetailByLeadIdParam
+    : never;
 
 interface IResponseParam {
     body: any;

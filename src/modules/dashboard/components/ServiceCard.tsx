@@ -1,6 +1,26 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useRef, useState } from 'react';
+import {
+    View,
+    Text,
+    TouchableOpacity,
+    StyleSheet,
+    LayoutAnimation,
+    Platform,
+    UIManager,
+} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import DeniedLeadFormModal from '../../../components/DeniedLeadFormModal';
+import CompletedLeadFormModal from '../../../components/CompletedLeadFormModal';
+import FollowUpLeadFormModal from '../../../components/FollowUpLeadFormModal';
+
+// Enable LayoutAnimation for Android
+if (
+    Platform.OS === 'android' &&
+    UIManager.setLayoutAnimationEnabledExperimental
+) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 interface ServiceCardProps {
     leadId: string;
@@ -16,9 +36,29 @@ interface ServiceCardProps {
     deniedDateStatus?: string;
     completedDate?: string;
     completedAmout?: string;
+    // Customer details
+    customerName?: string;
+    customerMobile?: string;
+    customerAddress?: string;
+    acceptLeadDate?: string;
+    // Action handlers
     onAccept?: () => void;
     onRefuse?: () => void;
     onCardPress?: () => void;
+    onFollowUp?: (data: {
+        nextFollowUpDate: Date;
+        followUpDetails: string;
+    }) => void;
+    onDenied?: (reason: string) => void;
+    onCompleted?: (data: {
+        totalBillAmount: string;
+        serviceDetails: string;
+        otherRemarks: string;
+    }) => void;
+    onCustomerDetailsClick?: (
+        leadId: string,
+        callBack: (data: any) => void,
+    ) => void;
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({
@@ -35,10 +75,89 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     deniedDateStatus,
     completedDate,
     completedAmout,
+    customerName,
+    customerMobile,
+    customerAddress,
+    acceptLeadDate,
     onAccept,
     onRefuse,
     onCardPress,
+    onFollowUp,
+    onDenied,
+    onCompleted,
+    onCustomerDetailsClick,
 }) => {
+    const [isCustomerDetailsExpanded, setIsCustomerDetailsExpanded] =
+        useState(false);
+    const [customerDetails, setCustomerDetails] = useState<{
+        customerName?: string;
+        customerMobile?: string;
+        customerAddress?: string;
+        acceptLeadDate?: string;
+    }>({
+        customerName,
+        customerMobile,
+        customerAddress,
+        acceptLeadDate,
+    });
+    const deniedModalRef = useRef<BottomSheetModal>(null);
+    const completedModalRef = useRef<BottomSheetModal>(null);
+    const followUpModalRef = useRef<BottomSheetModal>(null);
+
+    const handleFollowUpPress = () => {
+        followUpModalRef.current?.present();
+    };
+
+    const handleFollowUpSubmit = (data: {
+        nextFollowUpDate: Date;
+        followUpDetails: string;
+    }) => {
+        if (onFollowUp) {
+            onFollowUp(data);
+        }
+    };
+
+    const handleDeniedPress = () => {
+        deniedModalRef.current?.present();
+    };
+
+    const handleDeniedSubmit = (reason: string) => {
+        if (onDenied) {
+            onDenied(reason);
+        }
+    };
+
+    const handleCompletedPress = () => {
+        completedModalRef.current?.present();
+    };
+
+    const handleCompletedSubmit = (data: {
+        totalBillAmount: string;
+        serviceDetails: string;
+        otherRemarks: string;
+    }) => {
+        if (onCompleted) {
+            onCompleted(data);
+        }
+    };
+
+    const toggleCustomerDetails = () => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        if (!isCustomerDetailsExpanded && onCustomerDetailsClick) {
+            onCustomerDetailsClick(leadId, (data: any) => {
+                if (data && data.length > 0) {
+                    const detail = data[0];
+                    setCustomerDetails({
+                        customerName: detail.CustomerName,
+                        customerMobile: detail.MobileNo,
+                        customerAddress: detail.Address,
+                        acceptLeadDate: detail.AcceptDate,
+                    });
+                }
+            });
+        }
+        setIsCustomerDetailsExpanded(!isCustomerDetailsExpanded);
+    };
     // Get status styles including accent color
     const getStatusConfig = () => {
         const status = leadStatus?.trim();
@@ -252,8 +371,144 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                             </View>
                         </>
                     )}
+
+                    {/* Ongoing Status - Customer Details & Action Buttons */}
+                    {leadStatus === 'Ongoing' && (
+                        <>
+                            <View style={styles.divider} />
+
+                            {/* Expandable Customer Details */}
+                            <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={toggleCustomerDetails}
+                                style={styles.customerDetailsToggle}>
+                                <Text style={styles.customerDetailsToggleText}>
+                                    View Customer Details
+                                </Text>
+                                <Text style={styles.customerDetailsArrow}>
+                                    {isCustomerDetailsExpanded ? '▲' : '▼'}
+                                </Text>
+                            </TouchableOpacity>
+
+                            {isCustomerDetailsExpanded && (
+                                <>
+                                    <View
+                                        style={styles.customerDetailsContainer}>
+                                        <View style={styles.customerDetailRow}>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailLabel
+                                                }>
+                                                Customer Name
+                                            </Text>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailValue
+                                                }>
+                                                {customerDetails.customerName ||
+                                                    '-'}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.customerDetailRow}>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailLabel
+                                                }>
+                                                Customer Mobile
+                                            </Text>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailValue
+                                                }>
+                                                {customerDetails.customerMobile ||
+                                                    '-'}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.customerDetailRow}>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailLabel
+                                                }>
+                                                Customer Address
+                                            </Text>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailValue
+                                                }>
+                                                {customerDetails.customerAddress ||
+                                                    '-'}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.customerDetailRow}>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailLabel
+                                                }>
+                                                Accept Lead Date
+                                            </Text>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailValue
+                                                }>
+                                                {customerDetails.acceptLeadDate ||
+                                                    '-'}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    {/* Three Action Buttons - Shown after customer details expanded */}
+                                    <View style={styles.ongoingButtonsRow}>
+                                        <TouchableOpacity
+                                            activeOpacity={0.8}
+                                            onPress={handleFollowUpPress}
+                                            style={styles.followUpBtn}>
+                                            <Text
+                                                style={styles.followUpBtnText}>
+                                                📞 Follow Up
+                                            </Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            activeOpacity={0.8}
+                                            onPress={handleDeniedPress}
+                                            style={styles.deniedBtn}>
+                                            <Text style={styles.deniedBtnText}>
+                                                ✕ Denied
+                                            </Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            activeOpacity={0.8}
+                                            onPress={handleCompletedPress}
+                                            style={styles.completedBtn}>
+                                            <Text
+                                                style={styles.completedBtnText}>
+                                                ✓ Completed
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </>
+                            )}
+                        </>
+                    )}
                 </View>
             </View>
+
+            {/* Denied Lead Form Modal */}
+            <DeniedLeadFormModal
+                ref={deniedModalRef}
+                onSubmit={handleDeniedSubmit}
+            />
+
+            {/* Completed Lead Form Modal */}
+            <CompletedLeadFormModal
+                ref={completedModalRef}
+                onSubmit={handleCompletedSubmit}
+            />
+
+            {/* Follow Up Lead Form Modal */}
+            <FollowUpLeadFormModal
+                ref={followUpModalRef}
+                onSubmit={handleFollowUpSubmit}
+            />
         </TouchableOpacity>
     );
 };
@@ -261,32 +516,32 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
 const styles = StyleSheet.create({
     cardWrapper: {
         marginHorizontal: 16,
-        marginBottom: 16,
+        marginBottom: 10,
     },
     card: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 16,
+        borderRadius: 14,
         flexDirection: 'row',
         overflow: 'hidden',
-        shadowColor: '#1C1F34',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+        elevation: 3,
     },
     accentStrip: {
-        width: 5,
+        width: 4,
         backgroundColor: '#5F60B9',
     },
     cardContent: {
         flex: 1,
-        padding: 16,
+        padding: 14,
     },
     headerSection: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: 10,
     },
     headerLeft: {
         flexDirection: 'row',
@@ -298,10 +553,10 @@ const styles = StyleSheet.create({
     statusBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 20,
-        gap: 6,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 16,
+        gap: 5,
     },
     statusIcon: {
         fontSize: 12,
@@ -309,12 +564,12 @@ const styles = StyleSheet.create({
     statusText: {
         fontSize: 13,
         fontWeight: '700',
-        letterSpacing: 0.3,
+        letterSpacing: 0.2,
     },
     leadNoLabel: {
         fontSize: 11,
         color: '#8F8F8F',
-        marginBottom: 2,
+        marginBottom: 1,
     },
     leadNoValue: {
         fontSize: 15,
@@ -324,25 +579,25 @@ const styles = StyleSheet.create({
     divider: {
         height: 1,
         backgroundColor: '#F0F0F5',
-        marginVertical: 12,
+        marginVertical: 10,
     },
     detailsGrid: {
-        gap: 12,
+        gap: 8,
     },
     detailsRow: {
         flexDirection: 'row',
-        gap: 12,
+        gap: 8,
     },
     detailItem: {
         flex: 1,
-        backgroundColor: '#F9F9FB',
-        borderRadius: 10,
-        padding: 10,
+        backgroundColor: '#F7F8FA',
+        borderRadius: 8,
+        padding: 8,
     },
     detailLabel: {
         fontSize: 11,
         color: '#8F8F8F',
-        marginBottom: 4,
+        marginBottom: 3,
         fontWeight: '500',
     },
     detailValue: {
@@ -351,14 +606,14 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     actionSection: {
-        marginTop: 4,
+        marginTop: 2,
     },
     acceptButtonWrapper: {
-        borderRadius: 12,
+        borderRadius: 10,
         overflow: 'hidden',
     },
     acceptButton: {
-        paddingVertical: 14,
+        paddingVertical: 12,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -366,7 +621,92 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 15,
         fontWeight: '700',
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
+    },
+    // Ongoing Status Styles
+    ongoingButtonsRow: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 12,
+    },
+    followUpBtn: {
+        flex: 1,
+        backgroundColor: '#F3E5F5',
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    followUpBtnText: {
+        color: '#7B1FA2',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    deniedBtn: {
+        flex: 1,
+        backgroundColor: '#FFEBEE',
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    deniedBtnText: {
+        color: '#D32F2F',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    completedBtn: {
+        flex: 1,
+        backgroundColor: '#E8F5E9',
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    completedBtnText: {
+        color: '#388E3C',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    customerDetailsToggle: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#F5F6FA',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+    },
+    customerDetailsToggleText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#5F60B9',
+    },
+    customerDetailsArrow: {
+        fontSize: 10,
+        color: '#5F60B9',
+    },
+    customerDetailsContainer: {
+        marginTop: 10,
+        backgroundColor: '#F9FAFB',
+        borderRadius: 10,
+        padding: 12,
+        gap: 10,
+    },
+    customerDetailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+    },
+    customerDetailLabel: {
+        fontSize: 12,
+        color: '#8F8F8F',
+        fontWeight: '500',
+        flex: 1,
+    },
+    customerDetailValue: {
+        fontSize: 13,
+        color: '#1C1F34',
+        fontWeight: '600',
+        flex: 1.5,
+        textAlign: 'right',
     },
 });
 

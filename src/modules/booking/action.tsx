@@ -11,6 +11,9 @@ export function* conditionActions<T extends TUserBookingConditionParamActionName
         case 'Get_Leads_List_Api':
             yield call(GetLeadsListApi, actionParam as TUserGetLeadsListParam);
             break;
+        case 'Get_Lead_Detail_By_LeadId_Api':
+            yield call(GetLeadDetailByLeadIdApi, actionParam as TUserGetLeadDetailByLeadIdParam);
+            break;
     }
 }
 
@@ -71,6 +74,52 @@ function* GetLeadsListApi_Response(response: IResponseParam, callBack: (wB: any)
                 showToast({
                     type: 'error',
                     text1: 'No data found',
+                    visibilityTime: 2000,
+                });
+            }
+        }
+
+    } catch (error) {
+
+    }
+}
+
+function* GetLeadDetailByLeadIdApi(actionParam: TUserGetLeadDetailByLeadIdParam) {
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+
+        const dataObj = {
+            LeadID: actionParam.leadId,
+            AcceptByID: GlobalState.userId,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.getLeadDetailByLeadIdForVendorUrl,
+            data: dataObj,
+        });
+
+        yield GetLeadDetailByLeadIdApi_Response(response, actionParam.callBack);
+
+    } catch (error) {
+
+    }
+}
+
+function* GetLeadDetailByLeadIdApi_Response(response: IResponseParam, callBack: (wB: any) => void) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+
+            if (responseData.d !== '') {
+                const parsedData = JSON.parse(responseData.d);
+                callBack(parsedData);
+
+            } else {
+                callBack(null);
+                showToast({
+                    type: 'error',
+                    text1: 'No lead details found',
                     visibilityTime: 2000,
                 });
             }
