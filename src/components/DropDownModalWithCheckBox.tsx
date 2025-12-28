@@ -90,7 +90,7 @@ const DropDownModalWithCheckBox = (props: {
                 closeBSModal(props.dropDownModalRef),
                     props.setDropDownModal(false);
             }}
-            headerTitle={`Select Service ${props.title}`}
+            headerTitle={`Select ${props.title}`}
             bgGradientType="blue"
             isFlatList={true}
             scrollViewStyle={{ backgroundColor: undefined }}>

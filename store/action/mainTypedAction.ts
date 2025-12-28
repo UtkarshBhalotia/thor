@@ -59,3 +59,18 @@ export const bookingActions_dispatch =
                 },
             });
         };
+
+export const registerActions_dispatch =
+    (dispatch: AppDispatch) =>
+        <T extends TUserRegisterConditionParamActionName>(
+            actionName: T,
+            arg: TUserRegisterConditionParamActionParam<T>,
+        ) => {
+            dispatch({
+                type: 'Register_Actions',
+                payload: { actionName, actionParam: arg } as {
+                    actionName: T;
+                    actionParam: TUserRegisterConditionParamActionParam<T>;
+                },
+            });
+        };

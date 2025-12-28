@@ -6,6 +6,7 @@ import {
     TextInput,
     TouchableOpacity,
     Image,
+    InteractionManager,
 } from 'react-native';
 import {
     launchImageLibrary,
@@ -25,6 +26,9 @@ import { Controller, useForm, FormProvider } from 'react-hook-form';
 import Toast from 'react-native-toast-message';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { AppDispatch, RootState } from '../../../../store';
+import { connect } from 'react-redux';
+import { registerActions_dispatch } from '../../../../store/action/mainTypedAction';
 import { loginStyles } from '../../../assets/css/loginStyles';
 import { registerStyles } from '../../../assets/css/registerStyles';
 import SODTextInput from '../../../components/SODTextInput';
@@ -35,7 +39,7 @@ import Layout from '../../../assets/css/layout';
 import BSModal from '../../../components/BSModal';
 import LinearGradient from 'react-native-linear-gradient';
 
-const Register = () => {
+const Register = (props: any) => {
     const insets = useSafeAreaInsets();
     const [isPasswordSecure, setIsPasswordSecure] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -70,35 +74,21 @@ const Register = () => {
         | null
     >(null);
 
-    // Sample data for dropdowns
-    const serviceTypes = [
-        'Consulting',
-        'Development',
-        'Design',
-        'Marketing',
-        'Support',
-    ];
-    const countries = ['India'];
-    const states = [
-        'Maharashtra',
-        'Karnataka',
-        'Tamil Nadu',
-        'Delhi',
-        'Gujarat',
-    ];
-    const cities = ['Mumbai', 'Bangalore', 'Chennai', 'Delhi', 'Ahmedabad'];
-
-    // Sample data for checkbox dropdown
-    const serviceTypesWithCheckbox = [
-        { name: 'Consultation Fee', isChecked: false },
-        { name: 'Travel Expense', isChecked: false },
-        { name: 'Material Cost', isChecked: false },
-        { name: 'Service Charge', isChecked: false },
-        { name: 'Processing Fee', isChecked: false },
-        { name: 'Documentation Fee', isChecked: false },
-        { name: 'Inspection Fee', isChecked: false },
-        { name: 'Handling Charge', isChecked: false },
-    ];
+    // Service types state - will be filled from API
+    const [serviceTypes, setServiceTypes] = useState<string[]>([]);
+    const [serviceTypesWithCheckbox, setServiceTypesWithCheckbox] = useState<
+        { name: string; isChecked: boolean }[]
+    >([]);
+    // Country list state - will be filled from API
+    const [countries, setCountries] = useState<
+        { CountryID: string | number; CountryName: string }[]
+    >([]);
+    // State list state - will be filled from API
+    const [states, setStates] = useState<
+        { StateID: string | number; StateName: string }[]
+    >([]);
+    // City list state - will be filled from API
+    const [cities, setCities] = useState<string[]>([]);
 
     const formMethods = useForm({
         defaultValues: {
@@ -114,7 +104,7 @@ const Register = () => {
             country: '',
             state: '',
             city: '',
-            previousService: serviceTypesWithCheckbox,
+            previousService: [],
             count: 0,
             firstSelectedName: '',
         },
@@ -133,14 +123,131 @@ const Register = () => {
 
     console.log('getValues', getValues());
 
-    // Initialize count when component mounts
+    // Load service types and country list on component mount
     useEffect(() => {
-        const initialCount = serviceTypesWithCheckbox.filter(
-            (item: any) => item.isChecked,
-        ).length;
-        console.log('Initial count set to:', initialCount);
-        setValue('count', initialCount);
+        const task = InteractionManager.runAfterInteractions(() => {
+            loadServiceTypes();
+            loadCountryList();
+        });
+        return () => {
+            task.cancel();
+        };
     }, []);
+
+    // Initialize count when serviceTypesWithCheckbox is loaded
+    useEffect(() => {
+        if (serviceTypesWithCheckbox.length > 0) {
+            const initialCount = serviceTypesWithCheckbox.filter(
+                (item: any) => item.isChecked,
+            ).length;
+            console.log('Initial count set to:', initialCount);
+            setValue('count', initialCount);
+            setValue('previousService', serviceTypesWithCheckbox as any);
+        }
+    }, [serviceTypesWithCheckbox]);
+
+    const loadServiceTypes = () => {
+        props.registerActions('Get_Service_Types_Api', {
+            callBack: (data: any[]) => {
+                // Extract service type names from API response
+                const types = data.map((item: any) => item.ServiceName);
+                setServiceTypes(types);
+
+                // Create checkbox array from API data
+                const checkboxData = data.map((item: any) => ({
+                    name: item.ServiceName,
+                    isChecked: false,
+                }));
+                setServiceTypesWithCheckbox(checkboxData);
+            },
+        });
+    };
+
+    const loadCountryList = () => {
+        props.registerActions('Get_Country_List_Api', {
+            callBack: (data: any[]) => {
+                // Extract CountryID and Name from API response
+                const countryData = data.map((item: any) => ({
+                    CountryID: item.CountryID,
+                    CountryName: item.CountryName,
+                }));
+                setCountries(countryData);
+
+                // Set India as default selected country
+                const indiaCountry = countryData.find(
+                    (country) => country.CountryName.toLowerCase() === 'india',
+                );
+                if (indiaCountry) {
+                    setValue('country', indiaCountry.CountryName);
+                    // Load states for India by default
+                    loadStateList(indiaCountry.CountryID);
+                }
+            },
+        });
+    };
+
+    const loadStateList = (countryId: string | number) => {
+        props.registerActions('Get_State_List_Api', {
+            countryId: countryId,
+            callBack: (data: any[]) => {
+                // Extract StateID and StateName from API response
+                const stateData = data.map((item: any) => ({
+                    StateID: item.StateID,
+                    StateName: item.StateName || item.Name || item,
+                }));
+                setStates(stateData);
+            },
+        });
+    };
+
+    const loadCityList = (stateId: string | number) => {
+        props.registerActions('Get_City_List_Api', {
+            stateId: stateId,
+            callBack: (data: any[]) => {
+                // Extract city names from API response
+                // Adjust field name based on actual API response structure
+                const cityNames = data.map(
+                    (item: any) => item.CityName || item.Name || item,
+                );
+                setCities(cityNames);
+            },
+        });
+    };
+
+    // Watch country value and load states when country changes
+    const selectedCountry = watch('country');
+    useEffect(() => {
+        if (selectedCountry && countries.length > 0) {
+            // Find the country by name to get CountryID
+            const selectedCountryData = countries.find(
+                (country) => country.CountryName === selectedCountry,
+            );
+            if (selectedCountryData) {
+                loadStateList(selectedCountryData.CountryID);
+                // Clear state and city when country changes
+                setValue('state', '');
+                setValue('city', '');
+                setStates([]);
+                setCities([]);
+            }
+        }
+    }, [selectedCountry, countries.length]);
+
+    // Watch state value and load cities when state changes
+    const selectedState = watch('state');
+    useEffect(() => {
+        if (selectedState && states.length > 0) {
+            // Find the state by name to get StateID
+            const selectedStateData = states.find(
+                (state) => state.StateName === selectedState,
+            );
+            if (selectedStateData) {
+                loadCityList(selectedStateData.StateID);
+                // Clear city when state changes
+                setValue('city', '');
+            }
+        }
+    }, [selectedState, states.length]);
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -1107,9 +1214,9 @@ const Register = () => {
                                                                         styles.removeItemButton
                                                                     }
                                                                     onPress={() => {
-                                                                        const updatedItems =
+                                                                        const updatedItems: any[] =
                                                                             [
-                                                                                ...watchedValues.previousService,
+                                                                                ...(watchedValues.previousService as any[]),
                                                                             ];
                                                                         const itemIndex =
                                                                             updatedItems.findIndex(
@@ -1129,7 +1236,7 @@ const Register = () => {
                                                                                 false;
                                                                             setValue(
                                                                                 'previousService',
-                                                                                updatedItems,
+                                                                                updatedItems as any,
                                                                             );
 
                                                                             // Calculate count from checked items
@@ -1200,7 +1307,10 @@ const Register = () => {
                                             disabled={false}
                                             type="BSModal"
                                             errorMsg={error?.message}
-                                            dropDownFormData={countries}
+                                            dropDownFormData={countries.map(
+                                                (country) =>
+                                                    country.CountryName,
+                                            )}
                                         />
                                     )}
                                 />
@@ -1224,7 +1334,9 @@ const Register = () => {
                                             disabled={false}
                                             type="BSModal"
                                             errorMsg={error?.message}
-                                            dropDownFormData={states}
+                                            dropDownFormData={states.map(
+                                                (state) => state.StateName,
+                                            )}
                                         />
                                     )}
                                 />
@@ -2364,4 +2476,12 @@ const styles = {
     },
 };
 
-export default Register;
+const mapStateToProps = (state: RootState) => ({
+    globalState: state.globalState,
+});
+
+const mapDispatchToProps = (dispatch: AppDispatch) => ({
+    registerActions: registerActions_dispatch(dispatch),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Register);

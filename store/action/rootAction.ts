@@ -3,6 +3,7 @@ import * as login from '../../src/modules/gettingStarted/login/action';
 import * as dashboard from '../../src/modules/dashboard/action';
 import * as wallet from '../../src/modules/wallet/action';
 import * as booking from '../../src/modules/booking/action';
+import * as register from '../../src/modules/gettingStarted/register/action';
 
 export function* rootActions() {
     try {
@@ -10,6 +11,7 @@ export function* rootActions() {
         yield takeEvery('Dashboard_Actions', dashboard.conditionActions);
         yield takeEvery('Wallet_Actions', wallet.conditionActions);
         yield takeEvery('Leads_Actions', booking.conditionActions);
+        yield takeEvery('Register_Actions', register.conditionActions);
     } catch (error) { }
 }
 
