@@ -119,41 +119,33 @@ const Dashboard = (props: any) => {
         });
     };
 
+    const formatDateForApi = (date: Date) => {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${year}-${month}-${day}`;
+    };
+
     const fetchReportData = () => {
-        // Fetch ongoing count
-        // props.dashboardActions('Get_OnGoing_Services_List_Api', {
-        //     callBack: (data: any[]) => {
-        //         const ongoingCount = data.length;
-        //         // Fetch new leads count
-        //         props.dashboardActions('Get_New_Leads_List_Api', {
-        //             callBack: (newData: any[]) => {
-        //                 const newCount = newData.length;
-        //                 // Fetch completed leads for revenue (Today's revenue)
-        //                 props.dashboardActions(
-        //                     'Get_Completed_Services_List_Api',
-        //                     {
-        //                         callBack: (compData: any[]) => {
-        //                             // Simple revenue calculation (sum of LeadAmount or similar)
-        //                             // Filter for today if possible, or just sum the list if it's already filtered by API
-        //                             const revenue = compData.reduce(
-        //                                 (acc, lead) =>
-        //                                     acc +
-        //                                     (parseFloat(lead.CustomerAmount) ||
-        //                                         0),
-        //                                 0,
-        //                             );
-        //                             setReportStats({
-        //                                 ongoing: ongoingCount,
-        //                                 new: newCount,
-        //                                 revenue: revenue,
-        //                             });
-        //                         },
-        //                     },
-        //                 );
-        //             },
-        //         });
-        //     },
-        // });
+        // Get today's date for FromDate and ToDate
+        const today = new Date();
+        const todayFormatted = formatDateForApi(today);
+
+        props.dashboardActions('Get_Work_Report_For_Vendor_Api', {
+            fromDate: todayFormatted,
+            toDate: todayFormatted,
+            callBack: (data: {
+                ongoing: number;
+                new: number;
+                revenue: number;
+            }) => {
+                setReportStats({
+                    ongoing: data.ongoing,
+                    new: data.new,
+                    revenue: data.revenue,
+                });
+            },
+        });
     };
 
     const handleAcceptService = (serviceId: string) => {

@@ -4,7 +4,8 @@ type TUserDashboardConditionParamActionName =
     | 'Get_OnGoing_Services_List_Api'
     | 'Get_New_Leads_List_Api'
     | 'Get_Completed_Services_List_Api'
-    | 'Get_Lead_Detail_By_LeadId_Api';
+    | 'Get_Lead_Detail_By_LeadId_Api'
+    | 'Get_Work_Report_For_Vendor_Api';
 
 interface IUserDashboardActionConditionParam<
     T extends TUserDashboardConditionParamActionName,
@@ -37,6 +38,16 @@ type TUserGetLeadDetailByLeadIdParam = {
     callBack: (data: any) => void;
 };
 
+type TUserGetWorkReportForVendorParam = {
+    fromDate: string;
+    toDate: string;
+    callBack: (data: {
+        ongoing: number;
+        new: number;
+        revenue: number;
+    }) => void;
+};
+
 type TUserDashboardConditionParamActionParam<
     T extends TUserDashboardConditionParamActionName,
 > = T extends 'Wallet_Balance_Api'
@@ -51,6 +62,8 @@ type TUserDashboardConditionParamActionParam<
     ? TUserGetCompletedServicesListParam
     : T extends 'Get_Lead_Detail_By_LeadId_Api'
     ? TUserGetLeadDetailByLeadIdParam
+    : T extends 'Get_Work_Report_For_Vendor_Api'
+    ? TUserGetWorkReportForVendorParam
     : never;
 
 interface IResponseParam {

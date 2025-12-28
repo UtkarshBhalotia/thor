@@ -35,6 +35,12 @@ export function* conditionActions<
                 actionParam as TUserGetLeadDetailByLeadIdParam,
             );
             break;
+        case 'Get_Work_Report_For_Vendor_Api':
+            yield call(
+                GetWorkReportForVendorApi,
+                actionParam as TUserGetWorkReportForVendorParam,
+            );
+            break;
     }
 }
 
@@ -222,4 +228,90 @@ function* GetLeadDetailByLeadIdApi_Response(
             }
         }
     } catch (error) {}
+}
+
+function* GetWorkReportForVendorApi(
+    actionParam: TUserGetWorkReportForVendorParam,
+) {
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+
+        const dataObj = {
+            FromDate: actionParam.fromDate,
+            ToDate: actionParam.toDate,
+            UserID: GlobalState.userId,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.getReportForVendorUrl,
+            data: dataObj,
+        });
+
+        yield GetWorkReportForVendorApi_Response(
+            response,
+            actionParam.callBack,
+        );
+    } catch (error) {}
+}
+
+function* GetWorkReportForVendorApi_Response(
+    response: IResponseParam,
+    callBack: (data: { ongoing: number; new: number; revenue: number }) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+
+            if (responseData.d !== '') {
+                const parsedData = JSON.parse(responseData.d);
+
+                // Analyze the response and extract ongoing, new, and revenue data
+                let ongoing = 0;
+                let newLeads = 0;
+                let revenue = 0;
+
+                if (Array.isArray(parsedData) && parsedData.length > 0) {
+                    // Iterate through the array to find data by LeadStatus
+                    parsedData.forEach((item: any) => {
+                        const leadStatus = item.LeadStatus || '';
+                        const total = parseInt(item.Total || '0', 10);
+                        const totalAmt = parseFloat(item.TotalAmt || '0');
+
+                        if (leadStatus === 'Ongoing') {
+                            ongoing = total;
+                        } else if (leadStatus === 'New') {
+                            newLeads = total;
+                        } else if (leadStatus === 'Completed') {
+                            // Revenue is the TotalAmt from Completed leads
+                            revenue = totalAmt;
+                        }
+                    });
+                }
+
+                callBack({
+                    ongoing,
+                    new: newLeads,
+                    revenue,
+                });
+            } else {
+                callBack({
+                    ongoing: 0,
+                    new: 0,
+                    revenue: 0,
+                });
+                showToast({
+                    type: 'error',
+                    text1: 'No report data found',
+                    visibilityTime: 2000,
+                });
+            }
+        }
+    } catch (error) {
+        callBack({
+            ongoing: 0,
+            new: 0,
+            revenue: 0,
+        });
+    }
 }
