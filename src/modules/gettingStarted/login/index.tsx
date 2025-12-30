@@ -39,8 +39,8 @@ const Login = (props: any) => {
 
     const formMethods = useForm({
         defaultValues: {
-            email: 'ruhienterprises01@gmail.com',
-            password: '9472197062',
+            email: '', //'ruhienterprises01@gmail.com',
+            password: '', //'9472197062',
         },
     });
 
