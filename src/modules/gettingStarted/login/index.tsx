@@ -88,7 +88,7 @@ const Login = (props: any) => {
                 style={[Layout.viewHeight]}>
                 <View style={loginStyles.headerContainer}>
                     <Text style={loginStyles.title}>
-                        Login to SOD Partner App!
+                        Login to App!
                     </Text>
                 </View>
 
