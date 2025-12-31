@@ -31,6 +31,10 @@ const apiListing = {
     getReportForVendorUrl: `${BaseUrl}GetWorkReportForVendor`,
     getLeadDetailByLeadIdForVendorUrl: `${BaseUrl}GetLeadDetailsByLeadIDForVendor`,
     acceptLeadByVendorUrl: `${BaseUrl}AcceptLeadByVendor`,
+    insertRechargeDetailsUrl: `${BaseUrl}InsertRechargeDetails`,
+    // PayUMoney endpoints (mock for now, replace with actual backend endpoints when available)
+    initiatePaymentUrl: `${BaseUrl}InitiatePayment`, // Will generate payment hash on backend
+    verifyPaymentUrl: `${BaseUrl}VerifyPayment`, // Will verify payment with PayUMoney
 };
 
 const projectEnv = {

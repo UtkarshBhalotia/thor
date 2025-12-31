@@ -16,11 +16,19 @@ import { connect } from 'react-redux';
 import { walletActions_dispatch } from '../../../store/action/mainTypedAction';
 import BSModal from '../../components/BSModal';
 import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { validateRechargeAmount, createPaymentParams } from '../../services/payumoneyService';
+import { PAYUMONEY_CONFIG, PayUMoneyParams, PaymentResponse } from '../../config/payumoneyConfig';
+import Toast from 'react-native-toast-message';
+import PaymentWebView from './components/PaymentWebView';
 
 const Wallet = (props: any) => {
+    console.log(props, "Props");
+
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
     const [rechargeAmount, setRechargeAmount] = useState('');
+    const [showPaymentWebView, setShowPaymentWebView] = useState(false);
+    const [paymentParams, setPaymentParams] = useState<PayUMoneyParams | null>(null);
 
     // State management
     const [walletBalance, setWalletBalance] = useState('');
@@ -52,9 +60,90 @@ const Wallet = (props: any) => {
     };
 
     const handleRecharge = () => {
-        console.log('Recharge amount:', rechargeAmount);
-        // Add your recharge logic here
+        // Validate amount
+        const validation = validateRechargeAmount(rechargeAmount);
+        if (!validation.valid) {
+            Toast.show({
+                type: 'error',
+                text1: validation.error || 'Invalid amount',
+                visibilityTime: 2000,
+            });
+            return;
+        }
+
+        const amount = parseFloat(rechargeAmount);
+
+        // Get user details from global state
+        const userEmail = props.globalState.email || 'test@example.com';
+        const userName = props.globalState?.name || 'Test User';
+        const userPhone = props.globalState?.mobile || '9999999999';
+        const userId = props.globalState?.userId || '1';
+
+        // Create payment parameters
+        const paymentParams = createPaymentParams(
+            amount,
+            userEmail,
+            userName,
+            userPhone,
+            userId
+        );
+
+        console.log('Payment Params:', paymentParams);
+
+        // Close the recharge modal
         rechargeModalRef.current?.dismiss();
+
+        // Set payment params and show WebView
+        setPaymentParams(paymentParams);
+        setShowPaymentWebView(true);
+    };
+
+    const handlePaymentSuccess = (response: PaymentResponse) => {
+        console.log('Payment Success:', response);
+        setShowPaymentWebView(false);
+
+        // Process payment response
+        props.walletActions('Process_Payment_Response', {
+            paymentResponse: response,
+            callBack: (success: boolean, message: string) => {
+                if (success) {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Payment Successful',
+                        text2: message,
+                        visibilityTime: 3000,
+                    });
+                    // Clear the recharge amount
+                    setRechargeAmount('');
+                    // Reload wallet balance and history
+                    load();
+                }
+            }
+        });
+    };
+
+    const handlePaymentFailure = (response: PaymentResponse) => {
+        console.log('Payment Failure:', response);
+        setShowPaymentWebView(false);
+
+        Toast.show({
+            type: 'error',
+            text1: 'Payment Failed',
+            text2: response.error_Message || 'Unable to process payment',
+            visibilityTime: 3000,
+        });
+    };
+
+    const handlePaymentCancel = () => {
+        console.log('Payment Cancelled');
+        setShowPaymentWebView(false);
+
+        Toast.show({
+            type: 'info',
+            text1: 'Payment Cancelled',
+            text2: 'You cancelled the payment',
+            visibilityTime: 2000,
+        });
     };
 
     // const handlePaymentPress = (recharge: IRechargeHistoryItem) => {
@@ -140,7 +229,7 @@ const Wallet = (props: any) => {
             >
                 <View style={walletStyles.bottomSheetContent}>
                     <View style={walletStyles.amountInputContainer}>
-                        <Text style={walletStyles.inputLabel}>Enter Amount</Text>
+                        <Text style={walletStyles.inputLabel}>Enter Amount (Min: ₹{PAYUMONEY_CONFIG.MIN_AMOUNT})</Text>
                         <BottomSheetTextInput
                             style={walletStyles.amountInput}
                             placeholder="₹ 0.00"
@@ -157,6 +246,17 @@ const Wallet = (props: any) => {
                     </TouchableOpacity>
                 </View>
             </BSModal>
+
+            {/* Payment WebView Modal */}
+            {paymentParams && (
+                <PaymentWebView
+                    visible={showPaymentWebView}
+                    paymentParams={paymentParams}
+                    onSuccess={handlePaymentSuccess}
+                    onFailure={handlePaymentFailure}
+                    onCancel={handlePaymentCancel}
+                />
+            )}
         </SafeAreaView>
     );
 };
