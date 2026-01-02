@@ -77,8 +77,8 @@ jobs:
       #     cd android
       #     ./gradlew assembleDebug --no-daemon
       
-      # Step 9: Build Release AAB
-      - name: Build Release AAB
+      # Step 9: Build Release APK
+      - name: Build Release APK
         if: |
           github.event.inputs.build_type == 'release' || 
           startsWith(github.ref, 'refs/tags/') || 
@@ -86,7 +86,7 @@ jobs:
         run: |
           cd android
           ./gradlew clean
-          ./gradlew bundleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon
       
       # Step 11: Upload Debug APK as artifact
       # - name: Upload Debug APK
@@ -97,8 +97,8 @@ jobs:
       #     path: android/app/build/outputs/apk/debug/app-debug.apk
       #     retention-days: 30
       
-      # Step 12: Upload Release AAB as artifact
-      - name: Upload Release AAB
+      # Step 12: Upload Release APK as artifact
+      - name: Upload Release APK
         if: |
           github.event.inputs.build_type == 'release' || 
           startsWith(github.ref, 'refs/tags/') || 
@@ -106,8 +106,37 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: android/app/build/outputs/bundle/release/app-release.aab
+          path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 90
+
+      # Step 13: Send Email with APK
+      - name: Send Email
+        if: |
+          github.event.inputs.build_type == 'release' || 
+          startsWith(github.ref, 'refs/tags/') || 
+          (github.event_name == 'push' && github.ref == 'refs/heads/CI_CD_Integration_Testing')
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: 465
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "New Android Build: Release APK"
+          to: utkarsh.bhalotia@busy.in
+          from: GitHub Actions
+          body: "The build for ${{ github.repository }} has completed successfully. Attached is the release APK."
+          attachments: android/app/build/outputs/apk/release/app-release.apk
+
+      # Step 14: Notify Google Chat
+      - name: Notify Google Chat
+        if: |
+          github.event.inputs.build_type == 'release' || 
+          startsWith(github.ref, 'refs/tags/') || 
+          (github.event_name == 'push' && github.ref == 'refs/heads/CI_CD_Integration_Testing')
+        run: |
+          curl -X POST -H 'Content-Type: application/json' \
+          '${{ secrets.GOOGLE_CHAT_WEBHOOK }}' \
+          -d '{"text": "🚀 *New Android Build Successful!*\n*Project:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Build Type:* Release APK\n*Recipient:* sudhanshu.singh@busy.in\n*Notify:* utkarsh.bhalotia@busy.in"}'
       
       # Step 13: Upload to Play Store (Internal Track)
       # - name: Upload to Play Store
