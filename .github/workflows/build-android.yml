@@ -109,7 +109,7 @@ jobs:
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 90
 
-      # Step 13: Send Email with APK
+      # Step 13: Send Email with Download Link
       - name: Send Email
         if: |
           github.event.inputs.build_type == 'release' || 
@@ -121,13 +121,22 @@ jobs:
           server_port: 465
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "New Android Build: Release APK"
+          subject: "New Android Build: Release APK Available"
           to: utkarsh.bhalotia@busy.in
           from: GitHub Actions
-          body: "The build for ${{ github.repository }} has completed successfully. Attached is the release APK."
-          attachments: android/app/build/outputs/apk/release/app-release.apk
+          body: |
+            The build for ${{ github.repository }} has completed successfully.
+            
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            
+            You can download the APK from the GitHub Actions run page:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            (Note: You must be logged into GitHub to download the artifact.)
+          # attachments: android/app/build/outputs/apk/release/app-release.apk
 
-      # Step 14: Notify Google Chat
+      # Step 14: Notify Google Chat with Download Link
       - name: Notify Google Chat
         if: |
           github.event.inputs.build_type == 'release' || 
@@ -136,7 +145,7 @@ jobs:
         run: |
           curl -X POST -H 'Content-Type: application/json' \
           '${{ secrets.GOOGLE_CHAT_WEBHOOK }}' \
-          -d '{"text": "🚀 *New Android Build Successful!*\n*Project:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Build Type:* Release APK\n*Recipient:* sudhanshu.singh@busy.in\n*Notify:* utkarsh.bhalotia@busy.in"}'
+          -d '{"text": "🚀 *New Android Build Successful!*\n*Project:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Build Type:* Release APK\n*Download Link:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n*Notify:* utkarsh.bhalotia@busy.in"}'
       
       # Step 13: Upload to Play Store (Internal Track)
       # - name: Upload to Play Store
