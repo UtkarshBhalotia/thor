@@ -21,7 +21,7 @@ function* UserAuth_Wallet_Balance_Api(actionParam: TUserWalletBalanceParam) {
         );
 
         const dataObj = {
-            UserID: GlobalState.userId,
+            UserID: GlobalState.id,
         }
         const response: IResponseParam = yield call(clientPostHandler, {
             url: projectEnv.walletBalanceUrl,

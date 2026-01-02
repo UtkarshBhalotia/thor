@@ -63,12 +63,12 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x android/gradlew
       
-      # Step 7: Set up release keystore (for release builds)
-      - name: Set up release keystore
-        if: github.event.inputs.build_type == 'release' || startsWith(github.ref, 'refs/tags/')
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
-        continue-on-error: false
+      # Step 7: Set up release keystore (Not needed since ro.jks is committed)
+      # - name: Set up release keystore
+      #   if: github.event.inputs.build_type == 'release' || startsWith(github.ref, 'refs/tags/')
+      #   run: |
+      #     echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+      #   continue-on-error: false
       
       # Step 8: Build Debug APK (default)
       # - name: Build Debug APK
@@ -77,14 +77,9 @@ jobs:
       #     cd android
       #     ./gradlew assembleDebug --no-daemon
       
-      # Step 9: Build Release AAB (when release is selected)
+      # Step 9: Build Release AAB
       - name: Build Release AAB
         if: github.event.inputs.build_type == 'release' || startsWith(github.ref, 'refs/tags/')
-        env:
-          ANDROID_KEYSTORE_FILE: release.keystore
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd android
           ./gradlew bundleRelease --no-daemon
@@ -99,13 +94,13 @@ jobs:
       #     retention-days: 30
       
       # Step 12: Upload Release AAB as artifact
-      # - name: Upload Release AAB
-      #   if: github.event.inputs.build_type == 'release' || startsWith(github.ref, 'refs/tags/')
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: app-release
-      #     path: android/app/build/outputs/bundle/release/app-release.aab
-      #     retention-days: 90
+      - name: Upload Release AAB
+        if: github.event.inputs.build_type == 'release' || startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 90
       
       # Step 13: Upload to Play Store (Internal Track)
       # - name: Upload to Play Store

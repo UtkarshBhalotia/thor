@@ -93,21 +93,10 @@ android {
             keyPassword 'android'
         }
         release {
-            // For CI/CD: Use environment variables
-            // For local: You can create a keystore.properties file
-            if (System.getenv("ANDROID_KEYSTORE_FILE")) {
-                storeFile file(System.getenv("ANDROID_KEYSTORE_FILE"))
-                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
-            } else {
-                // Fallback to debug keystore for local development
-                // TODO: Generate a production keystore for releases
-                storeFile file('debug.keystore')
-                storePassword 'android'
-                keyAlias 'androiddebugkey'
-                keyPassword 'android'
-            }
+            storeFile file('ro.jks')
+            storePassword 'sonu@121#'
+            keyAlias 'key0'
+            keyPassword 'sonu@121#'
         }
     }
     buildTypes {
