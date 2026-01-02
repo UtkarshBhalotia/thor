@@ -1,4 +1,4 @@
-package com.dooda
+package com.roservice.partner
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
