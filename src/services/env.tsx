@@ -2,10 +2,10 @@ export const ENV: 'dev' | 'prod' = 'dev';
 
 export const BASE_ENV = {
     dev: {
-        API_HOST: 'https://crm.dooda.in/MyWebService.asmx/',
+        API_HOST: 'http://103.13.114.225/MyWebService.asmx/',
     },
     prod: {
-        API_HOST: 'https://serviceondoors.com/MyWebService.asmx/',
+        API_HOST: 'https://crm.dooda.in/MyWebService.asmx/',
     },
 };
 

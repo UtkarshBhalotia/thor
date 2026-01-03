@@ -56,7 +56,7 @@ const More = () => {
                     onPress={() => navigation.goBack()}
                     style={moreStyles.backButton}
                 >
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="chevron-back" size={24} color="#1C1F34" />
                 </TouchableOpacity>
                 <Text style={moreStyles.headerTitle}>More</Text>
             </View>

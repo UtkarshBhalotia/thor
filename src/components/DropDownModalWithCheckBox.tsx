@@ -21,9 +21,9 @@ const DropDownModalWithCheckBox = (props: {
     name: string | any;
     isFlatList?: boolean;
 }) => {
-    const { setValue, getValues, watch } = useFormContext();
+    const { setValue, watch } = useFormContext();
 
-    const previousServiceArray = watch('previousService');
+    const dataArray = watch(props.name) || [];
 
     const renderItem = ({ item, index }: any) => {
         return (
@@ -39,27 +39,21 @@ const DropDownModalWithCheckBox = (props: {
                 ]}
                 onPress={() => {
                     // Create a new array with updated checkbox state
-                    const updatedArray = [...previousServiceArray];
+                    const updatedArray = [...dataArray];
                     updatedArray[index] = {
                         ...updatedArray[index],
                         isChecked: !item.isChecked,
                     };
 
                     // Update the form with the new array
-                    setValue('previousService', updatedArray);
+                    setValue(props.name, updatedArray);
 
-                    // Calculate count from checked items
+                    // Optional: Handle count and firstSelectedName if we are in Register flow or similar
+                    // We can check if these fields exist in the form or just update them if they are useful
                     const checkedCount = updatedArray.filter(
                         (serviceItem: any) => serviceItem.isChecked,
                     ).length;
-                    console.log(
-                        'Updated count:',
-                        checkedCount,
-                        'for item:',
-                        item.name,
-                        'isChecked:',
-                        !item.isChecked,
-                    );
+
                     setValue('count', checkedCount);
 
                     // Update first selected name
@@ -96,7 +90,7 @@ const DropDownModalWithCheckBox = (props: {
             scrollViewStyle={{ backgroundColor: undefined }}>
             <BottomSheetView style={{ flex: 1 }}>
                 <BottomSheetFlatList
-                    data={previousServiceArray}
+                    data={dataArray}
                     renderItem={renderItem}
                     enableFooterMarginAdjustment={true}
                     initialNumToRender={15}

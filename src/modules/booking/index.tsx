@@ -190,7 +190,7 @@ const Booking = (props: any) => {
                         justifyContent: 'center',
                         alignItems: 'center',
                     }}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+                    <Ionicons name="chevron-back" size={24} color="#1C1F34" />
                 </TouchableOpacity>
                 <Text style={bookingStyles.headerTitle}>Leads</Text>
             </View>

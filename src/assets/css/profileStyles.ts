@@ -3,92 +3,184 @@ import { StyleSheet } from 'react-native';
 export const profileStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F7F7FB',
+        backgroundColor: '#FFFFFF',
     },
     scrollContent: {
         paddingBottom: 30,
+        paddingHorizontal: 16,
     },
 
-    // Profile Header
-    profileHeader: {
-        backgroundColor: '#FFFFFF',
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        paddingBottom: 20,
+    // Header Section
+    headerContainer: {
+        flexDirection: 'row',
         alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#FFFFFF',
         borderBottomWidth: 1,
         borderBottomColor: '#F0F0F0',
     },
-    avatarContainer: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#5F60B9',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 12,
+    backButton: {
+        padding: 4,
+        marginRight: 12,
     },
-    avatarText: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-    },
-    userName: {
-        fontSize: 22,
-        fontWeight: 'bold',
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: '700',
         color: '#1C1F34',
-        marginBottom: 4,
     },
-    ratingContainer: {
-        flexDirection: 'row',
+
+    // Form Section
+    formSection: {
+        paddingTop: 20,
+    },
+
+    // Profile Photo Section
+    profilePhotoContainer: {
         alignItems: 'center',
-        marginBottom: 8,
+        marginVertical: 10,
+        paddingHorizontal: 20,
     },
-    ratingText: {
+    profilePhotoLabel: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#FF9800',
-        marginLeft: 4,
+        color: '#333',
+        marginBottom: 15,
+        textAlign: 'center',
     },
-    memberSince: {
-        fontSize: 13,
-        color: '#8F8F8F',
-        marginBottom: 12,
-    },
-    locationContainer: {
-        flexDirection: 'row',
+    profilePhotoButton: {
+        position: 'relative',
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: '#F5F5F5',
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        borderStyle: 'dashed',
+        justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 16,
+        overflow: 'hidden',
     },
-    locationText: {
+    profileImage: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+    },
+    profilePhotoPlaceholder: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    profilePhotoIcon: {
+        fontSize: 32,
+        marginBottom: 8,
+    },
+    profilePhotoText: {
+        fontSize: 12,
+        color: '#666',
+        fontWeight: '500',
+    },
+    profilePhotoOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#29B6D1',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#FFFFFF',
+    },
+    profilePhotoOverlayIcon: {
         fontSize: 14,
-        color: '#1C1F34',
-        marginLeft: 6,
+        color: '#FFFFFF',
+    },
+    removePhotoButton: {
+        marginTop: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        backgroundColor: '#FF3B30',
+        borderRadius: 20,
+        alignSelf: 'center',
+    },
+    removePhotoText: {
+        color: '#FFFFFF',
+        fontSize: 12,
+        fontWeight: '600',
+        textAlign: 'center',
     },
 
-    // Stats Row
-    statsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        paddingTop: 16,
-        borderTopWidth: 1,
-        borderTopColor: '#F0F0F0',
-        width: '100%',
+    // Action Buttons
+    updateButton: {
+        backgroundColor: '#29B6D1',
+        paddingVertical: 16,
+        borderRadius: 14,
+        alignItems: 'center',
+        marginTop: 30,
+        marginBottom: 10,
+        shadowColor: '#29B6D1',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
     },
-    statItem: {
+    updateButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '700',
+        letterSpacing: 1,
+    },
+    disabledButton: {
+        backgroundColor: '#CCCCCC',
+        opacity: 0.6,
+    },
+
+    // Upload Modal Styles (from Register)
+    uploadModalContainer: {
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+    },
+    uploadOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        backgroundColor: '#F8F9FA',
+        borderRadius: 12,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    uploadOptionIcon: {
+        fontSize: 24,
+        marginRight: 16,
+    },
+    uploadOptionText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333333',
+    },
+    removeOption: {
+        backgroundColor: '#FFF5F5',
+        borderColor: '#FF3B30',
+    },
+    removeOptionText: {
+        color: '#FF3B30',
+    },
+    modalCloseButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#F0F0F0',
+        justifyContent: 'center',
         alignItems: 'center',
     },
-    statLabel: {
-        fontSize: 11,
-        color: '#8F8F8F',
-        marginBottom: 4,
-    },
-    statValue: {
+    modalCloseText: {
         fontSize: 16,
-        fontWeight: 'bold',
-        color: '#1C1F34',
+        fontWeight: '600',
+        color: '#666666',
     },
-
     // Section
     section: {
         backgroundColor: '#FFFFFF',
