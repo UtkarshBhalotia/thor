@@ -16,14 +16,24 @@ import ReportCard from './components/ReportCard';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { AppDispatch, RootState } from '../../../store';
 import { connect } from 'react-redux';
-import { dashboardActions_dispatch } from '../../../store/action/mainTypedAction';
+import { dashboardActions_dispatch, walletActions_dispatch } from '../../../store/action/mainTypedAction';
 import BSModal from '../../components/BSModal';
 import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { RazorpayService } from '../../services/RazorpayService';
+import { RAZORPAY_CONFIG } from '../../config/razorpayConfig';
+import { validateRechargeAmount, createPaymentParams } from '../../services/payumoneyService';
+import { PayUMoneyParams, PaymentResponse } from '../../config/payumoneyConfig';
+import Toast from 'react-native-toast-message';
+import PaymentWebView from '../wallet/components/PaymentWebView';
 
 const Dashboard = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
     const [rechargeAmount, setRechargeAmount] = useState('');
+    const [selectedGateway, setSelectedGateway] = useState<'payumoney' | 'razorpay'>('payumoney');
+    const [showPaymentWebView, setShowPaymentWebView] = useState(false);
+    const [paymentParams, setPaymentParams] = useState<PayUMoneyParams | null>(null);
 
     // Sample data - replace with actual data from API/Redux
 
@@ -184,9 +194,155 @@ const Dashboard = (props: any) => {
     };
 
     const handleRecharge = () => {
-        console.log('Recharge amount:', rechargeAmount);
-        // Add your recharge logic here
+        // Map recharge type to payment gateway
+        const mappedGateway = selectedGateway === 'razorpay' ? 'razorpay' : 'payumoney';
+
+        // Validate amount
+        const validateService = mappedGateway === 'razorpay' ? RazorpayService : { validateAmount: validateRechargeAmount };
+        const validation = validateService.validateAmount(rechargeAmount);
+
+        if (!validation.valid) {
+            Toast.show({
+                type: 'error',
+                text1: validation.error || 'Invalid amount',
+                visibilityTime: 2000,
+            });
+            return;
+        }
+
+        const amount = parseFloat(rechargeAmount);
+
+        // Get user details from global state
+        const userEmail = props.globalState.email || 'test@example.com';
+        const userName = props.globalState?.name || 'Test User';
+        const userPhone = props.globalState?.mobile || '9999999999';
+        const userId = props.globalState?.userId || '1';
+
+        // Close the recharge modal
         rechargeModalRef.current?.dismiss();
+
+        if (mappedGateway === 'razorpay') {
+            // Open Razorpay Checkout
+            RazorpayService.openCheckout({
+                amount: amount * 100, // Razorpay expects amount in paise
+                email: userEmail,
+                contact: userPhone,
+                name: userName,
+                description: RAZORPAY_CONFIG.PRODUCT_INFO,
+            }).then((response) => {
+                if (response.status === 'success') {
+                    handleRazorpaySuccess(response);
+                } else {
+                    handleRazorpayFailure(response);
+                }
+            });
+        } else {
+            // Create PayUMoney payment parameters
+            const paymentParams = createPaymentParams(
+                amount,
+                userEmail,
+                userName,
+                userPhone,
+                userId
+            );
+
+            console.log('PayUMoney Payment Params:', paymentParams);
+
+            // Set payment params and show WebView
+            setPaymentParams(paymentParams);
+            setShowPaymentWebView(true);
+        }
+    };
+
+    const handleRazorpaySuccess = (response: any) => {
+        console.log('Razorpay Success:', response);
+
+        // Process payment response
+        props.walletActions('Process_Payment_Response', {
+            paymentResponse: {
+                status: 'success',
+                txnid: response.razorpay_payment_id,
+                amount: rechargeAmount,
+                productinfo: RAZORPAY_CONFIG.PRODUCT_INFO,
+                firstname: props.globalState?.name || 'User',
+                email: props.globalState?.email || '',
+                phone: props.globalState?.mobile || '',
+                mihpayid: response.razorpay_payment_id,
+            },
+            callBack: (success: boolean, message: string) => {
+                if (success) {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Payment Successful',
+                        text2: message,
+                        visibilityTime: 3000,
+                    });
+                    // Clear the recharge amount
+                    setRechargeAmount('');
+                    // Reload wallet balance
+                    load();
+                }
+            }
+        });
+    };
+
+    const handleRazorpayFailure = (response: any) => {
+        console.log('Razorpay Failure:', response);
+
+        Toast.show({
+            type: 'error',
+            text1: 'Payment Failed',
+            text2: response.error?.description || 'Unable to process payment',
+            visibilityTime: 3000,
+        });
+    };
+
+    const handlePaymentSuccess = (response: PaymentResponse) => {
+        console.log('Payment Success:', response);
+        setShowPaymentWebView(false);
+
+        // Process payment response
+        props.walletActions('Process_Payment_Response', {
+            paymentResponse: response,
+            callBack: (success: boolean, message: string) => {
+                if (success) {
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Payment Successful',
+                        text2: message,
+                        visibilityTime: 3000,
+                    });
+                    // Clear the recharge amount
+                    setRechargeAmount('');
+                    // Reload wallet balance
+                    load();
+                }
+            }
+        });
+    };
+
+    const handlePaymentFailure = (response: PaymentResponse) => {
+        console.log('Payment Failure:', response);
+        setShowPaymentWebView(false);
+
+        Toast.show({
+            type: 'error',
+            text1: 'Payment Failed',
+            text2: response.error_Message || 'Unable to process payment',
+            visibilityTime: 3000,
+        });
+    };
+
+    const handlePaymentCancel = () => {
+        console.log('Payment Cancelled');
+        setShowPaymentWebView(false);
+
+        Toast.show({
+            type: 'info',
+            text1: 'Payment Cancelled',
+            text2: 'You cancelled the payment',
+            visibilityTime: 2000,
+        });
     };
 
     return (
@@ -219,7 +375,10 @@ const Dashboard = (props: any) => {
                 <WalletCard
                     balance={walletBalance}
                     onPress={() => navigation.navigate('Wallet')}
-                    onRechargePress={() => rechargeModalRef.current?.present()}
+                    onRechargePress={() => {
+                        setSelectedGateway('payumoney');
+                        rechargeModalRef.current?.present();
+                    }}
                 />
 
                 {/* Quick Stats Row - Security Deposit & System Charges */}
@@ -229,6 +388,10 @@ const Dashboard = (props: any) => {
                             key={index}
                             label={stat.label}
                             value={stat.value}
+                            onPress={stat.label === 'Security Deposit' ? () => {
+                                setSelectedGateway('razorpay');
+                                rechargeModalRef.current?.present();
+                            } : undefined}
                         />
                     ))}
                 </View>
@@ -248,7 +411,7 @@ const Dashboard = (props: any) => {
                 {/* Assigned Service List */}
                 <View style={dashboardStyles.sectionHeader}>
                     <Text style={dashboardStyles.sectionTitle}>
-                        Ongoing Services
+                        Ongoing Leads
                     </Text>
                     <TouchableOpacity
                         onPress={() => navigation.navigate('Booking')}>
@@ -306,8 +469,47 @@ const Dashboard = (props: any) => {
             <BSModal
                 bsModalRef={rechargeModalRef}
                 headerTitle="Recharge Wallet"
-                snapPoints={['40%']}>
+                snapPoints={['55%']}>
                 <View style={dashboardStyles.bottomSheetContent}>
+                    <Text style={dashboardStyles.inputLabel}>Select Recharge Type</Text>
+                    <View style={dashboardStyles.gatewayContainer}>
+                        <TouchableOpacity
+                            style={[
+                                dashboardStyles.gatewayOption,
+                                selectedGateway === 'payumoney' && dashboardStyles.gatewayOptionSelected
+                            ]}
+                            onPress={() => setSelectedGateway('payumoney')}
+                        >
+                            <Ionicons
+                                name="wallet-outline"
+                                size={24}
+                                color={selectedGateway === 'payumoney' ? '#5F60B9' : '#1C1F34'}
+                            />
+                            <Text style={[
+                                dashboardStyles.gatewayText,
+                                selectedGateway === 'payumoney' && dashboardStyles.gatewayTextSelected
+                            ]}>Wallet Balance</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[
+                                dashboardStyles.gatewayOption,
+                                selectedGateway === 'razorpay' && dashboardStyles.gatewayOptionSelected
+                            ]}
+                            onPress={() => setSelectedGateway('razorpay')}
+                        >
+                            <Ionicons
+                                name="shield-checkmark-outline"
+                                size={24}
+                                color={selectedGateway === 'razorpay' ? '#5F60B9' : '#1C1F34'}
+                            />
+                            <Text style={[
+                                dashboardStyles.gatewayText,
+                                selectedGateway === 'razorpay' && dashboardStyles.gatewayTextSelected
+                            ]}>Security Deposit</Text>
+                        </TouchableOpacity>
+                    </View>
+
                     <View style={dashboardStyles.amountInputContainer}>
                         <Text style={dashboardStyles.inputLabel}>
                             Enter Amount
@@ -320,6 +522,7 @@ const Dashboard = (props: any) => {
                             onChangeText={setRechargeAmount}
                         />
                     </View>
+
                     <TouchableOpacity
                         style={dashboardStyles.rechargeButton}
                         onPress={handleRecharge}>
@@ -329,6 +532,17 @@ const Dashboard = (props: any) => {
                     </TouchableOpacity>
                 </View>
             </BSModal>
+
+            {/* Payment WebView Modal */}
+            {paymentParams && (
+                <PaymentWebView
+                    visible={showPaymentWebView}
+                    paymentParams={paymentParams}
+                    onSuccess={handlePaymentSuccess}
+                    onFailure={handlePaymentFailure}
+                    onCancel={handlePaymentCancel}
+                />
+            )}
         </SafeAreaView>
     );
 };
@@ -339,7 +553,7 @@ const mapStateToProps = (state: RootState) => ({
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dashboardActions: dashboardActions_dispatch(dispatch),
-    // loginActions_dispatch: loginActions_dispatch(dispatch),
+    walletActions: walletActions_dispatch(dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);
