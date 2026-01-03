@@ -61,7 +61,7 @@ function* Wallet_Balance_Api(actionParam: TUserWalletBalanceParam) {
             response,
             actionParam.callBack,
         );
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* UserAuth_Wallet_Balance_Api_Response(
@@ -89,7 +89,7 @@ function* UserAuth_Wallet_Balance_Api_Response(
                 });
             }
         }
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* Total_Security_Deposit_Api(
@@ -112,7 +112,7 @@ function* Total_Security_Deposit_Api(
             response,
             actionParam.callBack,
         );
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* Total_Security_Deposit_Api_Response(
@@ -137,7 +137,7 @@ function* Total_Security_Deposit_Api_Response(
                 });
             }
         }
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetOnGoingServicesListApi(
@@ -161,7 +161,7 @@ function* GetOnGoingServicesListApi(
             response,
             actionParam.callBack,
         );
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetOnGoingServicesListApi_Response(
@@ -183,7 +183,7 @@ function* GetOnGoingServicesListApi_Response(
                 });
             }
         }
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetLeadDetailByLeadIdApi(
@@ -204,7 +204,7 @@ function* GetLeadDetailByLeadIdApi(
         });
 
         yield GetLeadDetailByLeadIdApi_Response(response, actionParam.callBack);
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetLeadDetailByLeadIdApi_Response(
@@ -227,7 +227,7 @@ function* GetLeadDetailByLeadIdApi_Response(
                 });
             }
         }
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetWorkReportForVendorApi(
@@ -252,7 +252,7 @@ function* GetWorkReportForVendorApi(
             response,
             actionParam.callBack,
         );
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetWorkReportForVendorApi_Response(

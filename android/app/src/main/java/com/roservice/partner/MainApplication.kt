@@ -1,4 +1,4 @@
-package com.dooda
+package com.roservice.partner
 
 import android.app.Application
 import com.facebook.react.PackageList

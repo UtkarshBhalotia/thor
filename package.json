@@ -4,10 +4,16 @@
     "private": true,
     "scripts": {
         "android": "react-native run-android",
+        "android:build:debug": "cd android && ./gradlew assembleDebug",
+        "android:build:release": "cd android && ./gradlew assembleRelease",
+        "android:clean": "cd android && ./gradlew clean",
         "ios": "react-native run-ios",
         "lint": "eslint .",
+        "lint:ci": "eslint . --max-warnings 0",
         "start": "react-native start",
-        "test": "jest"
+        "test": "jest",
+        "test:ci": "jest --coverage --watchAll=false --ci",
+        "type-check": "tsc --noEmit"
     },
     "dependencies": {
         "@gorhom/bottom-sheet": "^4.6.4",
