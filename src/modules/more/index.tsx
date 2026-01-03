@@ -5,14 +5,20 @@ import { moreStyles } from '../../assets/css/moreStyles';
 import ProfileMenuItem from '../profile/components/ProfileMenuItem';
 import { CommonActions, NavigationProp, useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { removeItem, STORAGE_KEYS } from '../../utils/storage';
+import { RootState } from '../../../store';
 
 const More = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const dispatch = useDispatch();
+    const globalState = useSelector((state: RootState) => state.globalState);
 
     const handleAction = (title: string) => {
+        if (title === 'Change password') {
+            navigation.navigate('ChangePassword');
+            return;
+        }
         Alert.alert(title, `Functionality for ${title} coming soon.`);
     };
 
@@ -41,13 +47,39 @@ const More = () => {
         );
     };
 
-    const menuActions = [
+    const businessMenu = [
         { title: 'Tax invoice', ionicon: 'receipt-outline' },
         { title: 'Report', ionicon: 'bar-chart-outline' },
-        { title: 'Help and support', ionicon: 'help-circle-outline' },
+    ];
+
+    const accountMenu = [
         { title: 'Change password', ionicon: 'lock-closed-outline' },
+    ];
+
+    const supportMenu = [
+        { title: 'Help and support', ionicon: 'help-circle-outline' },
         { title: 'Share', ionicon: 'share-social-outline' },
     ];
+
+    const renderMenuSection = (title: string, items: any[]) => (
+        <View style={moreStyles.sectionContainer}>
+            <View style={moreStyles.sectionHeader}>
+                <Text style={moreStyles.sectionTitle}>{title}</Text>
+            </View>
+            <View style={moreStyles.menuCard}>
+                {items.map((item, index) => (
+                    <ProfileMenuItem
+                        key={index}
+                        ionicon={item.ionicon}
+                        title={item.title}
+                        onPress={() => item.title === 'Logout' ? handleLogout() : handleAction(item.title)}
+                    />
+                ))}
+            </View>
+        </View>
+    );
+
+    const userInitial = globalState.name ? globalState.name.charAt(0).toUpperCase() : 'U';
 
     return (
         <SafeAreaView style={moreStyles.container} edges={['top']}>
@@ -65,21 +97,40 @@ const More = () => {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={moreStyles.scrollContent}
             >
-                <View style={moreStyles.section}>
-                    {menuActions.map((item, index) => (
-                        <ProfileMenuItem
-                            key={index}
-                            ionicon={item.ionicon}
-                            title={item.title}
-                            onPress={() => handleAction(item.title)}
-                        />
-                    ))}
-                    <ProfileMenuItem
-                        ionicon="log-out-outline"
-                        title="Logout"
-                        isLogout={true}
+                {/* Profile Header */}
+                <TouchableOpacity
+                    style={moreStyles.profileCard}
+                    onPress={() => navigation.navigate('Profile')}
+                >
+                    <View style={moreStyles.avatarContainer}>
+                        <Text style={moreStyles.avatarText}>{userInitial}</Text>
+                    </View>
+                    <View style={moreStyles.profileInfo}>
+                        <Text style={moreStyles.userName}>{globalState.name || 'User Name'}</Text>
+                        <Text style={moreStyles.userEmail}>{globalState.email || 'user@example.com'}</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color="#ADB5BD" style={moreStyles.editProfileIcon} />
+                </TouchableOpacity>
+
+                {/* Menu Sections */}
+                {renderMenuSection('Business & Reports', businessMenu)}
+                {renderMenuSection('Account Settings', accountMenu)}
+                {renderMenuSection('Support', supportMenu)}
+
+                {/* Logout Button */}
+                <View style={moreStyles.logoutContainer}>
+                    <TouchableOpacity
+                        style={moreStyles.logoutButton}
                         onPress={handleLogout}
-                    />
+                    >
+                        <Ionicons name="log-out-outline" size={20} color="#FF4D4D" style={moreStyles.logoutIcon} />
+                        <Text style={moreStyles.logoutText}>Logout</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Footer */}
+                <View style={moreStyles.footer}>
+                    <Text style={moreStyles.versionText}>Version 1.0.0 (Build 01)</Text>
                 </View>
             </ScrollView>
         </SafeAreaView>

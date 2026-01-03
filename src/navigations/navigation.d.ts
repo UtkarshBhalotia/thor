@@ -9,6 +9,7 @@ type RootStackParamList = {
     Wallet: undefined;
     Profile: undefined;
     More: undefined;
+    ChangePassword: undefined;
 };
 
 type TabParamList = {

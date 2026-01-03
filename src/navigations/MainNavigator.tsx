@@ -9,6 +9,7 @@ import Booking from '../modules/booking';
 import Wallet from '../modules/wallet';
 import Profile from '../modules/profile';
 import More from '../modules/more';
+import ChangePassword from '../modules/changePassword';
 import Onboarding from '../modules/gettingStarted/onboarding';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getItem, STORAGE_KEYS } from '../utils/storage';
@@ -161,6 +162,11 @@ const MainNavigator = () => {
                 <Stack.Screen
                     name="More"
                     component={More}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="ChangePassword"
+                    component={ChangePassword}
                     options={{ headerShown: false }}
                 />
             </Stack.Group>
