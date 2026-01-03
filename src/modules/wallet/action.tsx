@@ -14,6 +14,12 @@ export function* conditionActions<T extends TWalletConditionParamActionName>
         case 'Get_Recharge_History_Api':
             yield call(Get_Recharge_History_Api, actionParam as TGetRechargeHistoryParam);
             break;
+        case 'Initiate_Payment':
+            yield call(Initiate_Payment, actionParam as TInitiatePaymentParam);
+            break;
+        case 'Process_Payment_Response':
+            yield call(Process_Payment_Response, actionParam as TProcessPaymentResponseParam);
+            break;
     }
 }
 
@@ -118,3 +124,86 @@ function* Get_Recharge_History_Api_Response(response: IResponseParam, callBack: 
         callBack([]);
     }
 }
+
+/**
+ * Initiate PayUMoney Payment
+ * This is a mock implementation - in production, call backend to get payment hash
+ */
+function* Initiate_Payment(actionParam: TInitiatePaymentParam) {
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+
+        // Mock API call to backend for payment initialization
+        // In production, send amount and user details to backend
+        // Backend should generate hash and return payment parameters
+        const mockBackendResponse = {
+            success: true,
+            transactionId: `TXN${Date.now()}`,
+            amount: actionParam.amount,
+        };
+
+        if (mockBackendResponse.success) {
+            actionParam.callBack(true, 'Payment initialized successfully');
+        } else {
+            actionParam.callBack(false, 'Failed to initialize payment');
+        }
+
+    } catch (error) {
+        showToast({
+            type: 'error',
+            text1: 'Failed to initiate payment',
+            visibilityTime: 2000,
+        });
+        actionParam.callBack(false, 'Payment initiation failed');
+    }
+}
+
+/**
+ * Process Payment Response
+ * This would verify payment with backend in production
+ */
+function* Process_Payment_Response(actionParam: TProcessPaymentResponseParam) {
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+
+        const { paymentResponse } = actionParam;
+
+        // Mock verification - in production, send response to backend for verification
+        // Backend should verify hash and transaction status with PayUMoney
+        if (paymentResponse && paymentResponse.status === 'success') {
+            const dataObj = {
+                UserID: GlobalState.userId,
+                Amount: paymentResponse.amount,
+                TxnID: paymentResponse.txnid,
+                Remarks: 'Wallet Recharge',
+                AddByUserID: GlobalState.userId,
+            };
+
+            const response: IResponseParam = yield call(clientPostHandler, {
+                url: projectEnv.insertRechargeDetailsUrl,
+                data: dataObj,
+            });
+
+            if (response && response.status === 200) {
+                actionParam.callBack(true, 'Payment completed and wallet updated successfully');
+            } else {
+                actionParam.callBack(false, response.message || 'Payment success but failed to update wallet');
+            }
+        } else {
+            actionParam.callBack(false, paymentResponse?.error_Message || 'Payment failed');
+        }
+
+    } catch (error) {
+        showToast({
+            type: 'error',
+            text1: 'Failed to process payment',
+            visibilityTime: 2000,
+        });
+        actionParam.callBack(false, 'Payment processing failed');
+    }
+}
+
