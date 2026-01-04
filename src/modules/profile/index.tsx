@@ -34,6 +34,8 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { registerActions_dispatch } from '../../../store/action/mainTypedAction';
 
+import LogoutModal from '../../components/LogoutModal';
+
 const Profile = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const dispatch = useDispatch();
@@ -41,6 +43,7 @@ const Profile = (props: any) => {
 
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
     const photoUploadModalRef = useRef<BottomSheetModal>(null);
 
     // State, City data
@@ -201,25 +204,21 @@ const Profile = (props: any) => {
         }, 2000);
     };
 
+    const confirmLogout = async () => {
+        setShowLogoutModal(false);
+        await removeItem(STORAGE_KEYS.USER_INFO);
+        await removeItem(STORAGE_KEYS.AUTH_TOKEN);
+        dispatch({ type: 'GLOBAL_RESET' });
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+            }),
+        );
+    };
+
     const handleLogout = () => {
-        Alert.alert('Logout', 'Are you sure you want to logout?', [
-            { text: 'Cancel', style: 'cancel' },
-            {
-                text: 'Logout',
-                style: 'destructive',
-                onPress: async () => {
-                    await removeItem(STORAGE_KEYS.USER_INFO);
-                    await removeItem(STORAGE_KEYS.AUTH_TOKEN);
-                    dispatch({ type: 'GLOBAL_RESET' });
-                    navigation.dispatch(
-                        CommonActions.reset({
-                            index: 0,
-                            routes: [{ name: 'Login' }],
-                        }),
-                    );
-                },
-            },
-        ]);
+        setShowLogoutModal(true);
     };
 
     return (
@@ -392,6 +391,12 @@ const Profile = (props: any) => {
                     </TouchableOpacity>
                 </View>
             </BSModal>
+            {/* Logout Modal */}
+            <LogoutModal
+                visible={showLogoutModal}
+                onClose={() => setShowLogoutModal(false)}
+                onLogout={confirmLogout}
+            />
         </SafeAreaView>
     );
 };
