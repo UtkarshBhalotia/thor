@@ -19,6 +19,9 @@ export function* conditionActions<T extends TUserLoginConditionParamActionName>(
         case 'ForgotPassword_Api':
             yield ForgotPassword_Api(actionParam as TUserForgotPasswordParam);
             break;
+        case 'Update_User_Password_Api':
+            yield UpdateUserPassword_Api(actionParam as TUpdateUserPasswordParam);
+            break;
         default:
             console.log('nothing to do at user Auth action');
     }
@@ -125,10 +128,10 @@ function* ForgotPassword_Api_Response(response: IResponseParam, callBack?: () =>
     try {
         if (response && response.body) {
             const responseData = response.body;
-            
+
             if (responseData.d) {
-                const parsedData = typeof responseData.d === 'string' 
-                    ? JSON.parse(responseData.d) 
+                const parsedData = typeof responseData.d === 'string'
+                    ? JSON.parse(responseData.d)
                     : responseData.d;
 
                 if (parsedData.status === true || parsedData.Status === true || parsedData.d === 'Success') {
@@ -164,5 +167,50 @@ function* ForgotPassword_Api_Response(response: IResponseParam, callBack?: () =>
             text1: 'Something went wrong. Please try again.',
             visibilityTime: 2000,
         });
+    }
+}
+
+function* UpdateUserPassword_Api(param: TUpdateUserPasswordParam) {
+    try {
+        const dataObj = {
+            OldPassword: param.oldPassword,
+            NewPassword: param.newPassword,
+            UserID: param.userId,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: `${projectEnv.UpdateUserPasswordUrl}`,
+            data: dataObj,
+        });
+        yield UpdateUserPassword_Api_Response(response, param.callBack);
+    } catch (error) {
+        console.log('UpdateUserPassword_Api error', error);
+        param.callBack(false, 'Something went wrong');
+    }
+}
+
+function* UpdateUserPassword_Api_Response(
+    response: IResponseParam,
+    callBack: (success: boolean, message: string) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+
+            if (responseData.d) {
+                let parsedData = responseData.d;
+                if (parsedData == '1') {
+                    callBack(true, parsedData);
+                } else {
+                    callBack(false, parsedData);
+                }
+            } else {
+                callBack(false, 'Invalid server response');
+            }
+        } else {
+            callBack(false, 'No response from server');
+        }
+    } catch (error) {
+        console.log('UpdateUserPassword_Api_Response error', error);
+        callBack(false, 'Error processing response');
     }
 }

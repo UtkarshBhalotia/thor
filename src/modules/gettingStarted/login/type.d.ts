@@ -1,6 +1,7 @@
 type TUserLoginConditionParamActionName =
     | 'UserAuth_Login_Api'
-    | 'ForgotPassword_Api';
+    | 'ForgotPassword_Api'
+    | 'Update_User_Password_Api';
 
 type TUserLoginConditionParamActionParam<
     T extends TUserLoginConditionParamActionName,
@@ -8,6 +9,8 @@ type TUserLoginConditionParamActionParam<
     ? TUserLoginParam
     : T extends 'ForgotPassword_Api'
     ? TUserForgotPasswordParam
+    : T extends 'Update_User_Password_Api'
+    ? TUpdateUserPasswordParam
     : never;
 
 interface IUserLoginActionConditionParam<
@@ -29,6 +32,13 @@ type TUserLoginParam = {
 type TUserForgotPasswordParam = {
     MobileNo: string;
     callBack?: () => void;
+};
+
+type TUpdateUserPasswordParam = {
+    oldPassword: string;
+    newPassword: string;
+    userId: string;
+    callBack: (success: boolean, message: string) => void;
 };
 
 interface IResponseParam {

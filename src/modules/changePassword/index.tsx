@@ -3,9 +3,9 @@ import {
     View,
     Text,
     ScrollView,
-    Alert,
     TouchableOpacity,
 } from 'react-native';
+import Toast from 'react-native-toast-message';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { changePasswordStyles } from '../../assets/css/changePasswordStyles';
@@ -15,8 +15,12 @@ import {
 } from '@react-navigation/native';
 import { Controller, useForm, FormProvider } from 'react-hook-form';
 import SODTextInput from '../../components/SODTextInput';
+import { connect } from 'react-redux';
+import { loginActions_dispatch } from '../../../store/action/mainTypedAction';
+import { AppDispatch, RootState } from '../../../store';
+import { getItem, setItem, STORAGE_KEYS } from '../../utils/storage';
 
-const ChangePassword = () => {
+const ChangePassword = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [submitting, setSubmitting] = useState(false);
 
@@ -39,21 +43,53 @@ const ChangePassword = () => {
 
     const handleUpdatePassword = (data: any) => {
         if (data.newPassword !== data.recheckPassword) {
-            Alert.alert('Error', 'New password and re-check password do not match');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'New password and re-check password do not match',
+            });
             return;
         }
-
         console.log('Update Password Data:', data);
         setSubmitting(true);
-        // Simulate API call
-        setTimeout(() => {
-            setSubmitting(false);
-            Alert.alert(
-                'Success',
-                'Password updated successfully',
-                [{ text: 'OK', onPress: () => navigation.goBack() }]
-            );
-        }, 2000);
+
+        props.loginActions('Update_User_Password_Api', {
+            oldPassword: data.currentPassword,
+            newPassword: data.newPassword,
+            userId: props.globalState.userId,
+            callBack: async (success: boolean, message: string) => {
+                setSubmitting(false);
+                if (success) {
+                    // Update password in AsyncStorage
+                    try {
+                        const userInfo = await getItem(STORAGE_KEYS.USER_INFO);
+                        if (userInfo) {
+                            userInfo.password = data.newPassword;
+                            await setItem(STORAGE_KEYS.USER_INFO, userInfo);
+                            console.log('Password updated in AsyncStorage');
+                        }
+                    } catch (error) {
+                        console.error('Failed to update password in storage', error);
+                    }
+
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Success',
+                        text2: message === '1' ? 'Password updated successfully' : message,
+                        visibilityTime: 2000,
+                    });
+                    setTimeout(() => {
+                        navigation.goBack();
+                    }, 2000);
+                } else {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Error',
+                        text2: message,
+                    });
+                }
+            }
+        });
     };
 
     return (
@@ -140,4 +176,12 @@ const ChangePassword = () => {
     );
 };
 
-export default ChangePassword;
+const mapStateToProps = (state: RootState) => ({
+    globalState: state.globalState,
+});
+
+const mapDispatchToProps = (dispatch: AppDispatch) => ({
+    loginActions: loginActions_dispatch(dispatch),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ChangePassword);
