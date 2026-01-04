@@ -8,43 +8,41 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
 import { removeItem, STORAGE_KEYS } from '../../utils/storage';
 import { RootState } from '../../../store';
+import LogoutModal from '../../components/LogoutModal';
 
 const More = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const dispatch = useDispatch();
     const globalState = useSelector((state: RootState) => state.globalState);
+    const [showLogoutModal, setShowLogoutModal] = React.useState(false);
 
     const handleAction = (title: string) => {
         if (title === 'Change password') {
             navigation.navigate('ChangePassword');
             return;
         }
+        if (title === 'Report') {
+            navigation.navigate('Report');
+            return;
+        }
         Alert.alert(title, `Functionality for ${title} coming soon.`);
     };
 
-    const handleLogout = () => {
-        Alert.alert(
-            'Logout',
-            'Are you sure you want to logout from this application?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Logout',
-                    style: 'destructive',
-                    onPress: async () => {
-                        await removeItem(STORAGE_KEYS.USER_INFO);
-                        await removeItem(STORAGE_KEYS.AUTH_TOKEN);
-                        dispatch({ type: 'GLOBAL_RESET' });
-                        navigation.dispatch(
-                            CommonActions.reset({
-                                index: 0,
-                                routes: [{ name: 'Login' }],
-                            })
-                        );
-                    },
-                },
-            ]
+    const confirmLogout = async () => {
+        setShowLogoutModal(false);
+        await removeItem(STORAGE_KEYS.USER_INFO);
+        await removeItem(STORAGE_KEYS.AUTH_TOKEN);
+        dispatch({ type: 'GLOBAL_RESET' });
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+            })
         );
+    };
+
+    const handleLogout = () => {
+        setShowLogoutModal(true);
     };
 
     const businessMenu = [
@@ -133,6 +131,12 @@ const More = () => {
                     <Text style={moreStyles.versionText}>Version 1.0.0 (Build 01)</Text>
                 </View>
             </ScrollView>
+
+            <LogoutModal
+                visible={showLogoutModal}
+                onClose={() => setShowLogoutModal(false)}
+                onLogout={confirmLogout}
+            />
         </SafeAreaView>
     );
 };

@@ -11,6 +11,7 @@ import Profile from '../modules/profile';
 import More from '../modules/more';
 import ChangePassword from '../modules/changePassword';
 import Onboarding from '../modules/gettingStarted/onboarding';
+import Report from '../modules/report';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getItem, STORAGE_KEYS } from '../utils/storage';
 import { useDispatch, useSelector } from 'react-redux';
@@ -167,6 +168,11 @@ const MainNavigator = () => {
                 <Stack.Screen
                     name="ChangePassword"
                     component={ChangePassword}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="Report"
+                    component={Report}
                     options={{ headerShown: false }}
                 />
             </Stack.Group>
