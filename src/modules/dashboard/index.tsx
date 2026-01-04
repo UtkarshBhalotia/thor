@@ -213,7 +213,7 @@ const Dashboard = (props: any) => {
         const amount = parseFloat(rechargeAmount);
 
         // Get user details from global state
-        const userEmail = props.globalState.email || 'test@example.com';
+        const userEmail = props.globalState?.email || 'test@example.com';
         const userName = props.globalState?.name || 'Test User';
         const userPhone = props.globalState?.mobile || '9999999999';
         const userId = props.globalState?.userId || '1';
@@ -258,17 +258,9 @@ const Dashboard = (props: any) => {
         console.log('Razorpay Success:', response);
 
         // Process payment response
-        props.walletActions('Process_Payment_Response', {
-            paymentResponse: {
-                status: 'success',
-                txnid: response.razorpay_payment_id,
-                amount: rechargeAmount,
-                productinfo: RAZORPAY_CONFIG.PRODUCT_INFO,
-                firstname: props.globalState?.name || 'User',
-                email: props.globalState?.email || '',
-                phone: props.globalState?.mobile || '',
-                mihpayid: response.razorpay_payment_id,
-            },
+        props.walletActions('Insert_Security_Deposit_Api', {
+            amount: rechargeAmount,
+            txnId: response.razorpay_payment_id,
             callBack: (success: boolean, message: string) => {
                 if (success) {
                     Toast.show({
@@ -279,8 +271,17 @@ const Dashboard = (props: any) => {
                     });
                     // Clear the recharge amount
                     setRechargeAmount('');
-                    // Reload wallet balance
+                    // Dismiss modal
+                    rechargeModalRef.current?.dismiss();
+                    // Reload wallet balance and security deposit
                     load();
+                } else {
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Payment Successful but Update Failed',
+                        text2: message,
+                        visibilityTime: 3000,
+                    });
                 }
             }
         });

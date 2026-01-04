@@ -5,6 +5,7 @@
 
 export const PAYUMONEY_CONFIG = {
     // Merchant Credentials (Test Mode)
+    // Valid Test UPI IDs: success@payu (for success), failure@payu (for failure)
     MERCHANT_KEY: 'I89qgr',
     MERCHANT_SALT: 'BiauCp5XvBooGy3c8dZqbyE1n3eX4n3p',
 

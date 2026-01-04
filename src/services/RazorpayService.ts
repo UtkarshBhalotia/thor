@@ -1,5 +1,6 @@
 import RazorpayCheckout from 'react-native-razorpay';
 import { RAZORPAY_CONFIG, RazorpayResponse } from '../config/razorpayConfig';
+import { Image } from 'react-native';
 
 /**
  * Razorpay Payment Gateway Service
@@ -17,14 +18,14 @@ export const RazorpayService = {
         order_id?: string; // Optional if using basic integration
     }): Promise<RazorpayResponse> => {
         return new Promise((resolve) => {
-            const checkoutOptions = {
+            const logoUri = Image.resolveAssetSource(require('../assets/img/launcher.png')).uri;
+            const checkoutOptions: any = {
                 description: options.description,
-                image: 'https://i.imgur.com/3g7nmJC.png', // Replace with your logo URL
+                image: logoUri,
                 currency: RAZORPAY_CONFIG.CURRENCY,
                 key: RAZORPAY_CONFIG.KEY_ID,
-                amount: options.amount,
+                amount: Math.round(options.amount), // Ensure amount is an integer
                 name: RAZORPAY_CONFIG.APP_NAME,
-                order_id: options.order_id, // If you have order_id from backend
                 prefill: {
                     email: options.email,
                     contact: options.contact,
@@ -34,6 +35,10 @@ export const RazorpayService = {
                     color: RAZORPAY_CONFIG.THEME_COLOR
                 }
             };
+
+            if (options.order_id) {
+                checkoutOptions.order_id = options.order_id;
+            }
 
             RazorpayCheckout.open(checkoutOptions)
                 .then((data: any) => {

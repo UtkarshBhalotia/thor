@@ -20,6 +20,47 @@ export function* conditionActions<T extends TWalletConditionParamActionName>
         case 'Process_Payment_Response':
             yield call(Process_Payment_Response, actionParam as TProcessPaymentResponseParam);
             break;
+        case 'Insert_Security_Deposit_Api':
+            yield call(Insert_Security_Deposit_Api, actionParam as TInsertSecurityDepositParam);
+            break;
+    }
+}
+
+function* Insert_Security_Deposit_Api(actionParam: TInsertSecurityDepositParam) {
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+
+        const dataObj = {
+            SecurityID: '0',
+            UserID: GlobalState.userId,
+            Amount: actionParam.amount,
+            TxnID: actionParam.txnId,
+            Remarks: 'Razorpay Payment Gateway',
+            AddByUserID: GlobalState.userId,
+        };
+
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.insertSecurityDepositUrl,
+            data: dataObj,
+        });
+
+        if (response && response.status === 200) {
+            // Assuming success if status is 200. Check response body if needed.
+            // Typically response.body.d would contain "1" or success message for these ASMX services
+            actionParam.callBack(true, 'Security deposit updated successfully');
+        } else {
+            actionParam.callBack(false, response.message || 'Failed to update security deposit');
+        }
+
+    } catch (error) {
+        showToast({
+            type: 'error',
+            text1: 'Failed to update security deposit',
+            visibilityTime: 2000,
+        });
+        actionParam.callBack(false, 'Security deposit update failed');
     }
 }
 
@@ -176,6 +217,7 @@ function* Process_Payment_Response(actionParam: TProcessPaymentResponseParam) {
         // Backend should verify hash and transaction status with PayUMoney
         if (paymentResponse && paymentResponse.status === 'success') {
             const dataObj = {
+                RechargeID: '0',
                 UserID: GlobalState.userId,
                 Amount: paymentResponse.amount,
                 TxnID: paymentResponse.txnid,

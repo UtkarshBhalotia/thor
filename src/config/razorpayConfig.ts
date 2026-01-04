@@ -5,15 +5,15 @@
 export const RAZORPAY_CONFIG = {
     // Razorpay API Key ID (Get this from Razorpay Dashboard)
     // Replace with your actual Key ID
-    KEY_ID: 'rzp_test_YOUR_KEY_ID',
+    KEY_ID: 'rzp_test_iv0ZP6rWVRisPk',
 
     // Environment
     IS_PRODUCTION: false,
 
     // Default values
     CURRENCY: 'INR',
-    APP_NAME: 'Dooda',
-    PRODUCT_INFO: 'Wallet Recharge',
+    APP_NAME: 'SOD Partner App',
+    PRODUCT_INFO: 'Security Deposit',
 
     // Minimum and maximum recharge amounts
     MIN_AMOUNT: 1,
