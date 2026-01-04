@@ -119,11 +119,8 @@ export const profileStyles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 30,
         marginBottom: 10,
-        shadowColor: '#29B6D1',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 6,
+        // shadowColor: '#29B6D1',
+        elevation: 0,
     },
     updateButtonText: {
         color: '#FFFFFF',

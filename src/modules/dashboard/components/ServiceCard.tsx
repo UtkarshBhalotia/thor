@@ -523,11 +523,8 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         flexDirection: 'row',
         overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        elevation: 3,
+        // shadowColor: '#000',
+        elevation: 0,
     },
     accentStrip: {
         width: 4,

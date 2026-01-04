@@ -3,14 +3,14 @@ import { StyleSheet } from 'react-native';
 export const bookingStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#F5F6FA',
     },
     header: {
         paddingHorizontal: 20,
         paddingVertical: 15,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#F5F6FA',
         borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        borderBottomColor: '#EAEAF0',
     },
     headerTitle: {
         fontSize: 20,
@@ -20,7 +20,7 @@ export const bookingStyles = StyleSheet.create({
 
     // Tab Filter Section
     tabContainer: {
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#F5F6FA',
         paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: '#F0F0F0',
@@ -77,11 +77,8 @@ export const bookingStyles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
         borderColor: '#E0E0E0',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        // shadowColor: '#000',
+        elevation: 0,
     },
     bookingHeader: {
         flexDirection: 'row',

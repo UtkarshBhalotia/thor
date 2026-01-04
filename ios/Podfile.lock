@@ -22,6 +22,9 @@ PODS:
     - PayUIndia-CrashReporter (~> 4.0)
     - PayUIndia-NetworkReachability (~> 2.1)
     - PayUIndia-PayUParams (~> 6.8)
+  - razorpay-core-pod (1.0.4)
+  - razorpay-pod (1.5.0):
+    - razorpay-core-pod
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -1316,6 +1319,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-razorpay (2.3.1):
+    - razorpay-pod (= 1.5.0)
+    - React
   - react-native-restart (0.0.27):
     - React-Core
   - react-native-safe-area-context (5.6.1):
@@ -2037,6 +2043,7 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-keyboard-controller (from `../node_modules/react-native-keyboard-controller`)
+  - react-native-razorpay (from `../node_modules/react-native-razorpay`)
   - react-native-restart (from `../node_modules/react-native-restart`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-webview (from `../node_modules/react-native-webview`)
@@ -2086,6 +2093,8 @@ SPEC REPOS:
     - PayUIndia-NetworkReachability
     - PayUIndia-PayUParams
     - PayUIndia-PG-SDK
+    - razorpay-core-pod
+    - razorpay-pod
     - SocketRocket
 
 EXTERNAL SOURCES:
@@ -2172,6 +2181,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-picker"
   react-native-keyboard-controller:
     :path: "../node_modules/react-native-keyboard-controller"
+  react-native-razorpay:
+    :path: "../node_modules/react-native-razorpay"
   react-native-restart:
     :path: "../node_modules/react-native-restart"
   react-native-safe-area-context:
@@ -2270,6 +2281,8 @@ SPEC CHECKSUMS:
   PayUIndia-NetworkReachability: 581c04b9ea3a8aaa78faef179ad819759942f381
   PayUIndia-PayUParams: b74ebe4f1def26de4998e1ae86deb192cb7cb6fe
   PayUIndia-PG-SDK: 958e1fa7eee3ef2e9a33ad34fd4fbb8a79f35c27
+  razorpay-core-pod: a5ee92704a114e9468436dcba9d9b6222f6d9899
+  razorpay-pod: f634f1b8397eb54d547f25d35291f679545ddf17
   RCT-Folly: 36fe2295e44b10d831836cc0d1daec5f8abcf809
   RCTDeprecation: b2eecf2d60216df56bc5e6be5f063826d3c1ee35
   RCTRequired: 78522de7dc73b81f3ed7890d145fa341f5bb32ea
@@ -2302,6 +2315,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 663bc64e3a96c5fc91081923ae7481adc1359a78
   react-native-image-picker: fb2d12cb86e0b3e58caee9aa660ddbd5742c841c
   react-native-keyboard-controller: aa67d2de4f5e08f890ee491351f333ca73533b81
+  react-native-razorpay: 41a407f4367b5b0e1bba89a77f9cab1918860844
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
   react-native-safe-area-context: ad7b31de8373577e003e700340b746fd5645b12c
   react-native-webview: 4c1156463f8031c30ea99262317ac3d0a5940211

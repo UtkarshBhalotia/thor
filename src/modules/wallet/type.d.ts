@@ -2,7 +2,8 @@ type TWalletConditionParamActionName =
     | 'Wallet_Balance_Api'
     | 'Get_Recharge_History_Api'
     | 'Initiate_Payment'
-    | 'Process_Payment_Response';
+    | 'Process_Payment_Response'
+    | 'Insert_Security_Deposit_Api';
 
 interface IWalletActionConditionParam<
     T extends TWalletConditionParamActionName,
@@ -32,11 +33,18 @@ type TProcessPaymentResponseParam = {
     callBack: (success: boolean, message: string) => void;
 };
 
+type TInsertSecurityDepositParam = {
+    amount: string;
+    txnId: string;
+    callBack: (success: boolean, message: string) => void;
+};
+
 type TWalletConditionParamActionParam<T extends TWalletConditionParamActionName> =
     T extends 'Wallet_Balance_Api' ? TWalletBalanceParam :
     T extends 'Get_Recharge_History_Api' ? TGetRechargeHistoryParam :
     T extends 'Initiate_Payment' ? TInitiatePaymentParam :
     T extends 'Process_Payment_Response' ? TProcessPaymentResponseParam :
+    T extends 'Insert_Security_Deposit_Api' ? TInsertSecurityDepositParam :
     never;
 
 interface IRechargeHistoryItem {

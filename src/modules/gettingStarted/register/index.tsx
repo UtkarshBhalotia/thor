@@ -936,7 +936,7 @@ const Register = (props: any) => {
                                                                 style={[
                                                                     styles.verifyButton,
                                                                     otpSending &&
-                                                                        styles.verifyButtonDisabled,
+                                                                    styles.verifyButtonDisabled,
                                                                 ]}
                                                                 onPress={
                                                                     handleSendOTP
@@ -951,7 +951,7 @@ const Register = (props: any) => {
                                                                     style={[
                                                                         styles.verifyButtonText,
                                                                         otpSending &&
-                                                                            styles.verifyButtonTextDisabled,
+                                                                        styles.verifyButtonTextDisabled,
                                                                     ]}>
                                                                     {otpSending
                                                                         ? 'Sending...'
@@ -1555,7 +1555,7 @@ const Register = (props: any) => {
                                     <View
                                         style={styles.documentUploadContainer}>
                                         {watchedValues.gstin &&
-                                        watchedValues.gstin.trim() !== '' ? (
+                                            watchedValues.gstin.trim() !== '' ? (
                                             <>
                                                 <Text
                                                     style={
@@ -1605,19 +1605,19 @@ const Register = (props: any) => {
                                                 }
                                                 onPress={() =>
                                                     watchedValues.gstin &&
-                                                    watchedValues.gstin.trim() !==
+                                                        watchedValues.gstin.trim() !==
                                                         ''
                                                         ? handleDocumentUpload(
-                                                              'gstCertificate',
-                                                          )
+                                                            'gstCertificate',
+                                                        )
                                                         : handleDocumentUpload(
-                                                              'panCard',
-                                                          )
+                                                            'panCard',
+                                                        )
                                                 }
                                                 activeOpacity={0.8}>
                                                 {(
                                                     watchedValues.gstin &&
-                                                    watchedValues.gstin.trim() !==
+                                                        watchedValues.gstin.trim() !==
                                                         ''
                                                         ? gstCertificate
                                                         : panCard
@@ -1626,12 +1626,12 @@ const Register = (props: any) => {
                                                         source={{
                                                             uri:
                                                                 watchedValues.gstin &&
-                                                                watchedValues.gstin.trim() !==
+                                                                    watchedValues.gstin.trim() !==
                                                                     ''
                                                                     ? gstCertificate ||
-                                                                      ''
+                                                                    ''
                                                                     : panCard ||
-                                                                      '',
+                                                                    '',
                                                         }}
                                                         style={
                                                             styles.documentPreview
@@ -1648,7 +1648,7 @@ const Register = (props: any) => {
                                                                 styles.documentIcon
                                                             }>
                                                             {watchedValues.gstin &&
-                                                            watchedValues.gstin.trim() !==
+                                                                watchedValues.gstin.trim() !==
                                                                 ''
                                                                 ? '🏢'
                                                                 : '💳'}
@@ -1658,7 +1658,7 @@ const Register = (props: any) => {
                                                                 styles.documentPlaceholderText
                                                             }>
                                                             {watchedValues.gstin &&
-                                                            watchedValues.gstin.trim() !==
+                                                                watchedValues.gstin.trim() !==
                                                                 ''
                                                                 ? 'GST Certificate'
                                                                 : 'PAN Card'}
@@ -1675,7 +1675,7 @@ const Register = (props: any) => {
                                                         }>
                                                         {(
                                                             watchedValues.gstin &&
-                                                            watchedValues.gstin.trim() !==
+                                                                watchedValues.gstin.trim() !==
                                                                 ''
                                                                 ? gstCertificate
                                                                 : panCard
@@ -1686,33 +1686,33 @@ const Register = (props: any) => {
                                                 </View>
                                             </TouchableOpacity>
                                             {(watchedValues.gstin &&
-                                            watchedValues.gstin.trim() !== ''
+                                                watchedValues.gstin.trim() !== ''
                                                 ? gstCertificate
                                                 : panCard) && (
-                                                <TouchableOpacity
-                                                    style={
-                                                        styles.removeDocumentButton
-                                                    }
-                                                    onPress={() =>
-                                                        watchedValues.gstin &&
-                                                        watchedValues.gstin.trim() !==
-                                                            ''
-                                                            ? handleRemoveDocument(
-                                                                  'gstCertificate',
-                                                              )
-                                                            : handleRemoveDocument(
-                                                                  'panCard',
-                                                              )
-                                                    }
-                                                    activeOpacity={0.7}>
-                                                    <Text
+                                                    <TouchableOpacity
                                                         style={
-                                                            styles.removeDocumentText
-                                                        }>
-                                                        Remove
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            )}
+                                                            styles.removeDocumentButton
+                                                        }
+                                                        onPress={() =>
+                                                            watchedValues.gstin &&
+                                                                watchedValues.gstin.trim() !==
+                                                                ''
+                                                                ? handleRemoveDocument(
+                                                                    'gstCertificate',
+                                                                )
+                                                                : handleRemoveDocument(
+                                                                    'panCard',
+                                                                )
+                                                        }
+                                                        activeOpacity={0.7}>
+                                                        <Text
+                                                            style={
+                                                                styles.removeDocumentText
+                                                            }>
+                                                            Remove
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                )}
                                         </View>
                                     </View>
                                 </View>
@@ -1729,7 +1729,7 @@ const Register = (props: any) => {
                                             style={[
                                                 styles.checkbox,
                                                 acceptTerms &&
-                                                    styles.checkboxChecked,
+                                                styles.checkboxChecked,
                                             ]}>
                                             {acceptTerms && (
                                                 <Text style={styles.checkmark}>
@@ -1759,7 +1759,7 @@ const Register = (props: any) => {
                                     style={[
                                         registerPageStyles.signupButton,
                                         !isSignupEnabled &&
-                                            styles.disabledButton,
+                                        styles.disabledButton,
                                     ]}
                                     onPress={handleSubmit(onSignupPress)}
                                     disabled={submitting || !isSignupEnabled}>
@@ -1767,7 +1767,7 @@ const Register = (props: any) => {
                                         style={[
                                             registerPageStyles.signupButtonText,
                                             !isSignupEnabled &&
-                                                styles.disabledButtonText,
+                                            styles.disabledButtonText,
                                         ]}>
                                         {submitting
                                             ? 'PROCESSING...'
@@ -1828,7 +1828,7 @@ const Register = (props: any) => {
                                 (!otpCode ||
                                     otpCode.length !== 6 ||
                                     otpVerifying) &&
-                                    styles.otpButtonDisabled,
+                                styles.otpButtonDisabled,
                             ]}
                             onPress={handleVerifyOTP}
                             disabled={
@@ -1841,7 +1841,7 @@ const Register = (props: any) => {
                                     (!otpCode ||
                                         otpCode.length !== 6 ||
                                         otpVerifying) &&
-                                        styles.otpButtonTextDisabled,
+                                    styles.otpButtonTextDisabled,
                                 ]}>
                                 {otpVerifying ? 'Verifying...' : 'Verify OTP'}
                             </Text>
@@ -1856,7 +1856,7 @@ const Register = (props: any) => {
                                 style={[
                                     styles.resendButtonText,
                                     otpSending &&
-                                        styles.resendButtonTextDisabled,
+                                    styles.resendButtonTextDisabled,
                                 ]}>
                                 {otpSending ? 'Sending...' : 'Resend OTP'}
                             </Text>
@@ -1985,11 +1985,8 @@ const registerPageStyles = {
         marginHorizontal: 16,
         borderRadius: 24,
         padding: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.1,
-        shadowRadius: 24,
-        elevation: 8,
+        // shadowColor: '#000',
+        elevation: 0,
     },
     signinContainer: {
         flexDirection: 'row' as const,
@@ -2016,11 +2013,8 @@ const registerPageStyles = {
         alignItems: 'center' as const,
         marginTop: 20,
         marginBottom: 10,
-        shadowColor: '#29B6D1',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 6,
+        // shadowColor: '#29B6D1',
+        elevation: 0,
     },
     signupButtonText: {
         color: '#FFFFFF',

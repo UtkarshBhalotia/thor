@@ -27,11 +27,7 @@ export const walletStyles = StyleSheet.create({
         marginVertical: 20,
         padding: 24,
         borderRadius: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 6,
+        // shadowColor: '#000',
     },
     balanceLabel: {
         fontSize: 14,
@@ -82,11 +78,7 @@ export const walletStyles = StyleSheet.create({
         borderRadius: 12,
         borderWidth: 1,
         borderColor: '#E0E0E0',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
+        // shadowColor: '#000',
     },
     paymentHeader: {
         flexDirection: 'row',
@@ -261,5 +253,34 @@ export const walletStyles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    // Gateway Selection
+    gatewayContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    gatewayOption: {
+        flex: 1,
+        backgroundColor: '#F7F7FB',
+        borderRadius: 12,
+        padding: 15,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        marginHorizontal: 5,
+    },
+    gatewayOptionSelected: {
+        borderColor: '#5F60B9',
+        backgroundColor: '#F0F0FF',
+    },
+    gatewayText: {
+        marginTop: 8,
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#1C1F34',
+    },
+    gatewayTextSelected: {
+        color: '#5F60B9',
     },
 });
