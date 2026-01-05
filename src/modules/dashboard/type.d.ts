@@ -1,6 +1,7 @@
 type TUserDashboardConditionParamActionName =
     | 'Wallet_Balance_Api'
     | 'Total_Security_Deposit_Api'
+    | 'Get_All_Type_Vendor_Balance_Api'
     | 'Get_OnGoing_Services_List_Api'
     | 'Get_New_Leads_List_Api'
     | 'Get_Completed_Services_List_Api'
@@ -22,6 +23,13 @@ type TUserWalletBalanceParam = {
 };
 type TUserTotalSecurityDepositParam = {
     callBack: (data: { DepositeAmt: string; MaintenanceAmt: string }) => void;
+};
+type TUserGetAllTypeVendorBalanceParam = {
+    callBack: (data: {
+        walletBalance: string;
+        securityDeposit: string;
+        systemCharges: string;
+    }) => void;
 };
 type TUserGetOnGoingServicesListParam = {
     callBack: (data: any) => void;
@@ -54,6 +62,8 @@ type TUserDashboardConditionParamActionParam<
     ? TUserWalletBalanceParam
     : T extends 'Total_Security_Deposit_Api'
     ? TUserTotalSecurityDepositParam
+    : T extends 'Get_All_Type_Vendor_Balance_Api'
+    ? TUserGetAllTypeVendorBalanceParam
     : T extends 'Get_OnGoing_Services_List_Api'
     ? TUserGetOnGoingServicesListParam
     : T extends 'Get_New_Leads_List_Api'

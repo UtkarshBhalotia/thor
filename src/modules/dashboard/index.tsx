@@ -110,23 +110,26 @@ const Dashboard = (props: any) => {
     }, []);
 
     const load = () => {
-        props.dashboardActions('Wallet_Balance_Api', {
-            callBack: (wB: any) => {
-                setWalletBalance(wB);
-                props.dashboardActions('Total_Security_Deposit_Api', {
-                    callBack: (data: any) => {
-                        setTotalSecurityDeposit(data);
-                        fetchReportData();
-                        props.dashboardActions(
-                            'Get_OnGoing_Services_List_Api',
-                            {
-                                callBack: (data: any) => {
-                                    setAssignedServices(data);
-                                },
-                            },
-                        );
-                    },
+        props.dashboardActions('Get_All_Type_Vendor_Balance_Api', {
+            callBack: (data: {
+                walletBalance: string;
+                securityDeposit: string;
+                systemCharges: string;
+            }) => {
+                setWalletBalance(data.walletBalance);
+                setTotalSecurityDeposit({
+                    DepositeAmt: data.securityDeposit,
+                    MaintenanceAmt: data.systemCharges,
                 });
+                fetchReportData();
+                props.dashboardActions(
+                    'Get_OnGoing_Services_List_Api',
+                    {
+                        callBack: (data: any) => {
+                            setAssignedServices(data);
+                        },
+                    },
+                );
             },
         });
     };

@@ -23,6 +23,12 @@ export function* conditionActions<
                 actionParam as TUserTotalSecurityDepositParam,
             );
             break;
+        case 'Get_All_Type_Vendor_Balance_Api':
+            yield call(
+                Get_All_Type_Vendor_Balance_Api,
+                actionParam as TUserGetAllTypeVendorBalanceParam,
+            );
+            break;
         case 'Get_OnGoing_Services_List_Api':
             yield call(
                 GetOnGoingServicesListApi,
@@ -136,6 +142,69 @@ function* Total_Security_Deposit_Api_Response(
                     visibilityTime: 2000,
                 });
             }
+        }
+    } catch (error) { }
+}
+
+function* Get_All_Type_Vendor_Balance_Api(
+    actionParam: TUserGetAllTypeVendorBalanceParam,
+) {
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+        const dataObj = {
+            data: [{
+                userid: GlobalState.userId,
+            }],
+        };
+
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.getAllTypeVendorBalanceUrl,
+            data: dataObj,
+        });
+
+        yield Get_All_Type_Vendor_Balance_Api_Response(
+            response,
+            actionParam.callBack,
+        );
+    } catch (error) { }
+}
+
+function* Get_All_Type_Vendor_Balance_Api_Response(
+    response: IResponseParam,
+    callBack: (data: {
+        walletBalance: string;
+        securityDeposit: string;
+        systemCharges: string;
+    }) => void,
+) {
+    try {
+        if (response.body.status === 'success') {
+            const responseData = response.body.data.response;
+
+            // Extract balance data from the API response
+            const walletBalance = String(responseData.Balance || 0);
+            const securityDeposit = String(responseData.DepositeAmt || 0);
+            const systemCharges = String(responseData.MaintenanceAmt || 0);
+
+            callBack({
+                walletBalance,
+                securityDeposit,
+                systemCharges,
+            });
+
+        } else if (response.body.status === 'error') {
+            callBack({
+                walletBalance: '0',
+                securityDeposit: '0',
+                systemCharges: '0',
+            });
+            showToast({
+                type: 'error',
+                text1: 'Something Went Wrong. Please Try Again Later.',
+                visibilityTime: 2000,
+            });
         }
     } catch (error) { }
 }
