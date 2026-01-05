@@ -24,21 +24,21 @@ interface Slide {
 const slides: Slide[] = [
     {
         id: '1',
-        title: 'Manage Leads Easily',
+        title: 'Manage Reports',
         description: 'Track your bookings and service requests in one place with our intuitive dashboard.',
-        image: require('../../../assets/img/onboarding_leads.png'),
+        image: require('../../../assets/img/manage_reports.png'),
     },
     {
         id: '2',
-        title: 'Track Your Earnings',
+        title: 'Track leads',
         description: 'Real-time updates on your wallet balance and detailed transaction history.',
-        image: require('../../../assets/img/onboarding_earnings.png'),
+        image: require('../../../assets/img/track_leads.png'),
     },
     {
         id: '3',
-        title: 'Stay Organized',
+        title: 'Increase Revenue',
         description: 'Manage your profile and access all features quickly with our modern menu.',
-        image: require('../../../assets/img/onboarding_profile.png'),
+        image: require('../../../assets/img/increase_revenue.png'),
     },
 ];
 

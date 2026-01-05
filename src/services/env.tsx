@@ -34,6 +34,7 @@ const apiListing = {
     insertRechargeDetailsUrl: `${BaseUrl}InsertRechargeDetails`,
     insertSecurityDepositUrl: `${BaseUrl}InsertSecurityDetails`,
     UpdateUserPasswordUrl: `${BaseUrl}UpdateUserPassword`,
+    getAllTypeVendorBalanceUrl: `${BaseUrl}api/get_all_type_vendor_balance`,
 
     // PayUMoney endpoints (mock for now, replace with actual backend endpoints when available)
     initiatePaymentUrl: `${BaseUrl}InitiatePayment`, // Will generate payment hash on backend

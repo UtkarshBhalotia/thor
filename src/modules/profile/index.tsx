@@ -7,6 +7,7 @@ import {
     TouchableOpacity,
     Image,
     Platform,
+    StatusBar,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -223,6 +224,7 @@ const Profile = (props: any) => {
 
     return (
         <SafeAreaView style={profileStyles.container} edges={['top']}>
+            <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
             <View style={profileStyles.headerContainer}>
                 <TouchableOpacity
                     style={profileStyles.backButton}

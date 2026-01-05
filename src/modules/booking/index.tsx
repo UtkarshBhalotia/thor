@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     FlatList,
     InteractionManager,
+    StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { bookingStyles } from '../../assets/css/bookingStyles';
@@ -176,6 +177,7 @@ const Booking = (props: any) => {
 
     return (
         <SafeAreaView style={bookingStyles.container} edges={['top']}>
+            <StatusBar backgroundColor="#F5F6FA" barStyle="dark-content" />
             {/* Header */}
             <View
                 style={[

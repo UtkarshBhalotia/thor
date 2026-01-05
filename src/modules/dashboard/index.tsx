@@ -5,6 +5,8 @@ import {
     ScrollView,
     TouchableOpacity,
     InteractionManager,
+    StatusBar,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { dashboardStyles } from '../../assets/css/dashboardStyles';
@@ -348,6 +350,7 @@ const Dashboard = (props: any) => {
 
     return (
         <SafeAreaView style={dashboardStyles.container} edges={['top']}>
+            <StatusBar backgroundColor="#F5F6FA" barStyle="dark-content" />
             {/* Header Section - Fixed at top */}
             <View style={dashboardStyles.headerSection}>
                 <View style={dashboardStyles.headerContent}>
@@ -412,7 +415,7 @@ const Dashboard = (props: any) => {
                 {/* Assigned Service List */}
                 <View style={dashboardStyles.sectionHeader}>
                     <Text style={dashboardStyles.sectionTitle}>
-                        Ongoing Leads
+                        Ongoing Services
                     </Text>
                     <TouchableOpacity
                         onPress={() => navigation.navigate('Booking')}>
@@ -422,30 +425,53 @@ const Dashboard = (props: any) => {
                     </TouchableOpacity>
                 </View>
 
-                {assignedServices.map((service, index) => (
-                    <ServiceCard
-                        key={index}
-                        leadId={service.LeadID}
-                        leadNo={service.LeadNo}
-                        leadType={service.ServiceTypeName}
-                        leadAmt={service.LeadAmount}
-                        leadStatus={service.LeadStatus as 'Ongoing'}
-                        leadDate={service.LeadDate}
-                        leadCity={service.CityName + ', ' + service.StateName}
-                        leadDescription={service.Desc}
-                        leadBrand={`${service.BrandName} (${service.ModelName})`}
-                        customerName={service.CustomerName}
-                        customerMobile={service.MobileNo}
-                        customerAddress={service.Address}
-                        acceptLeadDate={service.AcceptDate}
-                        onAccept={() => handleAcceptService(service.LeadID)}
-                        onRefuse={() => handleRefuseService(service.LeadID)}
-                        onFollowUp={() => handleFollowUp(service.LeadID)}
-                        onDenied={() => handleDenied(service.LeadID)}
-                        onCompleted={() => handleCompleted(service.LeadID)}
-                        onCustomerDetailsClick={handleCustomerDetailsClick}
-                    />
-                ))}
+                {/* Check if there are no services or all services are empty */}
+                {assignedServices.length === 0 || !assignedServices[0]?.LeadID ? (
+                    <View style={dashboardStyles.emptyStateContainer}>
+                        <Image
+                            source={require('../../assets/img/OnGoingService.png')}
+                            style={dashboardStyles.emptyStateImage}
+                        />
+                        <Text style={dashboardStyles.emptyStateTitle}>
+                            No Ongoing Services
+                        </Text>
+                        <Text style={dashboardStyles.emptyStateDescription}>
+                            You don't have any active services right now. New service requests will appear here once assigned.
+                        </Text>
+                        <TouchableOpacity
+                            style={dashboardStyles.emptyStateButton}
+                            onPress={() => navigation.navigate('Booking')}>
+                            <Text style={dashboardStyles.emptyStateButtonText}>
+                                View New Leads
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    assignedServices.map((service, index) => (
+                        <ServiceCard
+                            key={index}
+                            leadId={service.LeadID}
+                            leadNo={service.LeadNo}
+                            leadType={service.ServiceTypeName}
+                            leadAmt={service.LeadAmount}
+                            leadStatus={service.LeadStatus as 'Ongoing'}
+                            leadDate={service.LeadDate}
+                            leadCity={service.CityName + ', ' + service.StateName}
+                            leadDescription={service.Desc}
+                            leadBrand={`${service.BrandName} (${service.ModelName})`}
+                            customerName={service.CustomerName}
+                            customerMobile={service.MobileNo}
+                            customerAddress={service.Address}
+                            acceptLeadDate={service.AcceptDate}
+                            onAccept={() => handleAcceptService(service.LeadID)}
+                            onRefuse={() => handleRefuseService(service.LeadID)}
+                            onFollowUp={() => handleFollowUp(service.LeadID)}
+                            onDenied={() => handleDenied(service.LeadID)}
+                            onCompleted={() => handleCompleted(service.LeadID)}
+                            onCustomerDetailsClick={handleCustomerDetailsClick}
+                        />
+                    ))
+                )}
 
                 {/* Reviews Section */}
                 {/* <View style={dashboardStyles.sectionHeader}>

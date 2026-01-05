@@ -5,6 +5,7 @@ import {
     ScrollView,
     InteractionManager,
     TouchableOpacity,
+    StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { walletStyles } from '../../assets/css/walletStyles';
@@ -228,6 +229,7 @@ const Wallet = (props: any) => {
 
     return (
         <SafeAreaView style={walletStyles.container} edges={['top']}>
+            <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
             {/* Header with Back Button */}
             <View style={[walletStyles.header, { flexDirection: 'row', alignItems: 'center' }]}>
                 <TouchableOpacity

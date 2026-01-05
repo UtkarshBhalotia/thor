@@ -22,9 +22,9 @@ export const onboardingStyles = StyleSheet.create({
         width: '100%',
     },
     image: {
-        width: width * 0.8,
-        height: width * 0.8,
-        resizeMode: 'contain',
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
     },
     textContainer: {
         flex: 0.4,
@@ -32,15 +32,17 @@ export const onboardingStyles = StyleSheet.create({
         paddingTop: 20,
     },
     title: {
-        fontSize: RFValue(24),
-        fontWeight: 'bold',
-        color: '#333333',
+        fontSize: RFValue(26),
+        fontWeight: '900',
+        color: '#4A90E2',
         textAlign: 'center',
         marginBottom: 15,
+        marginTop: -20,
+
     },
     description: {
-        fontSize: RFValue(16),
-        color: '#666666',
+        fontSize: RFValue(14),
+        color: '#4A90E2',
         textAlign: 'center',
         lineHeight: 24,
     },

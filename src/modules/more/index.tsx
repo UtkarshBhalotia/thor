@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Alert, TouchableOpacity, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moreStyles } from '../../assets/css/moreStyles';
 import ProfileMenuItem from '../profile/components/ProfileMenuItem';
@@ -81,6 +81,7 @@ const More = () => {
 
     return (
         <SafeAreaView style={moreStyles.container} edges={['top']}>
+            <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
             <View style={moreStyles.header}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}

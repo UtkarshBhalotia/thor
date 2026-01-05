@@ -506,4 +506,50 @@ export const dashboardStyles = StyleSheet.create({
         textTransform: 'uppercase',
         letterSpacing: 0.3,
     },
+
+    // Empty State Styles
+    emptyStateContainer: {
+        backgroundColor: '#FFFFFF',
+        marginHorizontal: 20,
+        marginBottom: 15,
+        paddingTop: 8,
+        paddingHorizontal: 24,
+        paddingBottom: 24,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    emptyStateImage: {
+        width: '90%',
+        height: 200,
+        resizeMode: 'cover',
+        marginBottom: 16,
+    },
+    emptyStateTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#1C1F34',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    emptyStateDescription: {
+        fontSize: 14,
+        color: '#8F8F8F',
+        textAlign: 'center',
+        marginBottom: 20,
+        lineHeight: 20,
+        paddingHorizontal: 12,
+    },
+    emptyStateButton: {
+        backgroundColor: '#5F60B9',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    emptyStateButtonText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600',
+    },
 });

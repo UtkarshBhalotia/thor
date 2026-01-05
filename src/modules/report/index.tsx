@@ -7,7 +7,8 @@ import {
     InteractionManager,
     ActivityIndicator,
     Platform,
-    Modal
+    Modal,
+    StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { reportStyles } from '../../assets/css/reportStyles';
@@ -96,13 +97,14 @@ const Report = (props: any) => {
 
     return (
         <SafeAreaView style={reportStyles.container} edges={['top']}>
+            <StatusBar backgroundColor="#F8F9FA" barStyle="dark-content" />
             {/* Header */}
             <View style={reportStyles.header}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={reportStyles.backButton}
                 >
-                    <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+                    <Ionicons name="chevron-back" size={24} color="#1C1F34" />
                 </TouchableOpacity>
                 <Text style={reportStyles.headerTitle}>Report</Text>
             </View>
