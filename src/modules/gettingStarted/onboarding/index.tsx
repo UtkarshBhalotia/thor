@@ -26,7 +26,7 @@ const slides: Slide[] = [
         id: '1',
         title: 'Manage Reports',
         description: 'Track your bookings and service requests in one place with our intuitive dashboard.',
-        image: require('../../../assets/img/manage_reports.png'),
+        image: require('../../../assets/img/manageReports.png'),
     },
     {
         id: '2',
@@ -38,7 +38,7 @@ const slides: Slide[] = [
         id: '3',
         title: 'Increase Revenue',
         description: 'Manage your profile and access all features quickly with our modern menu.',
-        image: require('../../../assets/img/increase_revenue.png'),
+        image: require('../../../assets/img/increaseRevenue.png'),
     },
 ];
 

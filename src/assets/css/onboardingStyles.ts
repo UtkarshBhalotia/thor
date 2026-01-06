@@ -24,7 +24,7 @@ export const onboardingStyles = StyleSheet.create({
     image: {
         width: '100%',
         height: '100%',
-        resizeMode: 'cover',
+        resizeMode: 'contain',
     },
     textContainer: {
         flex: 0.4,

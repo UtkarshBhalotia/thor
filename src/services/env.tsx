@@ -9,6 +9,8 @@ export const BASE_ENV = {
     },
 };
 
+export const NEW_URL = 'http://103.13.114.225/api/'
+
 export const BaseUrl = BASE_ENV[ENV].API_HOST;
 
 const apiListing = {
@@ -34,7 +36,14 @@ const apiListing = {
     insertRechargeDetailsUrl: `${BaseUrl}InsertRechargeDetails`,
     insertSecurityDepositUrl: `${BaseUrl}InsertSecurityDetails`,
     UpdateUserPasswordUrl: `${BaseUrl}UpdateUserPassword`,
-    getAllTypeVendorBalanceUrl: `http://103.13.114.225/api/get_all_type_vendor_balance`,
+    insertLeadCompletedByVendorUrl: `${BaseUrl}LeadCompletedByVendor`,
+    insertLeadFollowUpByVendorUrl: `${BaseUrl}InsertFollowupLeadByVendor`,
+    insertLeadDeniedByVendorUrl: `${BaseUrl}LeadDeniedByVendor`,
+    getVendorMinRechargeAmtUrl: `${BaseUrl}GetVendorMinRechargeAmt`,
+
+    getAllTypeVendorBalanceUrl: `${NEW_URL}/get_all_type_vendor_balance`,
+    getVendorLedgerWithOpeningBalanceUrl: `${NEW_URL}/vendor_ledger_with_opening_balance`,
+
 
     // PayUMoney endpoints (mock for now, replace with actual backend endpoints when available)
     initiatePaymentUrl: `${BaseUrl}InitiatePayment`, // Will generate payment hash on backend
