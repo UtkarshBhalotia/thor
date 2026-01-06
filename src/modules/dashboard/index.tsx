@@ -18,13 +18,20 @@ import ReportCard from './components/ReportCard';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import { AppDispatch, RootState } from '../../../store';
 import { connect } from 'react-redux';
-import { dashboardActions_dispatch, walletActions_dispatch } from '../../../store/action/mainTypedAction';
+import {
+    dashboardActions_dispatch,
+    walletActions_dispatch,
+    bookingActions_dispatch,
+} from '../../../store/action/mainTypedAction';
 import BSModal from '../../components/BSModal';
 import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RazorpayService } from '../../services/RazorpayService';
 import { RAZORPAY_CONFIG } from '../../config/razorpayConfig';
-import { validateRechargeAmount, createPaymentParams } from '../../services/payumoneyService';
+import {
+    validateRechargeAmount,
+    createPaymentParams,
+} from '../../services/payumoneyService';
 import { PayUMoneyParams, PaymentResponse } from '../../config/payumoneyConfig';
 import Toast from 'react-native-toast-message';
 import PaymentWebView from '../wallet/components/PaymentWebView';
@@ -33,9 +40,14 @@ const Dashboard = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
     const [rechargeAmount, setRechargeAmount] = useState('');
-    const [selectedGateway, setSelectedGateway] = useState<'payumoney' | 'razorpay'>('payumoney');
+    const [selectedGateway, setSelectedGateway] = useState<
+        'payumoney' | 'razorpay'
+    >('payumoney');
     const [showPaymentWebView, setShowPaymentWebView] = useState(false);
-    const [paymentParams, setPaymentParams] = useState<PayUMoneyParams | null>(null);
+    const [paymentParams, setPaymentParams] = useState<PayUMoneyParams | null>(
+        null,
+    );
+    const [minRechargeAmount, setMinRechargeAmount] = useState<string>('');
 
     // Sample data - replace with actual data from API/Redux
 
@@ -122,14 +134,27 @@ const Dashboard = (props: any) => {
                     MaintenanceAmt: data.systemCharges,
                 });
                 fetchReportData();
-                props.dashboardActions(
-                    'Get_OnGoing_Services_List_Api',
-                    {
-                        callBack: (data: any) => {
-                            setAssignedServices(data);
-                        },
+                props.dashboardActions('Get_OnGoing_Services_List_Api', {
+                    callBack: (data: any) => {
+                        setAssignedServices(data);
                     },
-                );
+                });
+            },
+        });
+    };
+
+    const refreshOngoingServices = () => {
+        props.dashboardActions('Get_OnGoing_Services_List_Api', {
+            callBack: (data: any) => {
+                setAssignedServices(data);
+            },
+        });
+    };
+
+    const fetchMinRechargeAmount = () => {
+        props.walletActions('Get_Vendor_Min_Recharge_Amt_Api', {
+            callBack: (minAmount: string) => {
+                setMinRechargeAmount(minAmount);
             },
         });
     };
@@ -173,19 +198,106 @@ const Dashboard = (props: any) => {
         // Add your refuse logic here
     };
 
-    const handleFollowUp = (serviceId: string) => {
-        console.log('Follow up service:', serviceId);
-        // Add your follow up logic here
+    const handleFollowUp = (
+        leadId: string,
+        data: {
+            nextFollowUpDate: Date;
+            followUpDetails: string;
+        },
+    ) => {
+        const formatDateForApi = (date: Date) => {
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${year}-${month}-${day}`;
+        };
+
+        props.bookingActions('FollowUp_Lead_By_Vendor_Api', {
+            leadId: leadId,
+            desc: data.followUpDetails,
+            nextDate: formatDateForApi(data.nextFollowUpDate),
+            callBack: (success: boolean, message: string) => {
+                if (success) {
+                    refreshOngoingServices();
+                    load();
+                    Toast.show({
+                        type: 'success',
+                        text1: message || 'Follow up added successfully',
+                        visibilityTime: 2000,
+                    });
+                } else {
+                    Toast.show({
+                        type: 'error',
+                        text1: message || 'Failed to add follow up',
+                        visibilityTime: 3000,
+                    });
+                }
+            },
+        });
     };
 
-    const handleDenied = (serviceId: string) => {
-        console.log('Denied service:', serviceId);
-        // Add your denied logic here
+    const handleDenied = (leadId: string, reason: string) => {
+        const lead = assignedServices.find((item) => item.LeadID === leadId);
+        if (lead) {
+            props.bookingActions('Deny_Lead_By_Vendor_Api', {
+                leadId: leadId,
+                reason: reason,
+                amount: lead.LeadAmount || '',
+                callBack: (success: boolean, message: string) => {
+                    if (success) {
+                        refreshOngoingServices();
+                        load();
+                        Toast.show({
+                            type: 'success',
+                            text1: message || 'Lead denied successfully',
+                            visibilityTime: 2000,
+                        });
+                    } else {
+                        Toast.show({
+                            type: 'error',
+                            text1: message || 'Failed to deny lead',
+                            visibilityTime: 3000,
+                        });
+                    }
+                },
+            });
+        }
     };
 
-    const handleCompleted = (serviceId: string) => {
-        console.log('Completed service:', serviceId);
-        // Add your completed logic here
+    const handleCompleted = (
+        leadId: string,
+        data: {
+            totalBillAmount: string;
+            serviceDetails: string;
+            otherRemarks: string;
+        },
+    ) => {
+        const lead = assignedServices.find((item) => item.LeadID === leadId);
+        if (lead) {
+            props.bookingActions('Complete_Lead_By_Vendor_Api', {
+                leadId: leadId,
+                partsDesc: data.serviceDetails,
+                remarks: data.otherRemarks || '',
+                customerAmount: data.totalBillAmount,
+                callBack: (success: boolean, message: string) => {
+                    if (success) {
+                        refreshOngoingServices();
+                        load();
+                        Toast.show({
+                            type: 'success',
+                            text1: message || 'Lead completed successfully',
+                            visibilityTime: 2000,
+                        });
+                    } else {
+                        Toast.show({
+                            type: 'error',
+                            text1: message || 'Failed to complete lead',
+                            visibilityTime: 3000,
+                        });
+                    }
+                },
+            });
+        }
     };
 
     const handleCustomerDetailsClick = (
@@ -200,10 +312,14 @@ const Dashboard = (props: any) => {
 
     const handleRecharge = () => {
         // Map recharge type to payment gateway
-        const mappedGateway = selectedGateway === 'razorpay' ? 'razorpay' : 'payumoney';
+        const mappedGateway =
+            selectedGateway === 'razorpay' ? 'razorpay' : 'payumoney';
 
         // Validate amount
-        const validateService = mappedGateway === 'razorpay' ? RazorpayService : { validateAmount: validateRechargeAmount };
+        const validateService =
+            mappedGateway === 'razorpay'
+                ? RazorpayService
+                : { validateAmount: validateRechargeAmount };
         const validation = validateService.validateAmount(rechargeAmount);
 
         if (!validation.valid) {
@@ -216,6 +332,35 @@ const Dashboard = (props: any) => {
         }
 
         const amount = parseFloat(rechargeAmount);
+
+        // Validate minimum amount for wallet balance recharge
+        if (
+            selectedGateway === 'payumoney' &&
+            minRechargeAmount &&
+            parseFloat(minRechargeAmount) > 0
+        ) {
+            if (amount < parseFloat(minRechargeAmount)) {
+                Toast.show({
+                    type: 'error',
+                    text1: `Minimum recharge amount is ₹ ${minRechargeAmount}`,
+                    visibilityTime: 3000,
+                });
+                return;
+            }
+        }
+
+        // Validate minimum amount for security deposit recharge
+        if (selectedGateway === 'razorpay') {
+            const minSecurityDepositAmount = 5000;
+            if (amount < minSecurityDepositAmount) {
+                Toast.show({
+                    type: 'error',
+                    text1: `Minimum recharge amount is ₹ ${minSecurityDepositAmount}`,
+                    visibilityTime: 3000,
+                });
+                return;
+            }
+        }
 
         // Get user details from global state
         const userEmail = props.globalState?.email || 'test@example.com';
@@ -248,7 +393,7 @@ const Dashboard = (props: any) => {
                 userEmail,
                 userName,
                 userPhone,
-                userId
+                userId,
             );
 
             console.log('PayUMoney Payment Params:', paymentParams);
@@ -288,7 +433,7 @@ const Dashboard = (props: any) => {
                         visibilityTime: 3000,
                     });
                 }
-            }
+            },
         });
     };
 
@@ -323,7 +468,7 @@ const Dashboard = (props: any) => {
                     // Reload wallet balance
                     load();
                 }
-            }
+            },
         });
     };
 
@@ -385,6 +530,7 @@ const Dashboard = (props: any) => {
                     onRechargePress={() => {
                         setSelectedGateway('payumoney');
                         rechargeModalRef.current?.present();
+                        fetchMinRechargeAmount();
                     }}
                 />
 
@@ -395,10 +541,14 @@ const Dashboard = (props: any) => {
                             key={index}
                             label={stat.label}
                             value={stat.value}
-                            onPress={stat.label === 'Security Deposit' ? () => {
-                                setSelectedGateway('razorpay');
-                                rechargeModalRef.current?.present();
-                            } : undefined}
+                            onPress={
+                                stat.label === 'Security Deposit'
+                                    ? () => {
+                                          setSelectedGateway('razorpay');
+                                          rechargeModalRef.current?.present();
+                                      }
+                                    : undefined
+                            }
                         />
                     ))}
                 </View>
@@ -429,7 +579,8 @@ const Dashboard = (props: any) => {
                 </View>
 
                 {/* Check if there are no services or all services are empty */}
-                {assignedServices.length === 0 || !assignedServices[0]?.LeadID ? (
+                {assignedServices.length === 0 ||
+                !assignedServices[0]?.LeadID ? (
                     <View style={dashboardStyles.emptyStateContainer}>
                         <Image
                             source={require('../../assets/img/OnGoingService.png')}
@@ -439,7 +590,8 @@ const Dashboard = (props: any) => {
                             No Ongoing Services
                         </Text>
                         <Text style={dashboardStyles.emptyStateDescription}>
-                            You don't have any active services right now. New service requests will appear here once assigned.
+                            You don't have any active services right now. New
+                            service requests will appear here once assigned.
                         </Text>
                         <TouchableOpacity
                             style={dashboardStyles.emptyStateButton}
@@ -459,7 +611,9 @@ const Dashboard = (props: any) => {
                             leadAmt={service.LeadAmount}
                             leadStatus={service.LeadStatus as 'Ongoing'}
                             leadDate={service.LeadDate}
-                            leadCity={service.CityName + ', ' + service.StateName}
+                            leadCity={
+                                service.CityName + ', ' + service.StateName
+                            }
                             leadDescription={service.Desc}
                             leadBrand={`${service.BrandName} (${service.ModelName})`}
                             customerName={service.CustomerName}
@@ -467,10 +621,18 @@ const Dashboard = (props: any) => {
                             customerAddress={service.Address}
                             acceptLeadDate={service.AcceptDate}
                             onAccept={() => handleAcceptService(service.LeadID)}
-                            onRefuse={() => handleRefuseService(service.LeadID)}
-                            onFollowUp={() => handleFollowUp(service.LeadID)}
-                            onDenied={() => handleDenied(service.LeadID)}
-                            onCompleted={() => handleCompleted(service.LeadID)}
+                            onFollowUp={(data: {
+                                nextFollowUpDate: Date;
+                                followUpDetails: string;
+                            }) => handleFollowUp(service.LeadID, data)}
+                            onDenied={(leadId: string, reason: string) =>
+                                handleDenied(leadId, reason)
+                            }
+                            onCompleted={(data: {
+                                totalBillAmount: string;
+                                serviceDetails: string;
+                                otherRemarks: string;
+                            }) => handleCompleted(service.LeadID, data)}
                             onCustomerDetailsClick={handleCustomerDetailsClick}
                         />
                     ))
@@ -499,50 +661,104 @@ const Dashboard = (props: any) => {
             <BSModal
                 bsModalRef={rechargeModalRef}
                 headerTitle="Recharge Wallet"
-                snapPoints={['55%']}>
+                snapPoints={['55%']}
+                customOnDismiss={() => {
+                    setRechargeAmount('');
+                    setMinRechargeAmount('');
+                }}
+                customHandleChangePosition={(index: number) => {
+                    if (index === 0 && selectedGateway === 'payumoney') {
+                        fetchMinRechargeAmount();
+                    }
+                }}>
                 <View style={dashboardStyles.bottomSheetContent}>
-                    <Text style={dashboardStyles.inputLabel}>Select Recharge Type</Text>
+                    <Text style={dashboardStyles.inputLabel}>
+                        Select Recharge Type
+                    </Text>
                     <View style={dashboardStyles.gatewayContainer}>
                         <TouchableOpacity
                             style={[
                                 dashboardStyles.gatewayOption,
-                                selectedGateway === 'payumoney' && dashboardStyles.gatewayOptionSelected
+                                selectedGateway === 'payumoney' &&
+                                    dashboardStyles.gatewayOptionSelected,
                             ]}
-                            onPress={() => setSelectedGateway('payumoney')}
-                        >
+                            onPress={() => {
+                                setSelectedGateway('payumoney');
+                                fetchMinRechargeAmount();
+                            }}>
                             <Ionicons
                                 name="wallet-outline"
                                 size={24}
-                                color={selectedGateway === 'payumoney' ? '#5F60B9' : '#1C1F34'}
+                                color={
+                                    selectedGateway === 'payumoney'
+                                        ? '#5F60B9'
+                                        : '#1C1F34'
+                                }
                             />
-                            <Text style={[
-                                dashboardStyles.gatewayText,
-                                selectedGateway === 'payumoney' && dashboardStyles.gatewayTextSelected
-                            ]}>Wallet Balance</Text>
+                            <Text
+                                style={[
+                                    dashboardStyles.gatewayText,
+                                    selectedGateway === 'payumoney' &&
+                                        dashboardStyles.gatewayTextSelected,
+                                ]}>
+                                Wallet Balance
+                            </Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={[
                                 dashboardStyles.gatewayOption,
-                                selectedGateway === 'razorpay' && dashboardStyles.gatewayOptionSelected
+                                selectedGateway === 'razorpay' &&
+                                    dashboardStyles.gatewayOptionSelected,
                             ]}
-                            onPress={() => setSelectedGateway('razorpay')}
-                        >
+                            onPress={() => setSelectedGateway('razorpay')}>
                             <Ionicons
                                 name="shield-checkmark-outline"
                                 size={24}
-                                color={selectedGateway === 'razorpay' ? '#5F60B9' : '#1C1F34'}
+                                color={
+                                    selectedGateway === 'razorpay'
+                                        ? '#5F60B9'
+                                        : '#1C1F34'
+                                }
                             />
-                            <Text style={[
-                                dashboardStyles.gatewayText,
-                                selectedGateway === 'razorpay' && dashboardStyles.gatewayTextSelected
-                            ]}>Security Deposit</Text>
+                            <Text
+                                style={[
+                                    dashboardStyles.gatewayText,
+                                    selectedGateway === 'razorpay' &&
+                                        dashboardStyles.gatewayTextSelected,
+                                ]}>
+                                Security Deposit
+                            </Text>
                         </TouchableOpacity>
                     </View>
 
                     <View style={dashboardStyles.amountInputContainer}>
                         <Text style={dashboardStyles.inputLabel}>
                             Enter Amount
+                            {selectedGateway === 'payumoney' &&
+                                minRechargeAmount &&
+                                parseFloat(minRechargeAmount) > 0 && (
+                                    <Text
+                                        style={{
+                                            fontSize: 14,
+                                            color: '#5F60B9',
+                                            fontWeight: '500',
+                                        }}>
+                                        {' '}
+                                        (Minimum: ₹ {minRechargeAmount})
+                                    </Text>
+                                )}
+                            {selectedGateway === 'razorpay' && (
+                                <Text
+                                    style={{
+                                        fontSize: 14,
+                                        color: '#5F60B9',
+                                        fontWeight: '500',
+                                    }}>
+                                    {' '}
+                                    (Minimum: ₹ 5000)
+                                </Text>
+                            )}
                         </Text>
                         <BottomSheetTextInput
                             style={dashboardStyles.amountInput}
@@ -584,6 +800,7 @@ const mapStateToProps = (state: RootState) => ({
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dashboardActions: dashboardActions_dispatch(dispatch),
     walletActions: walletActions_dispatch(dispatch),
+    bookingActions: bookingActions_dispatch(dispatch),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

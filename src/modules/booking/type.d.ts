@@ -1,4 +1,10 @@
-type TUserBookingConditionParamActionName = 'Get_Leads_List_Api' | 'Get_Lead_Detail_By_LeadId_Api' | 'Accept_Lead_By_Vendor_Api';
+type TUserBookingConditionParamActionName =
+    | 'Get_Leads_List_Api'
+    | 'Get_Lead_Detail_By_LeadId_Api'
+    | 'Accept_Lead_By_Vendor_Api'
+    | 'Deny_Lead_By_Vendor_Api'
+    | 'Complete_Lead_By_Vendor_Api'
+    | 'FollowUp_Lead_By_Vendor_Api';
 
 interface IUserBookingActionConditionParam<
     T extends TUserBookingConditionParamActionName,
@@ -26,8 +32,40 @@ type TAcceptLeadByVendorParam = {
     callBack: (success: boolean, message: string) => void;
 };
 
-type TUserBookingConditionParamActionParam<T extends TUserBookingConditionParamActionName> =
-    T extends 'Get_Leads_List_Api' ? TUserGetLeadsListParam :
-    T extends 'Get_Lead_Detail_By_LeadId_Api' ? TUserGetLeadDetailByLeadIdParam :
-    T extends 'Accept_Lead_By_Vendor_Api' ? TAcceptLeadByVendorParam :
-    never;
+type TDenyLeadByVendorParam = {
+    leadId: string;
+    reason: string;
+    amount: string;
+    callBack: (success: boolean, message: string) => void;
+};
+
+type TCompleteLeadByVendorParam = {
+    leadId: string;
+    partsDesc: string;
+    remarks: string;
+    customerAmount: string;
+    callBack: (success: boolean, message: string) => void;
+};
+
+type TFollowUpLeadByVendorParam = {
+    leadId: string;
+    desc: string;
+    nextDate: string;
+    callBack: (success: boolean, message: string) => void;
+};
+
+type TUserBookingConditionParamActionParam<
+    T extends TUserBookingConditionParamActionName,
+> = T extends 'Get_Leads_List_Api'
+    ? TUserGetLeadsListParam
+    : T extends 'Get_Lead_Detail_By_LeadId_Api'
+    ? TUserGetLeadDetailByLeadIdParam
+    : T extends 'Accept_Lead_By_Vendor_Api'
+    ? TAcceptLeadByVendorParam
+    : T extends 'Deny_Lead_By_Vendor_Api'
+    ? TDenyLeadByVendorParam
+    : T extends 'Complete_Lead_By_Vendor_Api'
+    ? TCompleteLeadByVendorParam
+    : T extends 'FollowUp_Lead_By_Vendor_Api'
+    ? TFollowUpLeadByVendorParam
+    : never;

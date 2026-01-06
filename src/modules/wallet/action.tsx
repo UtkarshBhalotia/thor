@@ -23,6 +23,9 @@ export function* conditionActions<T extends TWalletConditionParamActionName>
         case 'Insert_Security_Deposit_Api':
             yield call(Insert_Security_Deposit_Api, actionParam as TInsertSecurityDepositParam);
             break;
+        case 'Get_Vendor_Min_Recharge_Amt_Api':
+            yield call(Get_Vendor_Min_Recharge_Amt_Api, actionParam as TGetVendorMinRechargeAmtParam);
+            break;
     }
 }
 
@@ -246,6 +249,55 @@ function* Process_Payment_Response(actionParam: TProcessPaymentResponseParam) {
             visibilityTime: 2000,
         });
         actionParam.callBack(false, 'Payment processing failed');
+    }
+}
+
+function* Get_Vendor_Min_Recharge_Amt_Api(actionParam: TGetVendorMinRechargeAmtParam) {
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+        const dataObj = {
+            UserID: GlobalState.userId,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.getVendorMinRechargeAmtUrl,
+            data: dataObj,
+        });
+
+        yield Get_Vendor_Min_Recharge_Amt_Api_Response(response, actionParam.callBack);
+    } catch (error) {
+        showToast({
+            type: 'error',
+            text1: 'Failed to fetch minimum recharge amount',
+            visibilityTime: 2000,
+        });
+        actionParam.callBack('0');
+    }
+}
+
+function* Get_Vendor_Min_Recharge_Amt_Api_Response(response: IResponseParam, callBack: (minAmount: string) => void) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+
+            if (responseData.d !== '') {
+                const parsedData = JSON.parse(responseData.d);
+                const minAmount = parsedData.MinAmount || parsedData.minAmount || parsedData || '0';
+                callBack(minAmount.toString());
+            } else {
+                callBack('0');
+            }
+        } else {
+            callBack('0');
+        }
+    } catch (error) {
+        showToast({
+            type: 'error',
+            text1: 'Error processing minimum recharge amount',
+            visibilityTime: 2000,
+        });
+        callBack('0');
     }
 }
 

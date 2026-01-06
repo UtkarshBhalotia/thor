@@ -26,6 +26,24 @@ export function* conditionActions<
                 actionParam as TAcceptLeadByVendorParam,
             );
             break;
+        case 'Deny_Lead_By_Vendor_Api':
+            yield call(
+                DenyLeadByVendorApi,
+                actionParam as TDenyLeadByVendorParam,
+            );
+            break;
+        case 'Complete_Lead_By_Vendor_Api':
+            yield call(
+                CompleteLeadByVendorApi,
+                actionParam as TCompleteLeadByVendorParam,
+            );
+            break;
+        case 'FollowUp_Lead_By_Vendor_Api':
+            yield call(
+                FollowUpLeadByVendorApi,
+                actionParam as TFollowUpLeadByVendorParam,
+            );
+            break;
     }
 }
 
@@ -191,6 +209,174 @@ function* AcceptLeadByVendorApi_Response(
         showToast({
             type: 'error',
             text1: 'An error occurred while accepting the lead',
+            visibilityTime: 3000,
+        });
+    }
+}
+
+function* DenyLeadByVendorApi(actionParam: TDenyLeadByVendorParam) {
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+
+        const dataObj = {
+            LeadID: actionParam.leadId,
+            UserID: GlobalState.userId,
+            Reason: actionParam.reason,
+            Amount: actionParam.amount || '',
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.insertLeadDeniedByVendorUrl,
+            data: dataObj,
+        });
+
+        yield DenyLeadByVendorApi_Response(response, actionParam.callBack);
+    } catch (error) {
+        actionParam.callBack(false, 'Failed to deny lead. Please try again.');
+    }
+}
+
+function* DenyLeadByVendorApi_Response(
+    response: IResponseParam,
+    callBack: (success: boolean, message: string) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+            if (responseData.d == '1') {
+                const parsedData = JSON.parse(responseData.d);
+                callBack(
+                    parsedData.status === 'success',
+                    parsedData.message ||
+                        parsedData.Message ||
+                        'Lead denied successfully',
+                );
+            } else {
+                callBack(
+                    false,
+                    responseData.d || 'Failed to deny lead. Please try again.',
+                );
+            }
+        }
+    } catch (error) {
+        callBack(false, 'An error occurred while denying the lead');
+        showToast({
+            type: 'error',
+            text1: 'An error occurred while denying the lead',
+            visibilityTime: 3000,
+        });
+    }
+}
+
+function* CompleteLeadByVendorApi(actionParam: TCompleteLeadByVendorParam) {
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+
+        const dataObj = {
+            LeadID: actionParam.leadId,
+            UserID: GlobalState.userId,
+            PartsDesc: actionParam.partsDesc,
+            Remarks: actionParam.remarks || '',
+            CustomerAmount: actionParam.customerAmount,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.insertLeadCompletedByVendorUrl,
+            data: dataObj,
+        });
+
+        yield CompleteLeadByVendorApi_Response(response, actionParam.callBack);
+    } catch (error) {
+        actionParam.callBack(false, 'Failed to complete lead. Please try again.');
+    }
+}
+
+function* CompleteLeadByVendorApi_Response(
+    response: IResponseParam,
+    callBack: (success: boolean, message: string) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+            if (responseData.d == '1') {
+                const parsedData = JSON.parse(responseData.d);
+                callBack(
+                    parsedData.status === 'success',
+                    parsedData.message ||
+                        parsedData.Message ||
+                        'Lead completed successfully',
+                );
+            } else {
+                callBack(
+                    false,
+                    responseData.d ||
+                        'Failed to complete lead. Please try again.',
+                );
+            }
+        }
+    } catch (error) {
+        callBack(false, 'An error occurred while completing the lead');
+        showToast({
+            type: 'error',
+            text1: 'An error occurred while completing the lead',
+            visibilityTime: 3000,
+        });
+    }
+}
+
+function* FollowUpLeadByVendorApi(actionParam: TFollowUpLeadByVendorParam) {
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+
+        const dataObj = {
+            LeadID: actionParam.leadId,
+            UserID: GlobalState.userId,
+            Desc: actionParam.desc,
+            NextDate: actionParam.nextDate,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.insertLeadFollowUpByVendorUrl,
+            data: dataObj,
+        });
+
+        yield FollowUpLeadByVendorApi_Response(response, actionParam.callBack);
+    } catch (error) {
+        actionParam.callBack(false, 'Failed to add follow up. Please try again.');
+    }
+}
+
+function* FollowUpLeadByVendorApi_Response(
+    response: IResponseParam,
+    callBack: (success: boolean, message: string) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+            if (responseData.d == '1') {
+                const parsedData = JSON.parse(responseData.d);
+                callBack(
+                    parsedData.status === 'success',
+                    parsedData.message ||
+                        parsedData.Message ||
+                        'Follow up added successfully',
+                );
+            } else {
+                callBack(
+                    false,
+                    responseData.d ||
+                        'Failed to add follow up. Please try again.',
+                );
+            }
+        }
+    } catch (error) {
+        callBack(false, 'An error occurred while adding follow up');
+        showToast({
+            type: 'error',
+            text1: 'An error occurred while adding follow up',
             visibilityTime: 3000,
         });
     }

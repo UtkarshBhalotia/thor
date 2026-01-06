@@ -3,7 +3,8 @@ type TWalletConditionParamActionName =
     | 'Get_Recharge_History_Api'
     | 'Initiate_Payment'
     | 'Process_Payment_Response'
-    | 'Insert_Security_Deposit_Api';
+    | 'Insert_Security_Deposit_Api'
+    | 'Get_Vendor_Min_Recharge_Amt_Api';
 
 interface IWalletActionConditionParam<
     T extends TWalletConditionParamActionName,
@@ -39,12 +40,17 @@ type TInsertSecurityDepositParam = {
     callBack: (success: boolean, message: string) => void;
 };
 
+type TGetVendorMinRechargeAmtParam = {
+    callBack: (minAmount: string) => void;
+};
+
 type TWalletConditionParamActionParam<T extends TWalletConditionParamActionName> =
     T extends 'Wallet_Balance_Api' ? TWalletBalanceParam :
     T extends 'Get_Recharge_History_Api' ? TGetRechargeHistoryParam :
     T extends 'Initiate_Payment' ? TInitiatePaymentParam :
     T extends 'Process_Payment_Response' ? TProcessPaymentResponseParam :
     T extends 'Insert_Security_Deposit_Api' ? TInsertSecurityDepositParam :
+    T extends 'Get_Vendor_Min_Recharge_Amt_Api' ? TGetVendorMinRechargeAmtParam :
     never;
 
 interface IRechargeHistoryItem {

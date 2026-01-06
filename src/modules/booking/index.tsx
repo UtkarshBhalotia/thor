@@ -35,6 +35,7 @@ const Booking = (props: any) => {
     const [assignedServices, setAssignedServices] = useState<any[]>([]);
     const [selectedLead, setSelectedLead] = useState<any | null>(null);
     const [isAcceptingLead, setIsAcceptingLead] = useState(false);
+    const [isDenyingLead, setIsDenyingLead] = useState(false);
     const acceptModalRef = useRef<BottomSheetModal>(null);
 
     useEffect(() => {
@@ -115,8 +116,108 @@ const Booking = (props: any) => {
         }
     };
 
-    const handleRefuseService = (serviceId: string) => {
-        console.log('Refuse service:', serviceId);
+    const handleDeniedLead = (leadId: string, reason: string) => {
+        const lead = assignedServices.find((item) => item.LeadID === leadId);
+        if (lead) {
+            setIsDenyingLead(true);
+            props.bookingActions('Deny_Lead_By_Vendor_Api', {
+                leadId: leadId,
+                reason: reason,
+                amount: lead.LeadAmount || '',
+                callBack: (success: boolean, message: string) => {
+                    setIsDenyingLead(false);
+                    if (success) {
+                        load(activeTab);
+                        load('Ongoing');
+                        showToast({
+                            type: 'success',
+                            text1: message || 'Lead denied successfully',
+                            visibilityTime: 2000,
+                        });
+                    } else {
+                        showToast({
+                            type: 'error',
+                            text1: message || 'Failed to deny lead',
+                            visibilityTime: 3000,
+                        });
+                    }
+                },
+            });
+        }
+    };
+
+    const handleCompletedLead = (
+        leadId: string,
+        data: {
+            totalBillAmount: string;
+            serviceDetails: string;
+            otherRemarks: string;
+        },
+    ) => {
+        const lead = assignedServices.find((item) => item.LeadID === leadId);
+        if (lead) {
+            props.bookingActions('Complete_Lead_By_Vendor_Api', {
+                leadId: leadId,
+                partsDesc: data.serviceDetails,
+                remarks: data.otherRemarks || '',
+                customerAmount: data.totalBillAmount,
+                callBack: (success: boolean, message: string) => {
+                    if (success) {
+                        load(activeTab);
+                        load('Ongoing');
+                        showToast({
+                            type: 'success',
+                            text1: message || 'Lead completed successfully',
+                            visibilityTime: 2000,
+                        });
+                    } else {
+                        showToast({
+                            type: 'error',
+                            text1: message || 'Failed to complete lead',
+                            visibilityTime: 3000,
+                        });
+                    }
+                },
+            });
+        }
+    };
+
+    const handleFollowUpLead = (
+        leadId: string,
+        data: {
+            nextFollowUpDate: Date;
+            followUpDetails: string;
+        },
+    ) => {
+        const formatDateForApi = (date: Date) => {
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${year}-${month}-${day}`;
+        };
+
+        props.bookingActions('FollowUp_Lead_By_Vendor_Api', {
+            leadId: leadId,
+            desc: data.followUpDetails,
+            nextDate: formatDateForApi(data.nextFollowUpDate),
+            callBack: (success: boolean, message: string) => {
+                if (success) {
+                    load(activeTab);
+                    load('Ongoing');
+                    showToast({
+                        type: 'success',
+                        text1: message || 'Follow up added successfully',
+                        visibilityTime: 2000,
+                    });
+                } else {
+                    showToast({
+                        type: 'error',
+                        text1: message || 'Failed to add follow up',
+                        visibilityTime: 3000,
+                    });
+                }
+            },
+        });
     };
 
     const handleCustomerDetailsClick = (
@@ -156,7 +257,18 @@ const Booking = (props: any) => {
             customerAddress={item.Address}
             acceptLeadDate={item.AcceptDate}
             onAccept={() => handleAcceptService(item.LeadID)}
-            //   onRefuse={() => handleRefuseService(item.LeadID)}
+            onDenied={(leadId: string, reason: string) =>
+                handleDeniedLead(leadId, reason)
+            }
+            onCompleted={(data: {
+                totalBillAmount: string;
+                serviceDetails: string;
+                otherRemarks: string;
+            }) => handleCompletedLead(item.LeadID, data)}
+            onFollowUp={(data: {
+                nextFollowUpDate: Date;
+                followUpDetails: string;
+            }) => handleFollowUpLead(item.LeadID, data)}
             onCustomerDetailsClick={handleCustomerDetailsClick}
         />
     );

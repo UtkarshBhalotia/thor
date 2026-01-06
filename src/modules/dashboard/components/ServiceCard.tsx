@@ -49,7 +49,7 @@ interface ServiceCardProps {
         nextFollowUpDate: Date;
         followUpDetails: string;
     }) => void;
-    onDenied?: (reason: string) => void;
+    onDenied?: (leadId: string, reason: string) => void;
     onCompleted?: (data: {
         totalBillAmount: string;
         serviceDetails: string;
@@ -122,7 +122,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
 
     const handleDeniedSubmit = (reason: string) => {
         if (onDenied) {
-            onDenied(reason);
+            onDenied(leadId, reason);
         }
     };
 
