@@ -38,7 +38,6 @@ export const onboardingStyles = StyleSheet.create({
         textAlign: 'center',
         marginBottom: 15,
         marginTop: -20,
-
     },
     description: {
         fontSize: RFValue(14),

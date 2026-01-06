@@ -40,6 +40,7 @@ const apiListing = {
     insertLeadFollowUpByVendorUrl: `${BaseUrl}InsertFollowupLeadByVendor`,
     insertLeadDeniedByVendorUrl: `${BaseUrl}LeadDeniedByVendor`,
     getVendorMinRechargeAmtUrl: `${BaseUrl}GetVendorMinRechargeAmt`,
+    getVendorDetailsByIDUrl: `${BaseUrl}GetVendorDetailsByID`,
 
     getAllTypeVendorBalanceUrl: `${NEW_URL}/get_all_type_vendor_balance`,
     getVendorLedgerWithOpeningBalanceUrl: `${NEW_URL}/vendor_ledger_with_opening_balance`,

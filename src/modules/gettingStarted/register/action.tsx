@@ -1,7 +1,8 @@
-import { call } from 'redux-saga/effects';
+import { call, select } from 'redux-saga/effects';
 import { clientPostHandler } from '../../../services/request';
 import projectEnv from '../../../services/env';
 import { showToast } from '../../../utils/common';
+import { RootState } from '../../../../store';
 
 export function* conditionActions<
     T extends TUserRegisterConditionParamActionName,
@@ -27,6 +28,12 @@ export function* conditionActions<
             break;
         case 'Get_City_List_Api':
             yield call(GetCityListApi, actionParam as TUserGetCityListParam);
+            break;
+        case 'Get_Vendor_Details_By_ID_Api':
+            yield call(
+                GetVendorDetailsByIDApi,
+                actionParam as TUserGetVendorDetailsByIDParam,
+            );
             break;
     }
 }
@@ -178,5 +185,44 @@ function* GetCityListApi_Response(
         }
     } catch (error) {
         callBack([]);
+    }
+}
+
+function* GetVendorDetailsByIDApi(actionParam: TUserGetVendorDetailsByIDParam) {
+    try {
+        const dataObj = {
+            UserID: actionParam.UserID,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.getVendorDetailsByIDUrl,
+            data: dataObj,
+        });
+
+        yield GetVendorDetailsByIDApi_Response(response, actionParam.callBack);
+    } catch (error) {}
+}
+
+function* GetVendorDetailsByIDApi_Response(
+    response: IResponseParam,
+    callBack: (data: any) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+
+            if (responseData.d !== '') {
+                const parsedData = JSON.parse(responseData.d);
+                callBack(parsedData);
+            } else {
+                callBack(null);
+                showToast({
+                    type: 'error',
+                    text1: 'No vendor details found',
+                    visibilityTime: 2000,
+                });
+            }
+        }
+    } catch (error) {
+        callBack(null);
     }
 }

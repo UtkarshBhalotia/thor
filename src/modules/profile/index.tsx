@@ -55,15 +55,17 @@ const Profile = (props: any) => {
 
     const formMethods = useForm({
         defaultValues: {
-            name: globalState.name || '',
-            email: globalState.email || '',
-            mobileNumber: globalState.mobile || '',
-            companyName: globalState.companyName || '',
-            gstin: globalState.gstNo || '',
+            name: '',
+            email: '',
+            mobileNumber: '',
+            companyName: '',
+            gstin: '',
             address: '', // Assuming address is not in globalState yet or needs to be fetched
             state: '',
             city: '',
             cityCheckboxes: [], // For multi-select
+            ProfileLocked: 0,
+            ValidateGST: 0,
         },
     });
 
@@ -76,11 +78,52 @@ const Profile = (props: any) => {
     } = formMethods;
 
     const watchedValues = watch();
+    const profileLocked = watch('ProfileLocked');
+    const validateGST = watch('ValidateGST');
+
+    // Calculate editable states based on flags
+    const isCompanyNameEditable = profileLocked === 0 && validateGST === 1;
+    const isMobileEditable = profileLocked === 0;
+    const isAddressEditable = profileLocked === 0;
+    const isGSTINEditable = profileLocked === 0 && validateGST === 1;
+    const isStateEditable = profileLocked === 0;
+    const isCityEditable = profileLocked === 0;
+
+    // Update button is enabled only if ProfileLocked is 0 (user can edit at least some fields)
+    const isUpdateButtonEnabled = profileLocked === 0 && !submitting;
 
     // Load country list and set default states
     useEffect(() => {
-        loadCountryList();
+        loadVendorDetails();
+        //   loadCountryList();
     }, []);
+
+    const loadVendorDetails = () => {
+        const userId = globalState.userId;
+        if (userId) {
+            props.registerActions('Get_Vendor_Details_By_ID_Api', {
+                UserID: userId,
+                callBack: (data: any) => {
+                    console.log('Vendor Details:', data);
+                    // Capture the response
+                    if (data) {
+                        setValue('name', data[0].Name);
+                        setValue('email', data[0].EmailID);
+                        setValue('mobileNumber', data[0].MobileNo);
+                        setValue('companyName', data[0].CompanyName);
+                        setValue('gstin', data[0].GstNo);
+                        setValue('address', data[0].Address);
+                        setValue('state', data[0].State);
+                        setValue('city', data[0].City);
+                        setValue('ProfileLocked', data[0].ProfileLocked);
+                        setValue('ValidateGST', data[0].ValidateGST);
+                    }
+
+                    loadCountryList();
+                },
+            });
+        }
+    };
 
     const loadCountryList = () => {
         props.registerActions('Get_Country_List_Api', {
@@ -92,7 +135,9 @@ const Profile = (props: any) => {
                 setCountries(countryData);
 
                 // Default to India
-                const india = countryData.find(c => c.CountryName.toLowerCase() === 'india');
+                const india = countryData.find(
+                    (c) => c.CountryName.toLowerCase() === 'india',
+                );
                 if (india) {
                     loadStateList(india.CountryID);
                 }
@@ -117,7 +162,9 @@ const Profile = (props: any) => {
         props.registerActions('Get_City_List_Api', {
             stateId: stateId,
             callBack: (data: any[]) => {
-                const cityNames = data.map((item: any) => item.CityName || item.Name || item);
+                const cityNames = data.map(
+                    (item: any) => item.CityName || item.Name || item,
+                );
                 setCities(cityNames);
 
                 // Initialize checkbox array
@@ -135,7 +182,7 @@ const Profile = (props: any) => {
     const selectedState = watch('state');
     useEffect(() => {
         if (selectedState && states.length > 0) {
-            const stateData = states.find(s => s.StateName === selectedState);
+            const stateData = states.find((s) => s.StateName === selectedState);
             if (stateData) {
                 loadCityList(stateData.StateID);
                 setValue('city', '');
@@ -234,26 +281,51 @@ const Profile = (props: any) => {
                 <Text style={profileStyles.headerTitle}>Update Profile</Text>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={profileStyles.scrollContent}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={profileStyles.scrollContent}>
                 <View style={profileStyles.formSection}>
                     {/* Profile Photo Section */}
                     <View style={profileStyles.profilePhotoContainer}>
-                        <TouchableOpacity style={profileStyles.profilePhotoButton} onPress={handleProfilePhotoUpload}>
+                        <TouchableOpacity
+                            style={profileStyles.profilePhotoButton}
+                            onPress={handleProfilePhotoUpload}>
                             {profileImage ? (
-                                <Image source={{ uri: profileImage }} style={profileStyles.profileImage} />
+                                <Image
+                                    source={{ uri: profileImage }}
+                                    style={profileStyles.profileImage}
+                                />
                             ) : (
-                                <View style={profileStyles.profilePhotoPlaceholder}>
-                                    <Text style={profileStyles.profilePhotoIcon}>👤</Text>
-                                    <Text style={profileStyles.profilePhotoText}>Add Photo</Text>
+                                <View
+                                    style={
+                                        profileStyles.profilePhotoPlaceholder
+                                    }>
+                                    <Text
+                                        style={profileStyles.profilePhotoIcon}>
+                                        👤
+                                    </Text>
+                                    <Text
+                                        style={profileStyles.profilePhotoText}>
+                                        Add Photo
+                                    </Text>
                                 </View>
                             )}
                             <View style={profileStyles.profilePhotoOverlay}>
-                                <Text style={profileStyles.profilePhotoOverlayIcon}>{profileImage ? '✏️' : '➕'}</Text>
+                                <Text
+                                    style={
+                                        profileStyles.profilePhotoOverlayIcon
+                                    }>
+                                    {profileImage ? '✏️' : '➕'}
+                                </Text>
                             </View>
                         </TouchableOpacity>
                         {profileImage && (
-                            <TouchableOpacity style={profileStyles.removePhotoButton} onPress={handleRemovePhoto}>
-                                <Text style={profileStyles.removePhotoText}>Remove Photo</Text>
+                            <TouchableOpacity
+                                style={profileStyles.removePhotoButton}
+                                onPress={handleRemovePhoto}>
+                                <Text style={profileStyles.removePhotoText}>
+                                    Remove Photo
+                                </Text>
                             </TouchableOpacity>
                         )}
                     </View>
@@ -286,7 +358,7 @@ const Profile = (props: any) => {
                                     title="Mobile No"
                                     value={value}
                                     onChangeText={onChange}
-                                    isEditable={true}
+                                    isEditable={isMobileEditable}
                                     keyboard="numeric"
                                     placeholder="Mobile Number"
                                     name="mobileNumber"
@@ -294,25 +366,39 @@ const Profile = (props: any) => {
                             )}
                         />
 
-                        {/* Company Name (Read-only) */}
-                        <SODTextInput
-                            title="Company Name"
-                            value={watchedValues.companyName}
-                            isEditable={false}
-                            placeholder="Company Name"
+                        {/* Company Name (Conditionally Editable) */}
+                        <Controller
+                            control={control}
                             name="companyName"
+                            render={({ field: { onChange, value } }) => (
+                                <SODTextInput
+                                    title="Company Name"
+                                    value={value}
+                                    onChangeText={onChange}
+                                    isEditable={isCompanyNameEditable}
+                                    placeholder="Company Name"
+                                    name="companyName"
+                                />
+                            )}
                         />
 
-                        {/* GSTIN (Read-only) */}
-                        <SODTextInput
-                            title="GSTIN"
-                            value={watchedValues.gstin}
-                            isEditable={false}
-                            placeholder="GST Number"
+                        {/* GSTIN (Conditionally Editable) */}
+                        <Controller
+                            control={control}
                             name="gstin"
+                            render={({ field: { onChange, value } }) => (
+                                <SODTextInput
+                                    title="GSTIN"
+                                    value={value}
+                                    onChangeText={onChange}
+                                    isEditable={isGSTINEditable}
+                                    placeholder="GST Number"
+                                    name="gstin"
+                                />
+                            )}
                         />
 
-                        {/* Address (Editable, TextArea) */}
+                        {/* Address (Conditionally Editable, TextArea) */}
                         <Controller
                             control={control}
                             name="address"
@@ -321,9 +407,11 @@ const Profile = (props: any) => {
                                     title="Address"
                                     value={value}
                                     onChangeText={onChange}
-                                    isEditable={true}
+                                    isEditable={isAddressEditable}
                                     placeholder="Enter your address"
                                     name="address"
+                                    autoExpand={true}
+                                    minHeight={80}
                                 />
                             )}
                         />
@@ -336,10 +424,12 @@ const Profile = (props: any) => {
                                 <SODDropDown
                                     title="Select State"
                                     value={value || 'Select State'}
-                                    dropDownFormData={states.map(s => s.StateName)}
+                                    dropDownFormData={states.map(
+                                        (s) => s.StateName,
+                                    )}
                                     name="state"
                                     type="default"
-                                    disabled={false}
+                                    disabled={!isStateEditable}
                                 />
                             )}
                         />
@@ -356,22 +446,24 @@ const Profile = (props: any) => {
                                     name="cityCheckboxes"
                                     dropDownFormData={citiesWithCheckbox}
                                     type="default"
-                                    disabled={false}
+                                    disabled={!isCityEditable}
                                 />
                             )}
                         />
 
                         {/* Update Button */}
                         <TouchableOpacity
-                            style={[profileStyles.updateButton, submitting && profileStyles.disabledButton]}
+                            style={[
+                                profileStyles.updateButton,
+                                (!isUpdateButtonEnabled || submitting) &&
+                                    profileStyles.disabledButton,
+                            ]}
                             onPress={handleSubmit(handleUpdateProfile)}
-                            disabled={submitting}>
+                            disabled={!isUpdateButtonEnabled || submitting}>
                             <Text style={profileStyles.updateButtonText}>
                                 {submitting ? 'UPDATING...' : 'UPDATE PROFILE'}
                             </Text>
                         </TouchableOpacity>
-
-
                     </FormProvider>
                 </View>
             </ScrollView>
@@ -383,13 +475,21 @@ const Profile = (props: any) => {
                 snapPoints={['30%']}
                 headerTitle="Profile Photo">
                 <View style={profileStyles.uploadModalContainer}>
-                    <TouchableOpacity style={profileStyles.uploadOption} onPress={handleCamera}>
+                    <TouchableOpacity
+                        style={profileStyles.uploadOption}
+                        onPress={handleCamera}>
                         <Text style={profileStyles.uploadOptionIcon}>📷</Text>
-                        <Text style={profileStyles.uploadOptionText}>Take Photo</Text>
+                        <Text style={profileStyles.uploadOptionText}>
+                            Take Photo
+                        </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={profileStyles.uploadOption} onPress={handleGallery}>
+                    <TouchableOpacity
+                        style={profileStyles.uploadOption}
+                        onPress={handleGallery}>
                         <Text style={profileStyles.uploadOptionIcon}>🖼️</Text>
-                        <Text style={profileStyles.uploadOptionText}>Choose from Gallery</Text>
+                        <Text style={profileStyles.uploadOptionText}>
+                            Choose from Gallery
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </BSModal>

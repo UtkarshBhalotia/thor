@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 import { Platform, Text, TextInput, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Common from '../assets/css/common';
@@ -21,12 +21,30 @@ const SODTextInput = forwardRef(
             isEditable,
             placeholder,
             placeholderTextColor,
+            autoExpand,
+            minHeight = 50,
         }: TInputFieldProps,
         ref: any,
     ) => {
         const [selectionState, setSelectionState] = useState<
             { start: number; end: number } | undefined
         >(undefined);
+        const [height, setHeight] = useState<number>(minHeight);
+
+        // Initialize height based on value when component loads or value changes
+        useEffect(() => {
+            if (autoExpand && value && !secureTextEntry) {
+                // Estimate height based on content
+                const lines = value.split('\n').length;
+                const estimatedHeight = Math.max(
+                    minHeight,
+                    lines * 20 + 16,
+                );
+                setHeight(estimatedHeight);
+            } else if (!autoExpand) {
+                setHeight(minHeight);
+            }
+        }, [value, autoExpand, secureTextEntry, minHeight]);
 
         return (
             <View style={Common.py12}>
@@ -65,6 +83,15 @@ const SODTextInput = forwardRef(
                             }
                         }}
                         onChangeText={onChangeText}
+                        onContentSizeChange={(event) => {
+                            if (autoExpand && !secureTextEntry) {
+                                const newHeight = Math.max(
+                                    minHeight,
+                                    event.nativeEvent.contentSize.height + 16,
+                                );
+                                setHeight(newHeight);
+                            }
+                        }}
                         onBlur={() => {
                             // Handle existing onBlur logic
                             onBlurText && onBlurText();
@@ -84,23 +111,24 @@ const SODTextInput = forwardRef(
                         multiline={!secureTextEntry}
                         autoFocus={autoFocus}
                         editable={isEditable}
-                        scrollEnabled={false}
+                        scrollEnabled={autoExpand ? false : false}
                         keyboardType={keyboard}
                         selection={selectionState}
                         style={[
                             Common.px16,
                             SODText.MazuInputText,
                             SODText.bold400,
-                            Common.alignCenter,
-                            Common.textVerticalCenter,
+                            autoExpand ? {} : Common.alignCenter,
+                            autoExpand ? {} : Common.textVerticalCenter,
                             {
                                 backgroundColor: '#F0F4FD',
                                 paddingHorizontal: 6,
                                 borderRadius: 5, // Slightly smaller to account for gradient border
                                 width: '100%',
-                                height: 50,
+                                height: autoExpand ? height : 50,
                                 borderWidth: 0, // Remove border since gradient provides it
                                 opacity: isEditable ? 1 : 0.5,
+                                textAlignVertical: autoExpand ? 'top' : 'center',
                             },
                             Common.py8,
                         ]}

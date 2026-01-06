@@ -25,19 +25,22 @@ const slides: Slide[] = [
     {
         id: '1',
         title: 'Manage Reports',
-        description: 'Track your bookings and service requests in one place with our intuitive dashboard.',
+        description:
+            'Track your bookings and service requests in one place with our intuitive dashboard.',
         image: require('../../../assets/img/manageReports.png'),
     },
     {
         id: '2',
         title: 'Track leads',
-        description: 'Real-time updates on your wallet balance and detailed transaction history.',
+        description:
+            'Real-time updates on your wallet balance and detailed transaction history.',
         image: require('../../../assets/img/track_leads.png'),
     },
     {
         id: '3',
         title: 'Increase Revenue',
-        description: 'Manage your profile and access all features quickly with our modern menu.',
+        description:
+            'Manage your profile and access all features quickly with our modern menu.',
         image: require('../../../assets/img/increaseRevenue.png'),
     },
 ];
@@ -47,7 +50,9 @@ const Onboarding = () => {
     const ref = useRef<FlatList>(null);
     const navigation = useNavigation<NavigationProp<any>>();
 
-    const updateCurrentSlideIndex = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const updateCurrentSlideIndex = (
+        e: NativeSyntheticEvent<NativeScrollEvent>,
+    ) => {
         const contentOffsetX = e.nativeEvent.contentOffset.x;
         const currentIndex = Math.round(contentOffsetX / styles.slide.width);
         setCurrentSlideIndex(currentIndex);
@@ -87,17 +92,16 @@ const Onboarding = () => {
                 {/* Render Buttons */}
                 <View style={{ marginBottom: 20 }}>
                     {currentSlideIndex === slides.length - 1 ? (
-                        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Login')}>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => navigation.navigate('Login')}>
                             <Text style={styles.buttonText}>Get Started</Text>
                         </TouchableOpacity>
                     ) : (
                         <View style={{ flexDirection: 'row' }}>
                             <TouchableOpacity
                                 activeOpacity={0.8}
-                                style={[
-                                    styles.skipButton,
-                                    { marginRight: 10 }
-                                ]}
+                                style={[styles.skipButton, { marginRight: 10 }]}
                                 onPress={skip}>
                                 <Text style={styles.skipText}>Skip</Text>
                             </TouchableOpacity>
@@ -131,7 +135,9 @@ const Onboarding = () => {
                         </View>
                         <View style={styles.textContainer}>
                             <Text style={styles.title}>{item.title}</Text>
-                            <Text style={styles.description}>{item.description}</Text>
+                            <Text style={styles.description}>
+                                {item.description}
+                            </Text>
                         </View>
                     </View>
                 )}

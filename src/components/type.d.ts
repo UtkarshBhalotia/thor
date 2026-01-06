@@ -19,6 +19,8 @@ type TInputFieldProps = {
     isEditable: boolean;
     onFocusText?: () => void;
     placeholderTextColor?: string;
+    autoExpand?: boolean;
+    minHeight?: number;
 };
 
 type BSModalProps = {
