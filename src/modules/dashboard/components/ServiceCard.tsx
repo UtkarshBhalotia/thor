@@ -43,7 +43,7 @@ interface ServiceCardProps {
     acceptLeadDate?: string;
     // Action handlers
     onAccept?: () => void;
-    onRefuse?: () => void;
+    //  onRefuse?: () => void;
     onCardPress?: () => void;
     onFollowUp?: (data: {
         nextFollowUpDate: Date;
@@ -80,7 +80,6 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     customerAddress,
     acceptLeadDate,
     onAccept,
-    onRefuse,
     onCardPress,
     onFollowUp,
     onDenied,

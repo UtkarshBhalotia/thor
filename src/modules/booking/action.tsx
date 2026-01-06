@@ -1,18 +1,30 @@
-import { call, select } from "redux-saga/effects";
-import { clientPostHandler } from "../../services/request";
-import { RootState } from "../../../store";
-import projectEnv from "../../services/env";
-import { showToast } from "../../utils/common";
+import { call, select } from 'redux-saga/effects';
+import { clientPostHandler } from '../../services/request';
+import { RootState } from '../../../store';
+import projectEnv from '../../services/env';
+import { showToast } from '../../utils/common';
 
-export function* conditionActions<T extends TUserBookingConditionParamActionName>
-    (param: IUserBookingActionConditionParam<T>) {
-    const { payload: { actionName, actionParam } } = param;
+export function* conditionActions<
+    T extends TUserBookingConditionParamActionName,
+>(param: IUserBookingActionConditionParam<T>) {
+    const {
+        payload: { actionName, actionParam },
+    } = param;
     switch (actionName) {
         case 'Get_Leads_List_Api':
             yield call(GetLeadsListApi, actionParam as TUserGetLeadsListParam);
             break;
         case 'Get_Lead_Detail_By_LeadId_Api':
-            yield call(GetLeadDetailByLeadIdApi, actionParam as TUserGetLeadDetailByLeadIdParam);
+            yield call(
+                GetLeadDetailByLeadIdApi,
+                actionParam as TUserGetLeadDetailByLeadIdParam,
+            );
+            break;
+        case 'Accept_Lead_By_Vendor_Api':
+            yield call(
+                AcceptLeadByVendorApi,
+                actionParam as TAcceptLeadByVendorParam,
+            );
             break;
     }
 }
@@ -47,20 +59,23 @@ function* GetLeadsListApi(actionParam: TUserGetLeadsListParam) {
 
         const dataObj = {
             UserID: GlobalState.userId,
-        }
+        };
         const response: IResponseParam = yield call(clientPostHandler, {
             url: url,
-            data: url === projectEnv.getAllComplaintLeadForVendorUrl ? { ...dataObj, LeadID: 0 } : dataObj,
+            data:
+                url === projectEnv.getAllComplaintLeadForVendorUrl
+                    ? { ...dataObj, LeadID: 0 }
+                    : dataObj,
         });
 
         yield GetLeadsListApi_Response(response, actionParam.callBack);
-
-    } catch (error) {
-
-    }
+    } catch (error) {}
 }
 
-function* GetLeadsListApi_Response(response: IResponseParam, callBack: (wB: any) => void) {
+function* GetLeadsListApi_Response(
+    response: IResponseParam,
+    callBack: (wB: any) => void,
+) {
     try {
         if (response && response.body) {
             const responseData = response.body;
@@ -68,7 +83,6 @@ function* GetLeadsListApi_Response(response: IResponseParam, callBack: (wB: any)
             if (responseData.d !== '') {
                 const parsedData = JSON.parse(responseData.d);
                 callBack(parsedData);
-
             } else {
                 callBack([]); // Return empty array if no data
                 showToast({
@@ -78,13 +92,12 @@ function* GetLeadsListApi_Response(response: IResponseParam, callBack: (wB: any)
                 });
             }
         }
-
-    } catch (error) {
-
-    }
+    } catch (error) {}
 }
 
-function* GetLeadDetailByLeadIdApi(actionParam: TUserGetLeadDetailByLeadIdParam) {
+function* GetLeadDetailByLeadIdApi(
+    actionParam: TUserGetLeadDetailByLeadIdParam,
+) {
     try {
         const GlobalState: IGlobalInitialState = yield select(
             (state: RootState) => state.globalState,
@@ -100,13 +113,13 @@ function* GetLeadDetailByLeadIdApi(actionParam: TUserGetLeadDetailByLeadIdParam)
         });
 
         yield GetLeadDetailByLeadIdApi_Response(response, actionParam.callBack);
-
-    } catch (error) {
-
-    }
+    } catch (error) {}
 }
 
-function* GetLeadDetailByLeadIdApi_Response(response: IResponseParam, callBack: (wB: any) => void) {
+function* GetLeadDetailByLeadIdApi_Response(
+    response: IResponseParam,
+    callBack: (wB: any) => void,
+) {
     try {
         if (response && response.body) {
             const responseData = response.body;
@@ -114,7 +127,6 @@ function* GetLeadDetailByLeadIdApi_Response(response: IResponseParam, callBack: 
             if (responseData.d !== '') {
                 const parsedData = JSON.parse(responseData.d);
                 callBack(parsedData);
-
             } else {
                 callBack(null);
                 showToast({
@@ -124,8 +136,62 @@ function* GetLeadDetailByLeadIdApi_Response(response: IResponseParam, callBack: 
                 });
             }
         }
+    } catch (error) {}
+}
 
+function* AcceptLeadByVendorApi(actionParam: TAcceptLeadByVendorParam) {
+    console.log('actionParam', actionParam);
+
+    try {
+        const GlobalState: IGlobalInitialState = yield select(
+            (state: RootState) => state.globalState,
+        );
+
+        const dataObj = {
+            LeadID: actionParam.leadId,
+            UserID: GlobalState.userId,
+            Amount: actionParam.amount,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.acceptLeadByVendorUrl,
+            data: dataObj,
+        });
+
+        yield AcceptLeadByVendorApi_Response(response, actionParam.callBack);
     } catch (error) {
+        actionParam.callBack(false, 'Failed to accept lead. Please try again.');
+    }
+}
 
+function* AcceptLeadByVendorApi_Response(
+    response: IResponseParam,
+    callBack: (success: boolean, message: string) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+            if (responseData.d == '1') {
+                const parsedData = JSON.parse(responseData.d);
+                callBack(
+                    parsedData.status === 'success',
+                    parsedData.message ||
+                        parsedData.Message ||
+                        'Lead accepted successfully',
+                );
+            } else {
+                callBack(
+                    false,
+                    responseData.d ||
+                        'Failed to accept lead. Please try again.',
+                );
+            }
+        }
+    } catch (error) {
+        callBack(false, 'An error occurred while accepting the lead');
+        showToast({
+            type: 'error',
+            text1: 'An error occurred while accepting the lead',
+            visibilityTime: 3000,
+        });
     }
 }

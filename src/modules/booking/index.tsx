@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -9,13 +9,16 @@ import {
     StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { bookingStyles } from '../../assets/css/bookingStyles';
 import ServiceCard from '../dashboard/components/ServiceCard';
+import AcceptLeadConfirmationModal from '../../components/AcceptLeadConfirmationModal';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { AppDispatch, RootState } from '../../../store';
 import { connect } from 'react-redux';
 import { bookingActions_dispatch } from '../../../store/action/mainTypedAction';
+import { showToast } from '../../utils/common';
 
 type BookingStatus =
     | 'New'
@@ -30,6 +33,9 @@ const Booking = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const [activeTab, setActiveTab] = useState<TabFilter>('New');
     const [assignedServices, setAssignedServices] = useState<any[]>([]);
+    const [selectedLead, setSelectedLead] = useState<any | null>(null);
+    const [isAcceptingLead, setIsAcceptingLead] = useState(false);
+    const acceptModalRef = useRef<BottomSheetModal>(null);
 
     useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {
@@ -72,7 +78,41 @@ const Booking = (props: any) => {
     };
 
     const handleAcceptService = (serviceId: string) => {
-        console.log('Accept service:', serviceId);
+        const lead = assignedServices.find((item) => item.LeadID === serviceId);
+        if (lead) {
+            setSelectedLead(lead);
+            acceptModalRef.current?.present();
+        }
+    };
+
+    const handleAcceptLeadSubmit = (data: { amount: string }) => {
+        if (selectedLead) {
+            setIsAcceptingLead(true);
+            const amountToSend = data.amount || selectedLead.LeadAmount || '';
+            props.bookingActions('Accept_Lead_By_Vendor_Api', {
+                leadId: selectedLead.LeadID,
+                amount: amountToSend,
+                callBack: (success: boolean, message: string) => {
+                    setIsAcceptingLead(false);
+                    if (success) {
+                        acceptModalRef.current?.dismiss();
+                        setSelectedLead(null);
+                        load(activeTab);
+                        showToast({
+                            type: 'success',
+                            text1: message || 'Lead accepted successfully',
+                            visibilityTime: 2000,
+                        });
+                    } else {
+                        showToast({
+                            type: 'error',
+                            text1: message || 'Failed to accept lead',
+                            visibilityTime: 3000,
+                        });
+                    }
+                },
+            });
+        }
     };
 
     const handleRefuseService = (serviceId: string) => {
@@ -116,7 +156,7 @@ const Booking = (props: any) => {
             customerAddress={item.Address}
             acceptLeadDate={item.AcceptDate}
             onAccept={() => handleAcceptService(item.LeadID)}
-            onRefuse={() => handleRefuseService(item.LeadID)}
+            //   onRefuse={() => handleRefuseService(item.LeadID)}
             onCustomerDetailsClick={handleCustomerDetailsClick}
         />
     );
@@ -242,6 +282,23 @@ const Booking = (props: any) => {
                 contentContainerStyle={bookingStyles.listContainer}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={renderEmptyList}
+            />
+
+            {/* Accept Lead Confirmation Modal */}
+            <AcceptLeadConfirmationModal
+                ref={acceptModalRef}
+                onSubmit={handleAcceptLeadSubmit}
+                leadDetails={
+                    selectedLead
+                        ? {
+                              leadNo: selectedLead.LeadNo,
+                              leadType: selectedLead.ServiceTypeName,
+                              leadAmount: selectedLead.LeadAmount,
+                              leadDate: selectedLead.LeadDate,
+                          }
+                        : undefined
+                }
+                isLoading={isAcceptingLead}
             />
         </SafeAreaView>
     );
