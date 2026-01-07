@@ -25,22 +25,19 @@ const slides: Slide[] = [
     {
         id: '1',
         title: 'Manage Reports',
-        description:
-            'Track your bookings and service requests in one place with our intuitive dashboard.',
+        description: '',
         image: require('../../../assets/img/manageReports.png'),
     },
     {
         id: '2',
-        title: 'Track leads',
-        description:
-            'Real-time updates on your wallet balance and detailed transaction history.',
+        title: 'Track Leads',
+        description: '',
         image: require('../../../assets/img/track_leads.png'),
     },
     {
         id: '3',
         title: 'Increase Revenue',
-        description:
-            'Manage your profile and access all features quickly with our modern menu.',
+        description: '',
         image: require('../../../assets/img/increaseRevenue.png'),
     },
 ];
@@ -69,10 +66,6 @@ const Onboarding = () => {
         }
     };
 
-    const skip = () => {
-        navigation.navigate('Login');
-    };
-
     const Footer = () => {
         return (
             <View style={styles.footer}>
@@ -90,7 +83,7 @@ const Onboarding = () => {
                 </View>
 
                 {/* Render Buttons */}
-                <View style={{ marginBottom: 20 }}>
+                <View style={styles.buttonContainer}>
                     {currentSlideIndex === slides.length - 1 ? (
                         <TouchableOpacity
                             style={styles.button}
@@ -98,20 +91,12 @@ const Onboarding = () => {
                             <Text style={styles.buttonText}>Get Started</Text>
                         </TouchableOpacity>
                     ) : (
-                        <View style={{ flexDirection: 'row' }}>
-                            <TouchableOpacity
-                                activeOpacity={0.8}
-                                style={[styles.skipButton, { marginRight: 10 }]}
-                                onPress={skip}>
-                                <Text style={styles.skipText}>Skip</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                activeOpacity={0.8}
-                                style={styles.button}
-                                onPress={goToNextSlide}>
-                                <Text style={styles.buttonText}>Next</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity
+                            activeOpacity={0.8}
+                            style={styles.button}
+                            onPress={goToNextSlide}>
+                            <Text style={styles.buttonText}>Next</Text>
+                        </TouchableOpacity>
                     )}
                 </View>
             </View>
@@ -135,9 +120,6 @@ const Onboarding = () => {
                         </View>
                         <View style={styles.textContainer}>
                             <Text style={styles.title}>{item.title}</Text>
-                            <Text style={styles.description}>
-                                {item.description}
-                            </Text>
                         </View>
                     </View>
                 )}
