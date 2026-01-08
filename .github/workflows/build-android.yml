@@ -154,26 +154,6 @@ jobs:
                   '${{ secrets.GOOGLE_CHAT_WEBHOOK }}' \
                   -d '{"text": "🚀 *New Android Build Successful!*\n*Project:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Build Type:* Release APK\n*Download Link:* ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n*Notify:* utkarsh.bhalotia@busy.in"}'
 
-            # Step 14.5: Prepare and Validate Service Account JSON
-            - name: Prepare Service Account JSON
-              if: |
-                  github.event.inputs.build_type == 'release' || 
-                  startsWith(github.ref, 'refs/tags/') || 
-                  (github.event_name == 'push' && github.ref == 'refs/heads/CI_CD_Integration_Testing')
-              id: prepare-json
-              run: |
-                  # Install jq for JSON validation
-                  sudo apt-get update && sudo apt-get install -y jq
-                  # Write JSON to file with proper formatting
-                  echo '${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}' > /tmp/service-account.json
-                  # Validate JSON format
-                  cat /tmp/service-account.json | jq . > /dev/null
-                  echo "Service account JSON validated successfully"
-                  # Read back the validated JSON and set as output
-                  echo "json_content<<EOF" >> $GITHUB_OUTPUT
-                  cat /tmp/service-account.json >> $GITHUB_OUTPUT
-                  echo "EOF" >> $GITHUB_OUTPUT
-
             # Step 15: Upload to Play Store (Internal Track)
             - name: Upload to Play Store
               if: |
@@ -182,7 +162,7 @@ jobs:
                   (github.event_name == 'push' && github.ref == 'refs/heads/CI_CD_Integration_Testing')
               uses: r0adkll/upload-google-play@v1
               with:
-                  serviceAccountJsonPlainText: ${{ steps.prepare-json.outputs.json_content }}
+                  serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
                   packageName: com.roservice.partner
                   releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
                   track: internal

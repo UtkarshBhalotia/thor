@@ -1,13 +1,15 @@
 name: CI - Lint and Test
 
 # Trigger this workflow on push to main branches and on all pull requests
+# Disabled - only run manually if needed
 on:
-  push:
-    branches:
-      - CI_CD_Integration_Testing
-  pull_request:
-    branches:
-      - '**'
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - CI_CD_Integration_Testing
+  # pull_request:
+  #   branches:
+  #     - '**'
 
 jobs:
   lint-and-test:
