@@ -49,7 +49,7 @@ const SODTextInput = forwardRef(
         return (
             <View style={Common.py12}>
                 <LinearGradient
-                    colors={['#1E3A8A', '#4682B4', '#87CEEB']}
+                    colors={['#5F60B9', '#8A8BDD', '#B5B6E8']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={{
@@ -72,9 +72,9 @@ const SODTextInput = forwardRef(
                                 setSelectionState(
                                     value
                                         ? {
-                                              start: value.length,
-                                              end: value.length,
-                                          }
+                                            start: value.length,
+                                            end: value.length,
+                                        }
                                         : undefined,
                                 );
                                 setTimeout(() => {
@@ -121,7 +121,7 @@ const SODTextInput = forwardRef(
                             autoExpand ? {} : Common.alignCenter,
                             autoExpand ? {} : Common.textVerticalCenter,
                             {
-                                backgroundColor: '#F0F4FD',
+                                backgroundColor: '#F9FAFF',
                                 paddingHorizontal: 6,
                                 borderRadius: 5, // Slightly smaller to account for gradient border
                                 width: '100%',

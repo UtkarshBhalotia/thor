@@ -84,9 +84,9 @@ const Login = (props: any) => {
 
     return (
         <View style={loginStyles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#29B6D1" />
+            <StatusBar barStyle="light-content" backgroundColor="#5F60B9" />
             <LinearGradient
-                colors={['#29B6D1', '#7DD4E4', '#FFFFFF', '#FFFFFF']}
+                colors={['#5F60B9', '#8A8BDD', '#B5B6E8', '#E6E5F7', '#FFFFFF']}
                 style={loginStyles.gradientBackground}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}>

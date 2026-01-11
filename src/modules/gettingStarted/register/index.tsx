@@ -581,9 +581,9 @@ const Register = (props: any) => {
 
     return (
         <View style={loginStyles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#29B6D1" />
+            <StatusBar barStyle="light-content" backgroundColor="#5F60B9" />
             <LinearGradient
-                colors={['#29B6D1', '#7DD4E4', '#FFFFFF', '#FFFFFF']}
+                colors={['#5F60B9', '#8A8BDD', '#B5B6E8', '#E6E5F7', '#FFFFFF']}
                 style={loginStyles.gradientBackground}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 0.3 }}>
@@ -2002,19 +2002,22 @@ const registerPageStyles = {
     signinLink: {
         fontSize: 14,
         fontWeight: '700' as const,
-        color: '#29B6D1',
+        color: '#5F60B9',
         marginLeft: 5,
         textDecorationLine: 'underline' as const,
     },
     signupButton: {
-        backgroundColor: '#29B6D1',
+        backgroundColor: '#5F60B9',
         paddingVertical: 16,
         borderRadius: 14,
         alignItems: 'center' as const,
         marginTop: 20,
         marginBottom: 10,
-        // shadowColor: '#29B6D1',
-        elevation: 0,
+        shadowColor: '#5F60B9',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
     },
     signupButtonText: {
         color: '#FFFFFF',
@@ -2075,7 +2078,7 @@ const styles = {
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: '#29B6D1',
+        backgroundColor: '#5F60B9',
         justifyContent: 'center' as const,
         alignItems: 'center' as const,
         borderWidth: 2,
@@ -2119,8 +2122,8 @@ const styles = {
         backgroundColor: '#FFFFFF',
     },
     checkboxChecked: {
-        backgroundColor: '#29B6D1',
-        borderColor: '#29B6D1',
+        backgroundColor: '#5F60B9',
+        borderColor: '#5F60B9',
     },
     checkmark: {
         color: '#FFFFFF',
@@ -2174,7 +2177,7 @@ const styles = {
         flex: 1,
     },
     verifyButton: {
-        backgroundColor: '#29B6D1',
+        backgroundColor: '#5F60B9',
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 6,
@@ -2225,7 +2228,7 @@ const styles = {
         gap: 12,
     },
     otpButton: {
-        backgroundColor: '#29B6D1',
+        backgroundColor: '#5F60B9',
         paddingVertical: 12,
         borderRadius: 8,
         alignItems: 'center' as const,
@@ -2248,10 +2251,10 @@ const styles = {
         borderRadius: 8,
         alignItems: 'center' as const,
         borderWidth: 1,
-        borderColor: '#29B6D1',
+        borderColor: '#5F60B9',
     },
     resendButtonText: {
-        color: '#29B6D1',
+        color: '#5F60B9',
         fontSize: 16,
         fontWeight: '600' as const,
     },
@@ -2350,7 +2353,7 @@ const styles = {
         width: 24,
         height: 24,
         borderRadius: 12,
-        backgroundColor: '#29B6D1',
+        backgroundColor: '#5F60B9',
         justifyContent: 'center' as const,
         alignItems: 'center' as const,
         borderWidth: 1,

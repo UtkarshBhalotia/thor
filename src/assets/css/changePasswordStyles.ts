@@ -37,7 +37,7 @@ export const changePasswordStyles = StyleSheet.create({
         lineHeight: 20,
     },
     updateButton: {
-        backgroundColor: '#29B6D1',
+        backgroundColor: '#5F60B9',
         paddingVertical: 16,
         borderRadius: 14,
         alignItems: 'center',

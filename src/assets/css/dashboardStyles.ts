@@ -162,7 +162,7 @@ export const dashboardStyles = StyleSheet.create({
         color: '#1C1F34',
     },
     packageBadge: {
-        backgroundColor: '#F0F5FF',
+        backgroundColor: '#F0F0FF',
         paddingHorizontal: 8,
         paddingVertical: 3,
         borderRadius: 4,

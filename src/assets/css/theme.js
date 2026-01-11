@@ -15,7 +15,7 @@ const light = {
             color: '#242424',
         },
         textColorBlue: {
-            color: '#4F76FF',
+            color: '#5F60B9',
         },
         ...commonColor.colors,
     },

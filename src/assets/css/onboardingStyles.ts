@@ -38,12 +38,12 @@ export const onboardingStyles = StyleSheet.create({
     title: {
         fontSize: RFValue(28),
         fontWeight: '700',
-        color: '#6B46C1',
+        color: '#5F60B9',
         textAlign: 'center',
     },
     description: {
         fontSize: RFValue(14),
-        color: '#4A90E2',
+        color: '#8A8BDD',
         textAlign: 'center',
         lineHeight: 24,
     },
@@ -71,7 +71,7 @@ export const onboardingStyles = StyleSheet.create({
         marginHorizontal: 4,
     },
     activeDot: {
-        backgroundColor: '#6B46C1',
+        backgroundColor: '#5F60B9',
         width: 6,
         height: 6,
     },
@@ -79,14 +79,14 @@ export const onboardingStyles = StyleSheet.create({
         width: '100%',
     },
     button: {
-        backgroundColor: '#6B46C1',
+        backgroundColor: '#5F60B9',
         paddingVertical: 16,
         paddingHorizontal: 40,
         borderRadius: 12,
         width: '100%',
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#6B46C1',
+        shadowColor: '#5F60B9',
         shadowOffset: {
             width: 0,
             height: 4,

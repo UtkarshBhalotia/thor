@@ -86,7 +86,7 @@ export const profileStyles = StyleSheet.create({
         width: 32,
         height: 32,
         borderRadius: 16,
-        backgroundColor: '#29B6D1',
+        backgroundColor: '#5F60B9',
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
@@ -113,14 +113,17 @@ export const profileStyles = StyleSheet.create({
 
     // Action Buttons
     updateButton: {
-        backgroundColor: '#29B6D1',
+        backgroundColor: '#5F60B9',
         paddingVertical: 16,
         borderRadius: 14,
         alignItems: 'center',
         marginTop: 30,
         marginBottom: 10,
-        // shadowColor: '#29B6D1',
-        elevation: 0,
+        shadowColor: '#5F60B9',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
     },
     updateButtonText: {
         color: '#FFFFFF',
