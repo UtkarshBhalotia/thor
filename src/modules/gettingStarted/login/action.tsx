@@ -55,54 +55,65 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
         if (response && response.body) {
             const responseData = response.body;
 
-            if (responseData.d !== 'Wrong Username or Password') {
-                const parsedData = JSON.parse(responseData.d);
+            let parsedData: any;
+            try {
+                parsedData = JSON.parse(responseData.d);
+            } catch (e) {
+                showToast({
+                    type: 'error',
+                    text1: responseData.d,
+                    visibilityTime: 2000,
+                });
+                return;
+            }
 
-                if (parsedData.Table && parsedData.Table.length > 0) {
-                    const userData = parsedData.Table[0];
+            if (parsedData && parsedData.Table && parsedData.Table.length > 0) {
+                const userData = parsedData.Table[0];
 
-                    // Extract specific user information
-                    const userInfo = {
-                        userId: userData.UserID,
-                        name: userData.Name,
-                        email: userData.EmailID,
-                        mobile: userData.MobileNo,
-                        companyName: userData.CompanyName,
-                        gstNo: userData.GstNo,
-                        userType: userData.UserType,
-                        isActive: userData.IsActive,
-                        fcmToken: userData.FCMTokenID,
-                        minRechargeAmount: userData.MinRechargeAmt,
-                        profileLocked: userData.ProfileLocked,
-                        validateGST: userData.ValidateGST,
-                    };
+                // Extract specific user information
+                const userInfo = {
+                    userId: userData.UserID,
+                    name: userData.Name,
+                    email: userData.EmailID,
+                    mobile: userData.MobileNo,
+                    companyName: userData.CompanyName,
+                    gstNo: userData.GstNo,
+                    userType: userData.UserType,
+                    isActive: userData.IsActive,
+                    fcmToken: userData.FCMTokenID,
+                    minRechargeAmount: userData.MinRechargeAmt,
+                    profileLocked: userData.ProfileLocked,
+                    validateGST: userData.ValidateGST,
+                };
 
-                    showToast({
-                        type: 'success',
-                        text1: 'Login Successfully',
-                        visibilityTime: 2000,
-                    });
+                showToast({
+                    type: 'success',
+                    text1: 'Login Successfully',
+                    visibilityTime: 2000,
+                });
 
-                    yield put({
-                        type: 'GLOBAL_STATE_MUTATE',
-                        value: userInfo,
-                    })
+                yield put({
+                    type: 'GLOBAL_STATE_MUTATE',
+                    value: userInfo,
+                });
 
-                    // Save user info to AsyncStorage for persistence
-                    yield setItem(STORAGE_KEYS.USER_INFO, userInfo);
+                // Save user info to AsyncStorage for persistence
+                yield setItem(STORAGE_KEYS.USER_INFO, userInfo);
 
-                    callBack();
-
-                } else {
-                    console.log('No user data found');
-                }
+                callBack();
             } else {
                 showToast({
                     type: 'error',
-                    text1: 'Wrong Username or Password',
+                    text1: 'No user data found',
                     visibilityTime: 2000,
                 });
             }
+        } else {
+            showToast({
+                type: 'error',
+                text1: 'No response from server',
+                visibilityTime: 2000,
+            });
         }
     } catch (error) {
         console.log('UserAuth_login_Api_Response error', error);

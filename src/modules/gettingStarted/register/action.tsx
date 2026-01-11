@@ -35,6 +35,39 @@ export function* conditionActions<
                 actionParam as TUserGetVendorDetailsByIDParam,
             );
             break;
+        case 'Vendor_Registration_Api':
+            yield call(
+                VendorRegistrationApi,
+                actionParam as TUserVendorRegistrationParam,
+            );
+            break;
+    }
+}
+
+function* VendorRegistrationApi(actionParam: TUserVendorRegistrationParam) {
+    try {
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.vendorRegistrationUrl,
+            data: actionParam.data,
+        });
+
+        yield VendorRegistrationApi_Response(response, actionParam.callBack);
+    } catch (error) { }
+}
+
+function* VendorRegistrationApi_Response(
+    response: IResponseParam,
+    callBack: (data: any) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+            callBack(responseData);
+        } else {
+            callBack(null);
+        }
+    } catch (error) {
+        callBack(null);
     }
 }
 
@@ -46,7 +79,7 @@ function* GetServiceTypesApi(actionParam: TUserGetServiceTypesParam) {
         });
 
         yield GetServiceTypesApi_Response(response, actionParam.callBack);
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetServiceTypesApi_Response(
@@ -82,7 +115,7 @@ function* GetCountryListApi(actionParam: TUserGetCountryListParam) {
         });
 
         yield GetCountryListApi_Response(response, actionParam.callBack);
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetCountryListApi_Response(
@@ -121,7 +154,7 @@ function* GetStateListApi(actionParam: TUserGetStateListParam) {
         });
 
         yield GetStateListApi_Response(response, actionParam.callBack);
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetStateListApi_Response(
@@ -160,7 +193,7 @@ function* GetCityListApi(actionParam: TUserGetCityListParam) {
         });
 
         yield GetCityListApi_Response(response, actionParam.callBack);
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetCityListApi_Response(
@@ -199,7 +232,7 @@ function* GetVendorDetailsByIDApi(actionParam: TUserGetVendorDetailsByIDParam) {
         });
 
         yield GetVendorDetailsByIDApi_Response(response, actionParam.callBack);
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetVendorDetailsByIDApi_Response(

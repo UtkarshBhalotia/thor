@@ -43,7 +43,7 @@ const Register = (props: any) => {
     const insets = useSafeAreaInsets();
     const [isPasswordSecure, setIsPasswordSecure] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [profileImage, setProfileImage] = useState<any>(null);
     const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
 
     // Mobile verification states
@@ -54,10 +54,10 @@ const Register = (props: any) => {
     const [otpSent, setOtpSent] = useState(false);
 
     // Document upload states
-    const [aadharFront, setAadharFront] = useState<string | null>(null);
-    const [aadharBack, setAadharBack] = useState<string | null>(null);
-    const [gstCertificate, setGstCertificate] = useState<string | null>(null);
-    const [panCard, setPanCard] = useState<string | null>(null);
+    const [aadharFront, setAadharFront] = useState<any>(null);
+    const [aadharBack, setAadharBack] = useState<any>(null);
+    const [gstCertificate, setGstCertificate] = useState<any>(null);
+    const [panCard, setPanCard] = useState<any>(null);
 
     // Modal refs
     const otpModalRef = useRef<BottomSheetModal>(null);
@@ -77,7 +77,7 @@ const Register = (props: any) => {
     // Service types state - will be filled from API
     const [serviceTypes, setServiceTypes] = useState<string[]>([]);
     const [serviceTypesWithCheckbox, setServiceTypesWithCheckbox] = useState<
-        { name: string; isChecked: boolean }[]
+        { name: string; isChecked: boolean; id: string | number }[]
     >([]);
     // Country list state - will be filled from API
     const [countries, setCountries] = useState<
@@ -88,7 +88,9 @@ const Register = (props: any) => {
         { StateID: string | number; StateName: string }[]
     >([]);
     // City list state - will be filled from API
-    const [cities, setCities] = useState<string[]>([]);
+    const [cities, setCities] = useState<
+        { CityID: string | number; CityName: string }[]
+    >([]);
 
     const formMethods = useForm({
         defaultValues: {
@@ -157,6 +159,7 @@ const Register = (props: any) => {
                 const checkboxData = data.map((item: any) => ({
                     name: item.ServiceName,
                     isChecked: false,
+                    id: item.ServiceTypeID,
                 }));
                 setServiceTypesWithCheckbox(checkboxData);
             },
@@ -204,12 +207,12 @@ const Register = (props: any) => {
         props.registerActions('Get_City_List_Api', {
             stateId: stateId,
             callBack: (data: any[]) => {
-                // Extract city names from API response
-                // Adjust field name based on actual API response structure
-                const cityNames = data.map(
-                    (item: any) => item.CityName || item.Name || item,
-                );
-                setCities(cityNames);
+                // Extract city names and IDs from API response
+                const cityData = data.map((item: any) => ({
+                    CityID: item.CityID,
+                    CityName: item.CityName || item.Name || item,
+                }));
+                setCities(cityData);
             },
         });
     };
@@ -256,23 +259,27 @@ const Register = (props: any) => {
 
     // Check if all mandatory fields are filled
     const areMandatoryFieldsFilled = () => {
-        const mandatoryFields: (keyof typeof watchedValues)[] = [
+        const mandatoryTextFields: (keyof typeof watchedValues)[] = [
             'name',
             'email',
             'password',
             'mobileNumber',
             'address',
             'companyName',
-            'serviceType',
             'country',
             'state',
             'city',
         ];
 
-        return mandatoryFields.every((field) => {
+        const allTextFieldsFilled = mandatoryTextFields.every((field) => {
             const value = watchedValues[field];
-            return value && typeof value === 'string' && value.trim() !== '';
+            return typeof value === 'string' && value.trim() !== '';
         });
+
+        // Check if at least one service is selected
+        const servicesSelected = (watchedValues.count || 0) > 0;
+
+        return allTextFieldsFilled && servicesSelected;
     };
 
     // Check if all form validations are passing (no errors)
@@ -405,7 +412,7 @@ const Register = (props: any) => {
         documentUploadModalRef.current?.dismiss();
         const options = {
             mediaType: 'photo' as MediaType,
-            includeBase64: false,
+            includeBase64: true,
             maxHeight: 2000,
             maxWidth: 2000,
             quality: 0.8 as PhotoQuality,
@@ -417,19 +424,19 @@ const Register = (props: any) => {
                     return;
                 }
                 if (response.assets && response.assets[0]) {
-                    const uri = response.assets[0].uri || null;
+                    const asset = response.assets[0];
                     switch (currentDocumentType) {
                         case 'aadharFront':
-                            setAadharFront(uri);
+                            setAadharFront(asset);
                             break;
                         case 'aadharBack':
-                            setAadharBack(uri);
+                            setAadharBack(asset);
                             break;
                         case 'gstCertificate':
-                            setGstCertificate(uri);
+                            setGstCertificate(asset);
                             break;
                         case 'panCard':
-                            setPanCard(uri);
+                            setPanCard(asset);
                             break;
                     }
                 }
@@ -442,7 +449,7 @@ const Register = (props: any) => {
         documentUploadModalRef.current?.dismiss();
         const options = {
             mediaType: 'photo' as MediaType,
-            includeBase64: false,
+            includeBase64: true,
             maxHeight: 2000,
             maxWidth: 2000,
             quality: 0.8 as PhotoQuality,
@@ -454,19 +461,19 @@ const Register = (props: any) => {
                     return;
                 }
                 if (response.assets && response.assets[0]) {
-                    const uri = response.assets[0].uri || null;
+                    const asset = response.assets[0];
                     switch (currentDocumentType) {
                         case 'aadharFront':
-                            setAadharFront(uri);
+                            setAadharFront(asset);
                             break;
                         case 'aadharBack':
-                            setAadharBack(uri);
+                            setAadharBack(asset);
                             break;
                         case 'gstCertificate':
-                            setGstCertificate(uri);
+                            setGstCertificate(asset);
                             break;
                         case 'panCard':
-                            setPanCard(uri);
+                            setPanCard(asset);
                             break;
                     }
                 }
@@ -509,7 +516,7 @@ const Register = (props: any) => {
         photoUploadModalRef.current?.dismiss();
         const options = {
             mediaType: 'photo' as MediaType,
-            includeBase64: false,
+            includeBase64: true,
             maxHeight: 2000,
             maxWidth: 2000,
             quality: 0.8 as PhotoQuality,
@@ -521,7 +528,7 @@ const Register = (props: any) => {
                     return;
                 }
                 if (response.assets && response.assets[0]) {
-                    setProfileImage(response.assets[0].uri || null);
+                    setProfileImage(response.assets[0]);
                 }
             });
         }, 300);
@@ -532,7 +539,7 @@ const Register = (props: any) => {
         photoUploadModalRef.current?.dismiss();
         const options = {
             mediaType: 'photo' as MediaType,
-            includeBase64: false,
+            includeBase64: true,
             maxHeight: 2000,
             maxWidth: 2000,
             quality: 0.8 as PhotoQuality,
@@ -544,7 +551,7 @@ const Register = (props: any) => {
                     return;
                 }
                 if (response.assets && response.assets[0]) {
-                    setProfileImage(response.assets[0].uri || null);
+                    setProfileImage(response.assets[0]);
                 }
             });
         }, 300);
@@ -574,9 +581,97 @@ const Register = (props: any) => {
         }
     };
 
-    const onSignupPress = async (data: any) => {
-        console.log('Signup pressed:', data);
-        console.log('Profile image:', profileImage);
+    const getImageType = (type?: string) => {
+        if (!type) {
+            return '';
+        }
+        const parts = type.split('/');
+        return parts.length > 1 ? parts[1] : type;
+    };
+
+    const onSignupPress = async (formData: any) => {
+        setSubmitting(true);
+        try {
+            const countryData = countries.find(
+                (c) => c.CountryName === formData.country,
+            );
+            const stateData = states.find(
+                (s) => s.StateName === formData.state,
+            );
+            const cityData = cities.find((c) => c.CityName === formData.city);
+
+            const selectedServices = (formData.previousService || [])
+                .filter((s: any) => s.isChecked)
+                .map((s: any) => String(s.id));
+
+            const registerData = {
+                data: [
+                    {
+                        Name: formData.name,
+                        EmailID: formData.email,
+                        Password: formData.password,
+                        MobileNo: formData.mobileNumber,
+                        AltMobileNo: formData.alternateMobileNumber || '',
+                        CompanyName: formData.companyName,
+                        GstNo: formData.gstin || '',
+                        Address: formData.address,
+                        UserType: 'P',
+
+                        CountryID: String(countryData?.CountryID || ''),
+                        StateID: String(stateData?.StateID || ''),
+                        CityID: String(cityData?.CityID || ''),
+                        RoleID: '1',
+                        IsActive: '0',
+
+                        FCMTokenID: 'fcm_token_sample_123', // Placeholder or get from device info
+
+                        ServiceTypeList: selectedServices,
+
+                        ProfileImageType: getImageType(profileImage?.type),
+                        ProfileImageBase64: profileImage?.base64 || '',
+
+                        PanImageType: getImageType(panCard?.type),
+                        PanImageBase64: panCard?.base64 || '',
+
+                        AadhaarFrontImageType: getImageType(aadharFront?.type),
+                        AadhaarFrontImageBase64: aadharFront?.base64 || '',
+
+                        AadhaarBackImageType: getImageType(aadharBack?.type),
+                        AadhaarBackImageBase64: aadharBack?.base64 || '',
+                    },
+                ],
+            };
+
+            props.registerActions('Vendor_Registration_Api', {
+                data: registerData,
+                callBack: (response: any) => {
+                    setSubmitting(false);
+                    if (response && response.status === 'success') {
+                        Toast.show({
+                            type: 'success',
+                            text1: 'Registration Successful',
+                            text2: 'Redirecting to login...',
+                        });
+                        setTimeout(() => {
+                            navigation.navigate('Login' as any);
+                        }, 2000);
+                    } else {
+                        Toast.show({
+                            type: 'error',
+                            text1: 'Registration Failed',
+                            text2: response?.message || 'Please try again later',
+                        });
+                    }
+                },
+            });
+        } catch (error) {
+            setSubmitting(false);
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'An unexpected error occurred',
+            });
+        }
     };
 
     return (
@@ -637,7 +732,7 @@ const Register = (props: any) => {
                                     activeOpacity={0.8}>
                                     {profileImage ? (
                                         <Image
-                                            source={{ uri: profileImage }}
+                                            source={{ uri: profileImage?.uri }}
                                             style={styles.profileImage}
                                             resizeMode="cover"
                                         />
@@ -1157,7 +1252,7 @@ const Register = (props: any) => {
                                                 title="Service Types"
                                                 value={getDisplayValue()}
                                                 required={false}
-                                                name="serviceTypes"
+                                                name="previousService"
                                                 disabled={false}
                                                 type="BSModal"
                                                 ischeckBoxReq={true}
@@ -1360,7 +1455,9 @@ const Register = (props: any) => {
                                             disabled={false}
                                             type="BSModal"
                                             errorMsg={error?.message}
-                                            dropDownFormData={cities}
+                                            dropDownFormData={cities.map(
+                                                (city) => city.CityName,
+                                            )}
                                         />
                                     )}
                                 />
@@ -1409,7 +1506,7 @@ const Register = (props: any) => {
                                                     {aadharFront ? (
                                                         <Image
                                                             source={{
-                                                                uri: aadharFront,
+                                                                uri: aadharFront?.uri,
                                                             }}
                                                             style={
                                                                 styles.documentPreview
@@ -1488,7 +1585,7 @@ const Register = (props: any) => {
                                                     {aadharBack ? (
                                                         <Image
                                                             source={{
-                                                                uri: aadharBack,
+                                                                uri: aadharBack?.uri,
                                                             }}
                                                             style={
                                                                 styles.documentPreview
@@ -1628,10 +1725,8 @@ const Register = (props: any) => {
                                                                 watchedValues.gstin &&
                                                                     watchedValues.gstin.trim() !==
                                                                     ''
-                                                                    ? gstCertificate ||
-                                                                    ''
-                                                                    : panCard ||
-                                                                    '',
+                                                                    ? gstCertificate?.uri
+                                                                    : panCard?.uri,
                                                         }}
                                                         style={
                                                             styles.documentPreview

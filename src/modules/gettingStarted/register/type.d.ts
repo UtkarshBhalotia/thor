@@ -3,7 +3,8 @@ type TUserRegisterConditionParamActionName =
     | 'Get_Country_List_Api'
     | 'Get_State_List_Api'
     | 'Get_City_List_Api'
-    | 'Get_Vendor_Details_By_ID_Api';
+    | 'Get_Vendor_Details_By_ID_Api'
+    | 'Vendor_Registration_Api';
 
 interface IUserRegisterActionConditionParam<
     T extends TUserRegisterConditionParamActionName,
@@ -38,6 +39,11 @@ type TUserGetVendorDetailsByIDParam = {
     callBack: (data: any) => void;
 };
 
+type TUserVendorRegistrationParam = {
+    data: any;
+    callBack: (response: any) => void;
+};
+
 type TUserRegisterConditionParamActionParam<
     T extends TUserRegisterConditionParamActionName,
 > = T extends 'Get_Service_Types_Api'
@@ -50,5 +56,7 @@ type TUserRegisterConditionParamActionParam<
     ? TUserGetCityListParam
     : T extends 'Get_Vendor_Details_By_ID_Api'
     ? TUserGetVendorDetailsByIDParam
+    : T extends 'Vendor_Registration_Api'
+    ? TUserVendorRegistrationParam
     : never;
 

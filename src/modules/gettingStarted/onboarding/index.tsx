@@ -25,19 +25,19 @@ const slides: Slide[] = [
     {
         id: '1',
         title: 'Manage Reports',
-        description: '',
+        description: 'Effortlessly organize and access all your business reports in one central location.',
         image: require('../../../assets/img/manageReports.png'),
     },
     {
         id: '2',
         title: 'Track Leads',
-        description: '',
+        description: 'Never miss an opportunity by staying updated on every lead with real-time tracking.',
         image: require('../../../assets/img/track_leads.png'),
     },
     {
         id: '3',
         title: 'Increase Revenue',
-        description: '',
+        description: 'Boost your productivity and maximize growth with our streamlined service tools.',
         image: require('../../../assets/img/increaseRevenue.png'),
     },
 ];
@@ -120,6 +120,7 @@ const Onboarding = () => {
                         </View>
                         <View style={styles.textContainer}>
                             <Text style={styles.title}>{item.title}</Text>
+                            {/* <Text style={styles.description}>{item.description}</Text> */}
                         </View>
                     </View>
                 )}
