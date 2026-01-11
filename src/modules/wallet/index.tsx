@@ -6,6 +6,10 @@ import {
     InteractionManager,
     TouchableOpacity,
     StatusBar,
+    Modal,
+    Platform,
+    Dimensions,
+    ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { walletStyles } from '../../assets/css/walletStyles';
@@ -17,25 +21,50 @@ import { connect } from 'react-redux';
 import { walletActions_dispatch } from '../../../store/action/mainTypedAction';
 import BSModal from '../../components/BSModal';
 import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
-import { validateRechargeAmount, createPaymentParams } from '../../services/payumoneyService';
-import { PAYUMONEY_CONFIG, PayUMoneyParams, PaymentResponse } from '../../config/payumoneyConfig';
+import {
+    validateRechargeAmount,
+    createPaymentParams,
+} from '../../services/payumoneyService';
+import {
+    PAYUMONEY_CONFIG,
+    PayUMoneyParams,
+    PaymentResponse,
+} from '../../config/payumoneyConfig';
 import { RazorpayService } from '../../services/RazorpayService';
 import { RAZORPAY_CONFIG } from '../../config/razorpayConfig';
 import Toast from 'react-native-toast-message';
 import PaymentWebView from './components/PaymentWebView';
+import CalendarPicker from 'react-native-calendar-picker';
 
 const Wallet = (props: any) => {
-    console.log(props, "Props");
+    console.log(props, 'Props');
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
     const [rechargeAmount, setRechargeAmount] = useState('');
     const [showPaymentWebView, setShowPaymentWebView] = useState(false);
-    const [paymentParams, setPaymentParams] = useState<PayUMoneyParams | null>(null);
+    const [paymentParams, setPaymentParams] = useState<PayUMoneyParams | null>(
+        null,
+    );
     // State management
     const [walletBalance, setWalletBalance] = useState('');
-    const [rechargeHistory, setRechargeHistory] = useState<IRechargeHistoryItem[]>([]);
-    const [selectedGateway, setSelectedGateway] = useState<'payumoney' | 'razorpay'>('payumoney');
+    const [openingBalance, setOpeningBalance] = useState('');
+    const [rechargeHistory, setRechargeHistory] = useState<
+        IRechargeHistoryItem[]
+    >([]);
+    const [selectedGateway, setSelectedGateway] = useState<
+        'payumoney' | 'razorpay'
+    >('payumoney');
+    // Filter and sort state
+    const [fromDate, setFromDate] = useState<Date>(() => {
+        const date = new Date();
+        date.setDate(date.getDate() - 30); // Default to 30 days ago
+        return date;
+    });
+    const [toDate, setToDate] = useState<Date>(new Date());
+    const [showFromPicker, setShowFromPicker] = useState(false);
+    const [showToPicker, setShowToPicker] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {
@@ -46,28 +75,58 @@ const Wallet = (props: any) => {
         };
     }, []);
 
+
+    const onDateChange = (date: any) => {
+        const selectedDate = new Date(date);
+        if (showFromPicker) {
+            setFromDate(selectedDate);
+            setShowFromPicker(false);
+        } else if (showToPicker) {
+            setToDate(selectedDate);
+            setShowToPicker(false);
+        }
+    };
+
+    const formatDate = (date: Date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const day = d.getDate().toString().padStart(2, '0');
+        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+        const year = d.getFullYear();
+        return `${year}-${month}-${day}`;
+    };
+
+
     const load = () => {
+        setIsLoading(true);
         // Fetch wallet balance
         props.walletActions('Wallet_Balance_Api', {
             callBack: (balance: string) => {
                 setWalletBalance(balance);
-                // Fetch recharge history after wallet balance
                 props.walletActions('Get_Recharge_History_Api', {
+                    fromDate: formatDate(fromDate),
+                    toDate: formatDate(toDate),
                     callBack: (data: IRechargeHistoryItem[]) => {
                         console.log('Recharge history:', data);
+                        setOpeningBalance(data[0].Amount);
                         setRechargeHistory(data);
-                    }
+                        setIsLoading(false);
+                    },
                 });
-            }
+            },
         });
     };
 
     const handleRecharge = () => {
         // Map recharge type to payment gateway
-        const mappedGateway = selectedGateway === 'razorpay' ? 'razorpay' : 'payumoney';
+        const mappedGateway =
+            selectedGateway === 'razorpay' ? 'razorpay' : 'payumoney';
 
         // Validate amount
-        const validateService = mappedGateway === 'razorpay' ? RazorpayService : { validateAmount: validateRechargeAmount };
+        const validateService =
+            mappedGateway === 'razorpay'
+                ? RazorpayService
+                : { validateAmount: validateRechargeAmount };
         const validation = validateService.validateAmount(rechargeAmount);
 
         if (!validation.valid) {
@@ -112,7 +171,7 @@ const Wallet = (props: any) => {
                 userEmail,
                 userName,
                 userPhone,
-                userId
+                userId,
             );
 
             console.log('PayUMoney Payment Params:', paymentParams);
@@ -127,7 +186,7 @@ const Wallet = (props: any) => {
         console.log('Razorpay Success:', response);
 
         // Process payment response
-        // Note: Using the same 'Process_Payment_Response' action if compatible, 
+        // Note: Using the same 'Process_Payment_Response' action if compatible,
         // or we might need a new one for Razorpay
         props.walletActions('Process_Payment_Response', {
             paymentResponse: {
@@ -153,7 +212,7 @@ const Wallet = (props: any) => {
                     // Reload wallet balance and history
                     load();
                 }
-            }
+            },
         });
     };
 
@@ -188,7 +247,7 @@ const Wallet = (props: any) => {
                     // Reload wallet balance and history
                     load();
                 }
-            }
+            },
         });
     };
 
@@ -216,133 +275,303 @@ const Wallet = (props: any) => {
         });
     };
 
-    // const handlePaymentPress = (recharge: IRechargeHistoryItem) => {
-    //     console.log('Recharge pressed:', recharge.RechargeID);
-    //     // Navigate to recharge details screen if needed
-    // };
-
     const renderEmptyList = () => (
         <View style={walletStyles.emptyContainer}>
-            <Text style={walletStyles.emptyText}>No recharge history found</Text>
+            <Text style={walletStyles.emptyText}>
+                No recharge history found
+            </Text>
         </View>
     );
 
     return (
         <SafeAreaView style={walletStyles.container} edges={['top']}>
-            <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
-            {/* Header with Back Button */}
-            <View style={[walletStyles.header, { flexDirection: 'row', alignItems: 'center' }]}>
+            <StatusBar backgroundColor="#F5F6FA" barStyle="dark-content" />
+            {/* Header */}
+            <View style={walletStyles.header}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    style={{
-                        padding: 8,
-                        marginRight: 12,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}
-                >
+                    style={walletStyles.headerIcon}>
                     <Ionicons name="chevron-back" size={24} color="#1C1F34" />
                 </TouchableOpacity>
-                <Text style={walletStyles.headerTitle}>Recharge History</Text>
+                <Text style={walletStyles.headerTitle}>
+                    Wallet
+                </Text>
             </View>
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ flexGrow: 1 }}
-            >
-                {/* Wallet Balance Card */}
+                contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
+                {/* Wallet Balance Card - White Background */}
                 <View style={walletStyles.balanceCard}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <View>
-                            <Text style={walletStyles.balanceLabel}>Wallet Balance</Text>
-                            <Text style={walletStyles.balanceAmount}>₹ {walletBalance}</Text>
-                        </View>
+                    <Text style={walletStyles.balanceAmount}>
+                        Wallet Balance: ₹ {walletBalance}
+                        CR
+                    </Text>
+                    <Text style={walletStyles.openingBalance}>
+                        Opening Balance: ₹
+                        {parseFloat(openingBalance || '0').toLocaleString(
+                            'en-IN',
+                            {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                            },
+                        )}{' '}
+                        CR
+                    </Text>
+                </View>
+
+                {/* Filter Section */}
+                <View style={walletStyles.filterSection}>
+                    <View style={walletStyles.dateRow}>
                         <TouchableOpacity
-                            style={walletStyles.walletRechargeButton}
-                            onPress={() => {
-                                setSelectedGateway('payumoney');
-                                rechargeModalRef.current?.present();
-                            }}
-                        >
+                            style={walletStyles.dateInput}
+                            onPress={() => setShowFromPicker(true)}>
                             <Ionicons
-                                name="add-circle-outline"
+                                name="calendar-outline"
                                 size={18}
-                                color="#FFFFFF"
-                                style={walletStyles.walletRechargeIcon}
+                                color="#5F60B9"
                             />
-                            <Text style={walletStyles.walletRechargeText}>Recharge Now</Text>
+                            <Text style={walletStyles.dateInputText}>
+                                {formatDate(fromDate)}
+                            </Text>
+                            <Ionicons
+                                name="chevron-forward"
+                                size={16}
+                                color="#8F8F8F"
+                                style={walletStyles.dateInputIcon}
+                            />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={walletStyles.dateInput}
+                            onPress={() => setShowToPicker(true)}>
+                            <Ionicons
+                                name="calendar-outline"
+                                size={18}
+                                color="#5F60B9"
+                            />
+                            <Text style={walletStyles.dateInputText}>
+                                {formatDate(toDate)}
+                            </Text>
+                            <Ionicons
+                                name="chevron-forward"
+                                size={16}
+                                color="#8F8F8F"
+                                style={walletStyles.dateInputIcon}
+                            />
                         </TouchableOpacity>
                     </View>
+
+                    <TouchableOpacity
+                        style={walletStyles.applyFilterButton}
+                        onPress={load}
+                        disabled={isLoading}>
+                        {isLoading ? (
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                        ) : (
+                            <Text style={walletStyles.applyFilterButtonText}>
+                                APPLY FILTER
+                            </Text>
+                        )}
+                    </TouchableOpacity>
                 </View>
 
-                {/* Recharge History Section */}
-                <View style={walletStyles.sectionHeader}>
-                    <Text style={walletStyles.sectionTitle}>Recharge History</Text>
-                </View>
-
-                {/* Recharge History List */}
-                {rechargeHistory.length > 0 ? (
-                    rechargeHistory.map((item) => (
-                        <PaymentHistoryCard
-                            key={item.TxnID}
-                            tranDate={item.Date}
-                            amount={`₹ ${item.Amount}`}
-                            remarks={item.Remarks}
-                            paymentId={item.TxnID}
-                        />
-                    ))
-                ) : (
-                    renderEmptyList()
-                )}
+                {/* Transaction History List */}
+                {rechargeHistory.length > 0
+                    ? rechargeHistory.map((item) => {
+                        return (
+                            <PaymentHistoryCard
+                                entryType={item.EntryType}
+                                key={item.TxnID}
+                                balance={item.Balance}
+                                tranDate={item.Date}
+                                drCr={item.DrCr}
+                                amount={item.Amount}
+                                remarks={item.Remarks || 'Transaction'}
+                                paymentId={item.TxnID}
+                            />
+                        );
+                    })
+                    : renderEmptyList()}
             </ScrollView>
+
+            {/* Date Picker Modal */}
+            <Modal
+                visible={showFromPicker || showToPicker}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => {
+                    setShowFromPicker(false);
+                    setShowToPicker(false);
+                }}>
+                <View
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}>
+                    <View
+                        style={{
+                            backgroundColor: '#FFFFFF',
+                            borderRadius: 16,
+                            padding: 20,
+                            width: Dimensions.get('window').width - 40,
+                            maxHeight: Dimensions.get('window').height - 100,
+                        }}>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginBottom: 20,
+                            }}>
+                            <Text
+                                style={{
+                                    fontSize: 18,
+                                    fontWeight: 'bold',
+                                    color: '#1C1F34',
+                                }}>
+                                Select {showFromPicker ? 'From' : 'To'} Date
+                            </Text>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setShowFromPicker(false);
+                                    setShowToPicker(false);
+                                }}
+                                style={{
+                                    padding: 8,
+                                    backgroundColor: '#F7F9FC',
+                                    borderRadius: 12,
+                                }}>
+                                <Ionicons
+                                    name="close"
+                                    size={24}
+                                    color="#8F9BB3"
+                                />
+                            </TouchableOpacity>
+                        </View>
+
+                        <CalendarPicker
+                            onDateChange={onDateChange}
+                            selectedDayColor="#5F60B9"
+                            selectedDayTextColor="#FFFFFF"
+                            todayBackgroundColor="#E4E9F2"
+                            todayTextStyle={{
+                                color: '#222B45',
+                                fontWeight: 'bold',
+                            }}
+                            initialDate={showToPicker ? toDate : fromDate}
+                            width={Dimensions.get('window').width - 88}
+                            textStyle={{
+                                fontFamily:
+                                    Platform.OS === 'ios' ? 'System' : 'Roboto',
+                                color: '#222B45',
+                            }}
+                            headerWrapperStyle={{
+                                paddingHorizontal: 0,
+                            }}
+                            monthTitleStyle={{
+                                fontSize: 16,
+                                fontWeight: '700',
+                                color: '#222B45',
+                            }}
+                            yearTitleStyle={{
+                                fontSize: 16,
+                                fontWeight: '700',
+                                color: '#222B45',
+                            }}
+                            dayLabelsWrapper={{
+                                borderTopWidth: 0,
+                                borderBottomWidth: 0,
+                                paddingTop: 10,
+                                paddingBottom: 10,
+                            }}
+                            nextComponent={
+                                <Ionicons
+                                    name="chevron-forward"
+                                    size={24}
+                                    color="#5F60B9"
+                                />
+                            }
+                            previousComponent={
+                                <Ionicons
+                                    name="chevron-back"
+                                    size={24}
+                                    color="#5F60B9"
+                                />
+                            }
+                        />
+                    </View>
+                </View>
+            </Modal>
 
             <BSModal
                 bsModalRef={rechargeModalRef}
                 headerTitle="Recharge Wallet"
-                snapPoints={['55%']}
-            >
+                snapPoints={['55%']}>
                 <View style={walletStyles.bottomSheetContent}>
-                    <Text style={walletStyles.inputLabel}>Select Recharge Type</Text>
+                    <Text style={walletStyles.inputLabel}>
+                        Select Recharge Type
+                    </Text>
                     <View style={walletStyles.gatewayContainer}>
                         <TouchableOpacity
                             style={[
                                 walletStyles.gatewayOption,
-                                selectedGateway === 'payumoney' && walletStyles.gatewayOptionSelected
+                                selectedGateway === 'payumoney' &&
+                                walletStyles.gatewayOptionSelected,
                             ]}
-                            onPress={() => setSelectedGateway('payumoney')}
-                        >
+                            onPress={() => setSelectedGateway('payumoney')}>
                             <Ionicons
                                 name="wallet-outline"
                                 size={24}
-                                color={selectedGateway === 'payumoney' ? '#5F60B9' : '#1C1F34'}
+                                color={
+                                    selectedGateway === 'payumoney'
+                                        ? '#5F60B9'
+                                        : '#1C1F34'
+                                }
                             />
-                            <Text style={[
-                                walletStyles.gatewayText,
-                                selectedGateway === 'payumoney' && walletStyles.gatewayTextSelected
-                            ]}>Wallet Balance</Text>
+                            <Text
+                                style={[
+                                    walletStyles.gatewayText,
+                                    selectedGateway === 'payumoney' &&
+                                    walletStyles.gatewayTextSelected,
+                                ]}>
+                                Wallet Balance
+                            </Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={[
                                 walletStyles.gatewayOption,
-                                selectedGateway === 'razorpay' && walletStyles.gatewayOptionSelected
+                                selectedGateway === 'razorpay' &&
+                                walletStyles.gatewayOptionSelected,
                             ]}
-                            onPress={() => setSelectedGateway('razorpay')}
-                        >
+                            onPress={() => setSelectedGateway('razorpay')}>
                             <Ionicons
                                 name="shield-checkmark-outline"
                                 size={24}
-                                color={selectedGateway === 'razorpay' ? '#5F60B9' : '#1C1F34'}
+                                color={
+                                    selectedGateway === 'razorpay'
+                                        ? '#5F60B9'
+                                        : '#1C1F34'
+                                }
                             />
-                            <Text style={[
-                                walletStyles.gatewayText,
-                                selectedGateway === 'razorpay' && walletStyles.gatewayTextSelected
-                            ]}>Security Deposit</Text>
+                            <Text
+                                style={[
+                                    walletStyles.gatewayText,
+                                    selectedGateway === 'razorpay' &&
+                                    walletStyles.gatewayTextSelected,
+                                ]}>
+                                Security Deposit
+                            </Text>
                         </TouchableOpacity>
                     </View>
 
                     <View style={walletStyles.amountInputContainer}>
-                        <Text style={walletStyles.inputLabel}>Enter Amount (Min: ₹{RAZORPAY_CONFIG.MIN_AMOUNT})</Text>
+                        <Text style={walletStyles.inputLabel}>
+                            Enter Amount (Min: ₹{RAZORPAY_CONFIG.MIN_AMOUNT})
+                        </Text>
                         <BottomSheetTextInput
                             style={walletStyles.amountInput}
                             placeholder="₹ 0.00"
@@ -354,9 +583,10 @@ const Wallet = (props: any) => {
 
                     <TouchableOpacity
                         style={walletStyles.rechargeActionButton}
-                        onPress={handleRecharge}
-                    >
-                        <Text style={walletStyles.rechargeActionButtonText}>Recharge</Text>
+                        onPress={handleRecharge}>
+                        <Text style={walletStyles.rechargeActionButtonText}>
+                            Recharge
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </BSModal>

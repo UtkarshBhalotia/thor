@@ -9,41 +9,41 @@ import NetInfo from '@react-native-community/netinfo';
  * Check if device has internet connectivity
  * @returns Promise<boolean> - true if connected, false otherwise
  */
-async function checkInternetConnectivity(): Promise<boolean> {
-    try {
-        const netState = await NetInfo.fetch();
+// async function checkInternetConnectivity(): Promise<boolean> {
+//     try {
+//         const netState = await NetInfo.fetch();
 
-        if (!netState.isConnected) {
-            showToast({
-                type: 'error',
-                text1: 'No Internet Connection',
-                text2: 'Please check your internet connection and try again.',
-                visibilityTime: 3000,
-            });
-            return false;
-        }
+//         if (!netState.isConnected) {
+//             showToast({
+//                 type: 'error',
+//                 text1: 'No Internet Connection',
+//                 text2: 'Please check your internet connection and try again.',
+//                 visibilityTime: 3000,
+//             });
+//             return false;
+//         }
 
-        return true;
-    } catch (error) {
-        console.error('Error checking internet connectivity:', error);
-        return true; // Proceed with request if connectivity check fails
-    }
-}
+//         return true;
+//     } catch (error) {
+//         console.error('Error checking internet connectivity:', error);
+//         return true; // Proceed with request if connectivity check fails
+//     }
+// }
 
 export async function clientPostHandler(param: IClientRequestParam) {
     // Check internet connectivity before making request
-    const isConnected = await checkInternetConnectivity();
+    // const isConnected = await checkInternetConnectivity();
 
-    if (!isConnected) {
-        return Promise.reject({
-            body: {
-                status: 'error',
-                error: {
-                    message: 'No Internet Connection',
-                },
-            },
-        });
-    }
+    // if (!isConnected) {
+    //     return Promise.reject({
+    //         body: {
+    //             status: 'error',
+    //             error: {
+    //                 message: 'No Internet Connection',
+    //             },
+    //         },
+    //     });
+    // }
 
     console.log('clientPostHandler', {
         param,

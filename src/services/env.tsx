@@ -2,14 +2,14 @@ export const ENV: 'dev' | 'prod' = 'dev';
 
 export const BASE_ENV = {
     dev: {
-        API_HOST: 'http://103.13.114.225/MyWebService.asmx/',
+        API_HOST: 'https://testcrm.dooda.in/MyWebService.asmx/',
     },
     prod: {
         API_HOST: 'https://crm.dooda.in/MyWebService.asmx/',
     },
 };
 
-export const NEW_URL = 'http://103.13.114.225/api/';
+export const NEW_URL = 'https://testcrm.dooda.in/api';
 
 export const BaseUrl = BASE_ENV[ENV].API_HOST;
 
@@ -43,7 +43,7 @@ const apiListing = {
     getVendorDetailsByIDUrl: `${BaseUrl}GetVendorDetailsByID`,
 
     getAllTypeVendorBalanceUrl: `${NEW_URL}/get_all_type_vendor_balance`,
-    getVendorLedgerWithOpeningBalanceUrl: `${NEW_URL}/vendor_ledger_with_opening_balance`,
+    getVendorLedgerWithOpeningBalanceUrl: `${NEW_URL}/vendor_ledger_with_opening_bal`,
 
     // PayUMoney endpoints (mock for now, replace with actual backend endpoints when available)
     initiatePaymentUrl: `${BaseUrl}InitiatePayment`, // Will generate payment hash on backend

@@ -9,36 +9,47 @@ export const walletStyles = StyleSheet.create({
     // Header
     header: {
         paddingHorizontal: 20,
-        paddingVertical: 15,
+        paddingTop: 15,
         backgroundColor: '#FFFFFF',
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     headerTitle: {
         fontSize: 20,
         fontWeight: 'bold',
         color: '#1C1F34',
+        flex: 1,
+        marginLeft: 12,
+    },
+    headerIcon: {
+        padding: 8,
     },
 
     // Wallet Balance Card
     balanceCard: {
-        backgroundColor: '#5F60B9',
+        backgroundColor: '#FFFFFF',
         marginHorizontal: 20,
-        marginVertical: 20,
+        marginTop: 20,
+        marginBottom: 15,
         padding: 24,
-        borderRadius: 16,
-        // shadowColor: '#000',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
     },
     balanceLabel: {
         fontSize: 14,
-        color: '#FFFFFF',
-        opacity: 0.9,
+        color: '#8F8F8F',
         marginBottom: 8,
     },
     balanceAmount: {
-        fontSize: 36,
+        fontSize: 20,
         fontWeight: 'bold',
-        color: '#FFFFFF',
+        color: '#5F60B9',
+        marginBottom: 8,
+    },
+    openingBalance: {
+        fontSize: 14,
+        color: '#8F8F8F',
     },
 
     // Section Header
@@ -73,18 +84,17 @@ export const walletStyles = StyleSheet.create({
     paymentCard: {
         backgroundColor: '#FFFFFF',
         marginHorizontal: 20,
-        marginBottom: 15,
-        padding: 16,
+        marginBottom: 12,
+        padding: 12,
         borderRadius: 12,
         borderWidth: 1,
         borderColor: '#E0E0E0',
-        // shadowColor: '#000',
     },
     paymentHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 12,
+        alignItems: 'center',
+        marginBottom: 4,
     },
     paymentLeft: {
         flex: 1,
@@ -282,5 +292,116 @@ export const walletStyles = StyleSheet.create({
     },
     gatewayTextSelected: {
         color: '#5F60B9',
+    },
+    // Filter Section
+    filterSection: {
+        marginHorizontal: 20,
+        marginBottom: 15,
+        padding: 16,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    filterHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    filterLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    filterIcon: {
+        marginRight: 8,
+    },
+    filterLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1C1F34',
+    },
+    sortContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    sortLabel: {
+        fontSize: 14,
+        color: '#1C1F34',
+        marginRight: 4,
+    },
+    dateRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 15,
+        gap: 10,
+    },
+    dateInput: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 12,
+        backgroundColor: '#F7F7FB',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    dateInputText: {
+        paddingLeft: 8,
+        fontSize: 14,
+        color: '#1C1F34',
+        flex: 1,
+    },
+    dateInputIcon: {
+        marginLeft: 8,
+    },
+    applyFilterButton: {
+        backgroundColor: '#5F60B9',
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    applyFilterButtonText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    // Updated Payment Card Styles
+    transactionType: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1C1F34',
+        marginBottom: 4,
+    },
+    dateTimeBalanceRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 8,
+    },
+    dateTimeBalanceDivider: {
+        fontSize: 13,
+        color: '#8F8F8F',
+        marginHorizontal: 8,
+    },
+    transactionDateTime: {
+        fontSize: 13,
+        color: '#8F8F8F',
+    },
+    transactionAmount: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    transactionAmountCredit: {
+        color: '#107C10',
+    },
+    transactionAmountDebit: {
+        color: '#C50F1F',
+    },
+    currentBalance: {
+        fontSize: 13,
+        color: '#8F8F8F',
     },
 });

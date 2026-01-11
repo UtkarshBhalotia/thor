@@ -21,6 +21,8 @@ type TWalletBalanceParam = {
 };
 
 type TGetRechargeHistoryParam = {
+    fromDate: Date;
+    toDate: Date;
     callBack: (data: IRechargeHistoryItem[]) => void;
 };
 
@@ -58,6 +60,9 @@ interface IRechargeHistoryItem {
     Amount: string;
     Date: string;
     Remarks: string;
+    EntryType: string;
+    Balance: string;
+    DrCr: string;
 }
 
 interface IResponseParam {

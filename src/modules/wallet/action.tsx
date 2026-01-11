@@ -123,12 +123,17 @@ function* Get_Recharge_History_Api(actionParam: TGetRechargeHistoryParam) {
             (state: RootState) => state.globalState,
         );
         const dataObj = {
-            UserID: GlobalState.userId,
-        }
+            data: [{
+                userid: GlobalState.userId,
+                fromdate: actionParam.fromDate,
+                todate: actionParam.toDate,
+            }],
+        };
         const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getAllRechargeListForVendorUrl,
+            url: projectEnv.getVendorLedgerWithOpeningBalanceUrl,
             data: dataObj,
         });
+
 
         yield Get_Recharge_History_Api_Response(response, actionParam.callBack);
 
@@ -143,20 +148,17 @@ function* Get_Recharge_History_Api(actionParam: TGetRechargeHistoryParam) {
 
 function* Get_Recharge_History_Api_Response(response: IResponseParam, callBack: (data: IRechargeHistoryItem[]) => void) {
     try {
-        if (response && response.body) {
-            const responseData = response.body;
+        if (response.body.status === 'success') {
+            const responseData = response.body.data.response;
+            callBack(responseData);
 
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-            } else {
-                showToast({
-                    type: 'error',
-                    text1: 'No recharge history found',
-                    visibilityTime: 2000,
-                });
-                callBack([]);
-            }
+        } else if (response.body.status === 'error') {
+            callBack([]);
+            showToast({
+                type: 'error',
+                text1: response.body.message,
+                visibilityTime: 2000,
+            });
         }
 
     } catch (error) {

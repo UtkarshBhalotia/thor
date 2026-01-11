@@ -1,50 +1,66 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
 import { walletStyles } from '../../../assets/css/walletStyles';
-
 
 interface PaymentHistoryCardProps {
     tranDate: string;
     amount: string;
     remarks: string;
     paymentId: string;
+    entryType: string;
+    balance: string;
+    drCr: string;
 }
 
 const PaymentHistoryCard: React.FC<PaymentHistoryCardProps> = ({
     tranDate,
     amount,
-    remarks,
-    paymentId,
-
+    entryType,
+    balance,
+    drCr,
 }) => {
 
+    // Format amount with CR/DR suffix
+    const formatAmount = (amt: string | number, credit: boolean) => {
+        const sign = credit ? '+' : '-';
+        const suffix = credit ? ' CR' : ' DR';
+        const safeAmt = (amt ?? '0').toString();
+        const numericAmount = parseFloat(safeAmt.replace(/[₹,\s]/g, '') || '0');
+        const formattedAmount = numericAmount.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+        return `${sign}₹${formattedAmount}${suffix}`;
+    };
 
     return (
-        <View
-            style={walletStyles.paymentCard}
-
-        >
-            {/* Payment Header */}
-            <View style={walletStyles.paymentHeader}>
-                <View style={walletStyles.paymentLeft}>
-                    <Text style={walletStyles.serviceName}>{tranDate}</Text>
-                    {/* <Text style={walletStyles.bookingId}>{remarks}</Text> */}
-                </View>
-                <Text style={walletStyles.paymentAmount}>{amount}</Text>
-            </View>
-
-            {/* Payment Details */}
-            <View style={walletStyles.detailsGrid}>
-                {/* Payment ID */}
-                <View style={walletStyles.detailRow}>
-                    <View style={walletStyles.detailItem}>
-                        <Text style={walletStyles.detailLabel}>Payment ID</Text>
-                        <Text style={walletStyles.detailValue}>{paymentId}</Text>
-                    </View>
+        drCr !== 'Opening' && (
+            <View style={walletStyles.paymentCard}>
+                <View style={walletStyles.paymentHeader}>
+                    <Text style={walletStyles.transactionType}>
+                        {entryType || 'Transaction'}
+                    </Text>
+                    <Text
+                        style={[
+                            walletStyles.transactionAmount,
+                            drCr === 'Credit'
+                                ? walletStyles.transactionAmountCredit
+                                : walletStyles.transactionAmountDebit,
+                        ]}>
+                        {formatAmount(amount, drCr === 'Credit')}
+                    </Text>
                 </View>
 
+                <View style={walletStyles.dateTimeBalanceRow}>
+                    <Text style={walletStyles.transactionDateTime}>
+                        {tranDate}
+                    </Text>
+                    <Text style={walletStyles.currentBalance}>
+                        Balance: ₹{balance}
+                    </Text>
+                </View>
             </View>
-        </View>
+        )
     );
 };
 
