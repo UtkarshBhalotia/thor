@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StatusBar, Animated, Easing, Image } from 'react-native';
 import { splashStyles } from '../assets/css/splashStyles';
 
-const LauncherLogo = require('../assets/img/launcher.png');
+const LauncherLogo = require('../assets/img/new_launcher.png');
 
 type WelcomeToSODProps = {
     setShowWelcomeScreen: (show: boolean) => void;
@@ -141,7 +141,7 @@ const WelcomeToSOD = ({ setShowWelcomeScreen }: WelcomeToSODProps) => {
                     <Image
                         source={LauncherLogo}
                         style={splashStyles.logoImage}
-                        resizeMode="contain"
+                        resizeMode="cover"
                     />
                 </Animated.View>
 
