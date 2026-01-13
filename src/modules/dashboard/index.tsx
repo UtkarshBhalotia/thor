@@ -7,6 +7,8 @@ import {
     InteractionManager,
     StatusBar,
     Image,
+    BackHandler,
+    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { dashboardStyles } from '../../assets/css/dashboardStyles';
@@ -15,9 +17,10 @@ import StatCard from './components/StatCard';
 import ServiceCard from './components/ServiceCard';
 import ReviewCard from './components/ReviewCard';
 import ReportCard from './components/ReportCard';
-import { NavigationProp, useNavigation, useIsFocused } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useIsFocused, CommonActions } from '@react-navigation/native';
 import { AppDispatch, RootState } from '../../../store';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
+import { removeItem, STORAGE_KEYS } from '../../utils/storage';
 import {
     dashboardActions_dispatch,
     walletActions_dispatch,
@@ -37,10 +40,12 @@ import Toast from 'react-native-toast-message';
 import PaymentWebView from '../wallet/components/PaymentWebView';
 import { ActivityIndicator, Modal, StyleSheet } from 'react-native';
 import { useCallback } from 'react';
+import { RootStackParamList } from '../../navigations/navigation';
 
 const Dashboard = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const isFocused = useIsFocused();
+    const dispatch = useDispatch();
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
     const [rechargeAmount, setRechargeAmount] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -115,6 +120,52 @@ const Dashboard = (props: any) => {
             serviceName: 'Kitchen cleaning',
         },
     ];
+
+    useEffect(() => {
+        const handleBackPress = () => {
+            if (isFocused) {
+                Alert.alert(
+                    'Exit Application',
+                    'Are you sure you want to logout?',
+                    [
+                        {
+                            text: 'Cancel',
+                            onPress: () => null,
+                            style: 'cancel',
+                        },
+                        {
+                            text: 'OK',
+                            onPress: () => handleLogout(),
+                        },
+                    ],
+                    { cancelable: false }
+                );
+                return true;
+            }
+            return false;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            handleBackPress
+        );
+
+        return () => backHandler.remove();
+    }, [isFocused]);
+
+    const handleLogout = async () => {
+        setIsLoading(true);
+        await removeItem(STORAGE_KEYS.USER_INFO);
+        await removeItem(STORAGE_KEYS.AUTH_TOKEN);
+        dispatch({ type: 'GLOBAL_RESET' });
+        setIsLoading(false);
+        navigation.dispatch(
+            CommonActions.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+            })
+        );
+    };
 
     useEffect(() => {
         if (isFocused) {
@@ -596,7 +647,7 @@ const Dashboard = (props: any) => {
                         Ongoing Services
                     </Text>
                     <TouchableOpacity
-                        onPress={() => navigation.navigate('Booking')}>
+                        onPress={() => navigation.navigate('HomeTabs', { screen: 'Bookings', params: { initialTab: 'Ongoing' } })}>
                         <Text style={dashboardStyles.viewAllLink}>
                             View all
                         </Text>
@@ -620,7 +671,7 @@ const Dashboard = (props: any) => {
                         </Text>
                         <TouchableOpacity
                             style={dashboardStyles.emptyStateButton}
-                            onPress={() => navigation.navigate('Booking')}>
+                            onPress={() => navigation.navigate('HomeTabs', { screen: 'Bookings', params: { initialTab: 'New' } })}>
                             <Text style={dashboardStyles.emptyStateButtonText}>
                                 View New Leads
                             </Text>
@@ -692,9 +743,6 @@ const Dashboard = (props: any) => {
                     setMinRechargeAmount('');
                 }}
                 customHandleChangePosition={(index: number) => {
-                    if (index === 0 && selectedGateway === 'payumoney') {
-                        fetchMinRechargeAmount();
-                    }
                 }}>
                 <View style={dashboardStyles.bottomSheetContent}>
                     <Text style={dashboardStyles.inputLabel}>

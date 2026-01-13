@@ -7,18 +7,21 @@ import {
     FlatList,
     InteractionManager,
     StatusBar,
+    ActivityIndicator,
+    Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { bookingStyles } from '../../assets/css/bookingStyles';
 import ServiceCard from '../dashboard/components/ServiceCard';
 import AcceptLeadConfirmationModal from '../../components/AcceptLeadConfirmationModal';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { AppDispatch, RootState } from '../../../store';
 import { connect } from 'react-redux';
 import { bookingActions_dispatch } from '../../../store/action/mainTypedAction';
 import { showToast } from '../../utils/common';
+import { RootStackParamList } from '../../navigations/navigation';
 
 type BookingStatus =
     | 'New'
@@ -31,12 +34,23 @@ type TabFilter = 'All' | BookingStatus;
 
 const Booking = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const [activeTab, setActiveTab] = useState<TabFilter>('New');
+    const route = useRoute<any>();
+    const initialTab = route.params?.initialTab as TabFilter;
+
+    const [activeTab, setActiveTab] = useState<TabFilter>(initialTab || 'New');
     const [assignedServices, setAssignedServices] = useState<any[]>([]);
     const [selectedLead, setSelectedLead] = useState<any | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
     const [isAcceptingLead, setIsAcceptingLead] = useState(false);
     const [isDenyingLead, setIsDenyingLead] = useState(false);
     const acceptModalRef = useRef<BottomSheetModal>(null);
+
+    // Sync activeTab with initialTab from params
+    useEffect(() => {
+        if (route.params?.initialTab) {
+            setActiveTab(route.params.initialTab);
+        }
+    }, [route.params?.initialTab]);
 
     useEffect(() => {
         const task = InteractionManager.runAfterInteractions(() => {
@@ -48,10 +62,25 @@ const Booking = (props: any) => {
     }, [activeTab]);
 
     const load = (status: string) => {
+        setIsLoading(true);
+        const startTime = Date.now();
+
         props.bookingActions('Get_Leads_List_Api', {
             status: status,
             callBack: (data: any) => {
-                setAssignedServices(data);
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                const minDuration = 500; // 500ms minimum loading time
+
+                if (duration < minDuration) {
+                    setTimeout(() => {
+                        setAssignedServices(data);
+                        setIsLoading(false);
+                    }, minDuration - duration);
+                } else {
+                    setAssignedServices(data);
+                    setIsLoading(false);
+                }
             },
         });
     };
@@ -98,7 +127,7 @@ const Booking = (props: any) => {
                     if (success) {
                         acceptModalRef.current?.dismiss();
                         setSelectedLead(null);
-                        load(activeTab);
+                        setActiveTab('Ongoing');
                         showToast({
                             type: 'success',
                             text1: message || 'Lead accepted successfully',
@@ -128,7 +157,9 @@ const Booking = (props: any) => {
                     setIsDenyingLead(false);
                     if (success) {
                         load(activeTab);
-                        load('Ongoing');
+                        if (activeTab !== 'Ongoing') {
+                            load('Ongoing');
+                        }
                         showToast({
                             type: 'success',
                             text1: message || 'Lead denied successfully',
@@ -164,7 +195,9 @@ const Booking = (props: any) => {
                 callBack: (success: boolean, message: string) => {
                     if (success) {
                         load(activeTab);
-                        load('Ongoing');
+                        if (activeTab !== 'Ongoing') {
+                            load('Ongoing');
+                        }
                         showToast({
                             type: 'success',
                             text1: message || 'Lead completed successfully',
@@ -202,8 +235,7 @@ const Booking = (props: any) => {
             nextDate: formatDateForApi(data.nextFollowUpDate),
             callBack: (success: boolean, message: string) => {
                 if (success) {
-                    load(activeTab);
-                    load('Ongoing');
+                    setActiveTab('Ongoing');
                     showToast({
                         type: 'success',
                         text1: message || 'Follow up added successfully',
@@ -330,20 +362,23 @@ const Booking = (props: any) => {
     return (
         <SafeAreaView style={bookingStyles.container} edges={['top']}>
             <StatusBar backgroundColor="#F5F6FA" barStyle="dark-content" />
+
+            {/* Full Screen Loader */}
+            <Modal
+                transparent={true}
+                animationType="none"
+                visible={isLoading}
+                onRequestClose={() => { }}>
+                <View style={bookingStyles.loaderOverlay}>
+                    <ActivityIndicator size="large" color="#5F60B9" />
+                </View>
+            </Modal>
+            <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
             {/* Header */}
-            <View
-                style={[
-                    bookingStyles.header,
-                    { flexDirection: 'row', alignItems: 'center' },
-                ]}>
+            <View style={bookingStyles.header}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    style={{
-                        padding: 8,
-                        marginRight: 12,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                    }}>
+                    style={bookingStyles.backButton}>
                     <Ionicons name="chevron-back" size={24} color="#1C1F34" />
                 </TouchableOpacity>
                 <Text style={bookingStyles.headerTitle}>Leads</Text>
@@ -403,11 +438,11 @@ const Booking = (props: any) => {
                 leadDetails={
                     selectedLead
                         ? {
-                              leadNo: selectedLead.LeadNo,
-                              leadType: selectedLead.ServiceTypeName,
-                              leadAmount: selectedLead.LeadAmount,
-                              leadDate: selectedLead.LeadDate,
-                          }
+                            leadNo: selectedLead.LeadNo,
+                            leadType: selectedLead.ServiceTypeName,
+                            leadAmount: selectedLead.LeadAmount,
+                            leadDate: selectedLead.LeadDate,
+                        }
                         : undefined
                 }
                 isLoading={isAcceptingLead}

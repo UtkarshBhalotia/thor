@@ -7,12 +7,14 @@ import {
     LayoutAnimation,
     Platform,
     UIManager,
+    Linking,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import DeniedLeadFormModal from '../../../components/DeniedLeadFormModal';
 import CompletedLeadFormModal from '../../../components/CompletedLeadFormModal';
 import FollowUpLeadFormModal from '../../../components/FollowUpLeadFormModal';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // Enable LayoutAnimation for Android
 if (
@@ -137,6 +139,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     }) => {
         if (onCompleted) {
             onCompleted(data);
+        }
+    };
+
+    const handleCallPress = (mobile?: string) => {
+        if (mobile) {
+            Linking.openURL(`tel:${mobile}`);
         }
     };
 
@@ -371,123 +379,145 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                         </>
                     )}
 
-                    {/* Ongoing Status - Customer Details & Action Buttons */}
-                    {leadStatus === 'Ongoing' && (
-                        <>
-                            <View style={styles.divider} />
+                    {/* Ongoing or Follow Up Status - Customer Details & Action Buttons */}
+                    {(leadStatus?.trim().toLowerCase() === 'ongoing' ||
+                        leadStatus?.trim().toLowerCase() === 'follow up' ||
+                        leadStatus?.trim().toLowerCase() === 'followup' ||
+                        leadStatus?.trim().toLowerCase() === 'follow-up') && (
+                            <>
+                                <View style={styles.divider} />
 
-                            {/* Expandable Customer Details */}
-                            <TouchableOpacity
-                                activeOpacity={0.7}
-                                onPress={toggleCustomerDetails}
-                                style={styles.customerDetailsToggle}>
-                                <Text style={styles.customerDetailsToggleText}>
-                                    View Customer Details
-                                </Text>
-                                <Text style={styles.customerDetailsArrow}>
-                                    {isCustomerDetailsExpanded ? '▲' : '▼'}
-                                </Text>
-                            </TouchableOpacity>
+                                {/* Expandable Customer Details */}
+                                <TouchableOpacity
+                                    activeOpacity={0.7}
+                                    onPress={toggleCustomerDetails}
+                                    style={styles.customerDetailsToggle}>
+                                    <Text style={styles.customerDetailsToggleText}>
+                                        View Customer Details
+                                    </Text>
+                                    <Text style={styles.customerDetailsArrow}>
+                                        {isCustomerDetailsExpanded ? '▲' : '▼'}
+                                    </Text>
+                                </TouchableOpacity>
 
-                            {isCustomerDetailsExpanded && (
-                                <>
-                                    <View
-                                        style={styles.customerDetailsContainer}>
-                                        <View style={styles.customerDetailRow}>
-                                            <Text
-                                                style={
-                                                    styles.customerDetailLabel
-                                                }>
-                                                Customer Name
-                                            </Text>
-                                            <Text
-                                                style={
-                                                    styles.customerDetailValue
-                                                }>
-                                                {customerDetails.customerName ||
-                                                    '-'}
-                                            </Text>
+                                {isCustomerDetailsExpanded && (
+                                    <>
+                                        <View
+                                            style={styles.customerDetailsContainer}>
+                                            <View style={styles.customerDetailRow}>
+                                                <Text
+                                                    style={
+                                                        styles.customerDetailLabel
+                                                    }>
+                                                    Customer Name
+                                                </Text>
+                                                <Text
+                                                    style={
+                                                        styles.customerDetailValue
+                                                    }>
+                                                    {customerDetails.customerName ||
+                                                        '-'}
+                                                </Text>
+                                            </View>
+                                            <View style={styles.customerDetailRow}>
+                                                <Text
+                                                    style={
+                                                        styles.customerDetailLabel
+                                                    }>
+                                                    Customer Mobile
+                                                </Text>
+                                                <View style={styles.customerMobileValueContainer}>
+                                                    <Text
+                                                        style={
+                                                            styles.customerDetailValue
+                                                        }>
+                                                        {customerDetails.customerMobile ||
+                                                            '-'}
+                                                    </Text>
+                                                    {customerDetails.customerMobile && (
+                                                        <TouchableOpacity
+                                                            onPress={() =>
+                                                                handleCallPress(
+                                                                    customerDetails.customerMobile,
+                                                                )
+                                                            }
+                                                            style={
+                                                                styles.callIconButton
+                                                            }>
+                                                            <Ionicons
+                                                                name="call"
+                                                                size={18}
+                                                                color="#5F60B9"
+                                                            />
+                                                        </TouchableOpacity>
+                                                    )}
+                                                </View>
+                                            </View>
+                                            <View style={styles.customerDetailRow}>
+                                                <Text
+                                                    style={
+                                                        styles.customerDetailLabel
+                                                    }>
+                                                    Customer Address
+                                                </Text>
+                                                <Text
+                                                    style={
+                                                        styles.customerDetailValue
+                                                    }>
+                                                    {customerDetails.customerAddress ||
+                                                        '-'}
+                                                </Text>
+                                            </View>
+                                            <View style={styles.customerDetailRow}>
+                                                <Text
+                                                    style={
+                                                        styles.customerDetailLabel
+                                                    }>
+                                                    Accept Lead Date
+                                                </Text>
+                                                <Text
+                                                    style={
+                                                        styles.customerDetailValue
+                                                    }>
+                                                    {customerDetails.acceptLeadDate ||
+                                                        '-'}
+                                                </Text>
+                                            </View>
                                         </View>
-                                        <View style={styles.customerDetailRow}>
-                                            <Text
-                                                style={
-                                                    styles.customerDetailLabel
-                                                }>
-                                                Customer Mobile
-                                            </Text>
-                                            <Text
-                                                style={
-                                                    styles.customerDetailValue
-                                                }>
-                                                {customerDetails.customerMobile ||
-                                                    '-'}
-                                            </Text>
-                                        </View>
-                                        <View style={styles.customerDetailRow}>
-                                            <Text
-                                                style={
-                                                    styles.customerDetailLabel
-                                                }>
-                                                Customer Address
-                                            </Text>
-                                            <Text
-                                                style={
-                                                    styles.customerDetailValue
-                                                }>
-                                                {customerDetails.customerAddress ||
-                                                    '-'}
-                                            </Text>
-                                        </View>
-                                        <View style={styles.customerDetailRow}>
-                                            <Text
-                                                style={
-                                                    styles.customerDetailLabel
-                                                }>
-                                                Accept Lead Date
-                                            </Text>
-                                            <Text
-                                                style={
-                                                    styles.customerDetailValue
-                                                }>
-                                                {customerDetails.acceptLeadDate ||
-                                                    '-'}
-                                            </Text>
-                                        </View>
-                                    </View>
 
-                                    {/* Three Action Buttons - Shown after customer details expanded */}
-                                    <View style={styles.ongoingButtonsRow}>
-                                        <TouchableOpacity
-                                            activeOpacity={0.8}
-                                            onPress={handleFollowUpPress}
-                                            style={styles.followUpBtn}>
-                                            <Text
-                                                style={styles.followUpBtnText}>
-                                                📞 Follow Up
-                                            </Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            activeOpacity={0.8}
-                                            onPress={handleDeniedPress}
-                                            style={styles.deniedBtn}>
-                                            <Text style={styles.deniedBtnText}>
-                                                ✕ Denied
-                                            </Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            activeOpacity={0.8}
-                                            onPress={handleCompletedPress}
-                                            style={styles.completedBtn}>
-                                            <Text
-                                                style={styles.completedBtnText}>
-                                                ✓ Completed
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </>
-                            )}
-                        </>
-                    )}
+                                        {/* Three Action Buttons - Shown after customer details expanded */}
+                                        <View style={styles.ongoingButtonsRow}>
+                                            <TouchableOpacity
+                                                activeOpacity={0.8}
+                                                onPress={handleFollowUpPress}
+                                                style={styles.followUpBtn}>
+                                                <Text
+                                                    style={styles.followUpBtnText}>
+                                                    📞 Follow Up
+                                                </Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                activeOpacity={0.8}
+                                                onPress={handleDeniedPress}
+                                                style={styles.deniedBtn}>
+                                                <Text style={styles.deniedBtnText}>
+                                                    ✕ Denied
+                                                </Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                activeOpacity={0.8}
+                                                onPress={handleCompletedPress}
+                                                style={styles.completedBtn}>
+                                                <Text
+                                                    style={styles.completedBtnText}>
+                                                    ✓ Completed
+                                                </Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </>
+                                )}
+                            </>
+                        )}
                 </View>
             </View>
 
@@ -703,6 +733,19 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         flex: 1.5,
         textAlign: 'right',
+    },
+    customerMobileValueContainer: {
+        flex: 1.5,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: 8,
+    },
+    callIconButton: {
+        backgroundColor: '#F0F0F5',
+        padding: 6,
+        borderRadius: 20,
+        marginLeft: 4,
     },
 });
 

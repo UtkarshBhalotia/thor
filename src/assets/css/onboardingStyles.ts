@@ -6,7 +6,7 @@ const { width, height } = Dimensions.get('window');
 export const onboardingStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: '#FFFFFF',
     },
     slide: {
         width: width,
@@ -18,34 +18,39 @@ export const onboardingStyles = StyleSheet.create({
     },
     imageContainer: {
         width: width,
-        height: height * 0.65,
+        height: height * 0.55,
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 0,
     },
     image: {
         width: width,
-        height: height * 0.65,
+        height: height * 0.55,
         resizeMode: 'contain',
     },
     textContainer: {
         width: width,
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingTop: 20,
-        paddingBottom: 10,
+        justifyContent: 'flex-start',
+        paddingTop: 10,
+        paddingBottom: 20,
+        paddingHorizontal: 25,
+        flex: 1,
     },
     title: {
-        fontSize: RFValue(28),
+        fontSize: RFValue(24),
         fontWeight: '700',
         color: '#5F60B9',
         textAlign: 'center',
+        marginBottom: 12,
     },
     description: {
-        fontSize: RFValue(14),
-        color: '#8A8BDD',
+        fontSize: RFValue(15),
+        color: '#6B7280',
         textAlign: 'center',
-        lineHeight: 24,
+        lineHeight: 22,
+        marginTop: 10,
+        paddingHorizontal: 10,
     },
     footer: {
         position: 'absolute',
@@ -55,7 +60,7 @@ export const onboardingStyles = StyleSheet.create({
         paddingHorizontal: 30,
         paddingBottom: 40,
         paddingTop: 20,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: '#FFFFFF',
     },
     pagination: {
         flexDirection: 'row',
@@ -77,13 +82,13 @@ export const onboardingStyles = StyleSheet.create({
     },
     buttonContainer: {
         width: '100%',
+        alignItems: 'center',
     },
     button: {
         backgroundColor: '#5F60B9',
-        paddingVertical: 16,
-        paddingHorizontal: 40,
-        borderRadius: 12,
-        width: '100%',
+        paddingVertical: 12,
+        paddingHorizontal: 50,
+        borderRadius: 8,
         alignItems: 'center',
         justifyContent: 'center',
         shadowColor: '#5F60B9',
@@ -97,7 +102,7 @@ export const onboardingStyles = StyleSheet.create({
     },
     buttonText: {
         color: '#FFFFFF',
-        fontSize: RFValue(18),
+        fontSize: RFValue(15),
         fontWeight: '600',
         letterSpacing: 0.5,
     },

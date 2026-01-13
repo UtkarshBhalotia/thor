@@ -35,6 +35,7 @@ import { RAZORPAY_CONFIG } from '../../config/razorpayConfig';
 import Toast from 'react-native-toast-message';
 import PaymentWebView from './components/PaymentWebView';
 import CalendarPicker from 'react-native-calendar-picker';
+import { RootStackParamList } from '../../navigations/navigation';
 
 const Wallet = (props: any) => {
     console.log(props, 'Props');
@@ -285,7 +286,7 @@ const Wallet = (props: any) => {
 
     return (
         <SafeAreaView style={walletStyles.container} edges={['top']}>
-            <StatusBar backgroundColor="#F5F6FA" barStyle="dark-content" />
+            <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
             {/* Header */}
             <View style={walletStyles.header}>
                 <TouchableOpacity
@@ -293,9 +294,7 @@ const Wallet = (props: any) => {
                     style={walletStyles.headerIcon}>
                     <Ionicons name="chevron-back" size={24} color="#1C1F34" />
                 </TouchableOpacity>
-                <Text style={walletStyles.headerTitle}>
-                    Wallet
-                </Text>
+                <Text style={walletStyles.headerTitle}>Wallet</Text>
             </View>
 
             <ScrollView

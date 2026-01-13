@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StatusBar, Animated, Easing, Image } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
 import { splashStyles } from '../assets/css/splashStyles';
 
 const LauncherLogo = require('../assets/img/new_launcher.png');
@@ -99,7 +100,7 @@ const WelcomeToSOD = ({ setShowWelcomeScreen }: WelcomeToSODProps) => {
             useNativeDriver: false,
         }).start();
 
-        // Navigate after splash
+        //   Navigate after splash
         const timer = setTimeout(() => {
             setShowWelcomeScreen(false);
         }, 2500);
@@ -108,8 +109,12 @@ const WelcomeToSOD = ({ setShowWelcomeScreen }: WelcomeToSODProps) => {
     }, []);
 
     return (
-        <View style={splashStyles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#F8FBFC" />
+        <LinearGradient
+            colors={['#6B46C1', '#9333EA', '#4C1D95']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={splashStyles.container}>
+            <StatusBar barStyle="light-content" backgroundColor="#6B46C1" />
 
             {/* Background decorative circles */}
             <View style={splashStyles.backgroundCircle1} />
@@ -173,7 +178,7 @@ const WelcomeToSOD = ({ setShowWelcomeScreen }: WelcomeToSODProps) => {
                 </View>
                 <Text style={splashStyles.versionText}>v1.0.0</Text>
             </View>
-        </View>
+        </LinearGradient>
     );
 };
 

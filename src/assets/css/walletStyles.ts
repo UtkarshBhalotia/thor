@@ -8,21 +8,22 @@ export const walletStyles = StyleSheet.create({
 
     // Header
     header: {
-        paddingHorizontal: 20,
-        paddingTop: 15,
-        backgroundColor: '#FFFFFF',
         flexDirection: 'row',
         alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#FFFFFF',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
     },
     headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 18,
+        fontWeight: '700',
         color: '#1C1F34',
-        flex: 1,
-        marginLeft: 12,
     },
     headerIcon: {
-        padding: 8,
+        padding: 4,
+        marginRight: 12,
     },
 
     // Wallet Balance Card

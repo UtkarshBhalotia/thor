@@ -87,7 +87,7 @@ function* GetLeadsListApi(actionParam: TUserGetLeadsListParam) {
         });
 
         yield GetLeadsListApi_Response(response, actionParam.callBack);
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetLeadsListApi_Response(
@@ -110,7 +110,7 @@ function* GetLeadsListApi_Response(
                 });
             }
         }
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetLeadDetailByLeadIdApi(
@@ -131,7 +131,7 @@ function* GetLeadDetailByLeadIdApi(
         });
 
         yield GetLeadDetailByLeadIdApi_Response(response, actionParam.callBack);
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* GetLeadDetailByLeadIdApi_Response(
@@ -154,7 +154,7 @@ function* GetLeadDetailByLeadIdApi_Response(
                 });
             }
         }
-    } catch (error) {}
+    } catch (error) { }
 }
 
 function* AcceptLeadByVendorApi(actionParam: TAcceptLeadByVendorParam) {
@@ -188,20 +188,31 @@ function* AcceptLeadByVendorApi_Response(
     try {
         if (response && response.body) {
             const responseData = response.body;
-            if (responseData.d == '1') {
-                const parsedData = JSON.parse(responseData.d);
+
+            if (responseData.d === '1') {
+                callBack(true, 'Lead accepted successfully');
+                return;
+            }
+
+            let parsedData: any;
+            try {
+                parsedData = JSON.parse(responseData.d);
+            } catch (e) {
+                // If it's not valid JSON and not '1', treat as error message
+                callBack(false, responseData.d || 'Failed to accept lead');
+                return;
+            }
+
+            if (parsedData) {
+                const isSuccess = parsedData.status === 'success' || parsedData.Status === 'success' || parsedData.status === true || parsedData.Status === true;
                 callBack(
-                    parsedData.status === 'success',
+                    isSuccess,
                     parsedData.message ||
-                        parsedData.Message ||
-                        'Lead accepted successfully',
+                    parsedData.Message ||
+                    (isSuccess ? 'Lead accepted successfully' : 'Failed to accept lead'),
                 );
             } else {
-                callBack(
-                    false,
-                    responseData.d ||
-                        'Failed to accept lead. Please try again.',
-                );
+                callBack(false, 'Failed to accept lead. Please try again.');
             }
         }
     } catch (error) {
@@ -244,19 +255,29 @@ function* DenyLeadByVendorApi_Response(
     try {
         if (response && response.body) {
             const responseData = response.body;
-            if (responseData.d == '1') {
-                const parsedData = JSON.parse(responseData.d);
+            if (responseData.d === '1') {
+                callBack(true, 'Lead denied successfully');
+                return;
+            }
+
+            let parsedData: any;
+            try {
+                parsedData = JSON.parse(responseData.d);
+            } catch (e) {
+                callBack(false, responseData.d || 'Failed to deny lead');
+                return;
+            }
+
+            if (parsedData) {
+                const isSuccess = parsedData.status === 'success' || parsedData.Status === 'success' || parsedData.status === true || parsedData.Status === true;
                 callBack(
-                    parsedData.status === 'success',
+                    isSuccess,
                     parsedData.message ||
-                        parsedData.Message ||
-                        'Lead denied successfully',
+                    parsedData.Message ||
+                    (isSuccess ? 'Lead denied successfully' : 'Failed to deny lead'),
                 );
             } else {
-                callBack(
-                    false,
-                    responseData.d || 'Failed to deny lead. Please try again.',
-                );
+                callBack(false, 'Failed to deny lead. Please try again.');
             }
         }
     } catch (error) {
@@ -300,20 +321,29 @@ function* CompleteLeadByVendorApi_Response(
     try {
         if (response && response.body) {
             const responseData = response.body;
-            if (responseData.d == '1') {
-                const parsedData = JSON.parse(responseData.d);
+            if (responseData.d === '1') {
+                callBack(true, 'Lead completed successfully');
+                return;
+            }
+
+            let parsedData: any;
+            try {
+                parsedData = JSON.parse(responseData.d);
+            } catch (e) {
+                callBack(false, responseData.d || 'Failed to complete lead');
+                return;
+            }
+
+            if (parsedData) {
+                const isSuccess = parsedData.status === 'success' || parsedData.Status === 'success' || parsedData.status === true || parsedData.Status === true;
                 callBack(
-                    parsedData.status === 'success',
+                    isSuccess,
                     parsedData.message ||
-                        parsedData.Message ||
-                        'Lead completed successfully',
+                    parsedData.Message ||
+                    (isSuccess ? 'Lead completed successfully' : 'Failed to complete lead'),
                 );
             } else {
-                callBack(
-                    false,
-                    responseData.d ||
-                        'Failed to complete lead. Please try again.',
-                );
+                callBack(false, 'Failed to complete lead. Please try again.');
             }
         }
     } catch (error) {
@@ -356,20 +386,29 @@ function* FollowUpLeadByVendorApi_Response(
     try {
         if (response && response.body) {
             const responseData = response.body;
-            if (responseData.d == '1') {
-                const parsedData = JSON.parse(responseData.d);
+            if (responseData.d === '1') {
+                callBack(true, 'Follow up added successfully');
+                return;
+            }
+
+            let parsedData: any;
+            try {
+                parsedData = JSON.parse(responseData.d);
+            } catch (e) {
+                callBack(false, responseData.d || 'Failed to add follow up');
+                return;
+            }
+
+            if (parsedData) {
+                const isSuccess = parsedData.status === 'success' || parsedData.Status === 'success' || parsedData.status === true || parsedData.Status === true;
                 callBack(
-                    parsedData.status === 'success',
+                    isSuccess,
                     parsedData.message ||
-                        parsedData.Message ||
-                        'Follow up added successfully',
+                    parsedData.Message ||
+                    (isSuccess ? 'Follow up added successfully' : 'Failed to add follow up'),
                 );
             } else {
-                callBack(
-                    false,
-                    responseData.d ||
-                        'Failed to add follow up. Please try again.',
-                );
+                callBack(false, 'Failed to add follow up. Please try again.');
             }
         }
     } catch (error) {

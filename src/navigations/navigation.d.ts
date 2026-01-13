@@ -1,11 +1,13 @@
-type RootStackParamList = {
+import { NavigatorScreenParams } from '@react-navigation/native';
+
+export type RootStackParamList = {
     WelcomeToSOD: { setShowWelcomeScreen: (show: boolean) => void };
     Login: undefined;
     Onboarding: undefined;
     Register: undefined;
-    HomeTabs: undefined;
+    HomeTabs: NavigatorScreenParams<TabParamList>;
     Dashboard: undefined;
-    Booking: undefined;
+    Booking: { initialTab?: 'New' | 'Ongoing' | 'Follow Up' | 'Denied' | 'Completed' | 'Complaint' };
     Wallet: undefined;
     Profile: undefined;
     More: undefined;
@@ -13,9 +15,9 @@ type RootStackParamList = {
     Report: undefined;
 };
 
-type TabParamList = {
+export type TabParamList = {
     Home: undefined;
-    Bookings: undefined;
+    Bookings: { initialTab?: 'New' | 'Ongoing' | 'Follow Up' | 'Denied' | 'Completed' | 'Complaint' };
     Recharge: undefined;
     Profile: undefined;
     More: undefined;

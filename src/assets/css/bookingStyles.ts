@@ -6,15 +6,21 @@ export const bookingStyles = StyleSheet.create({
         backgroundColor: '#F5F6FA',
     },
     header: {
-        paddingHorizontal: 20,
-        paddingVertical: 15,
-        backgroundColor: '#F5F6FA',
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#FFFFFF',
         borderBottomWidth: 1,
-        borderBottomColor: '#EAEAF0',
+        borderBottomColor: '#F0F0F0',
+    },
+    backButton: {
+        padding: 4,
+        marginRight: 12,
     },
     headerTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
+        fontSize: 18,
+        fontWeight: '700',
         color: '#1C1F34',
     },
 
@@ -233,5 +239,11 @@ export const bookingStyles = StyleSheet.create({
         fontSize: 11,
         fontWeight: 'bold',
         color: '#FFFFFF',
+    },
+    loaderOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

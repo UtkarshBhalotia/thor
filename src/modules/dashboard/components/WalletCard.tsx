@@ -25,7 +25,15 @@ const WalletCard: React.FC<WalletCardProps> = ({ balance, onPress, onRechargePre
                 alignItems: 'center',
             }}>
                 <View>
-                    <Text style={dashboardStyles.walletLabel}>Wallet Balance</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                        <Ionicons
+                            name="wallet-outline"
+                            size={18}
+                            color="#FFFFFF"
+                            style={{ marginRight: 6 }}
+                        />
+                        <Text style={dashboardStyles.walletLabel}>Wallet Balance</Text>
+                    </View>
                     <Text style={dashboardStyles.walletBalance}>₹ {balance}</Text>
                 </View>
                 <TouchableOpacity
