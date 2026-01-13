@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import {
     View,
     Text,
-    ScrollView,
     TouchableOpacity,
     FlatList,
     InteractionManager,
@@ -15,7 +14,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { bookingStyles } from '../../assets/css/bookingStyles';
 import ServiceCard from '../dashboard/components/ServiceCard';
 import AcceptLeadConfirmationModal from '../../components/AcceptLeadConfirmationModal';
-import { NavigationProp, RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useRoute } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { AppDispatch, RootState } from '../../../store';
 import { connect } from 'react-redux';
@@ -31,6 +30,15 @@ type BookingStatus =
     | 'Completed'
     | 'Complaint';
 type TabFilter = 'All' | BookingStatus;
+
+const TAB_CONFIG: Record<BookingStatus, { icon: string; style: any; text: string }> = {
+    New: { icon: 'flash', style: bookingStyles.tabNew, text: 'New' },
+    Ongoing: { icon: 'construct', style: bookingStyles.tabOngoing, text: 'Ongoing' },
+    'Follow Up': { icon: 'call', style: bookingStyles.tabFollowUp, text: 'Follow Up' },
+    Denied: { icon: 'close-circle', style: bookingStyles.tabDenied, text: 'Denied' },
+    Completed: { icon: 'checkmark-circle', style: bookingStyles.tabCompleted, text: 'Completed' },
+    Complaint: { icon: 'alert-circle', style: bookingStyles.tabComplaint, text: 'Complaint' },
+};
 
 const Booking = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -61,32 +69,18 @@ const Booking = (props: any) => {
         };
     }, [activeTab]);
 
-    const load = (status: string) => {
+    const load = (status: TabFilter) => {
         setIsLoading(true);
-        const startTime = Date.now();
-
         props.bookingActions('Get_Leads_List_Api', {
-            status: status,
-            callBack: (data: any) => {
-                const endTime = Date.now();
-                const duration = endTime - startTime;
-                const minDuration = 500; // 500ms minimum loading time
-
-                if (duration < minDuration) {
-                    setTimeout(() => {
-                        setAssignedServices(data);
-                        setIsLoading(false);
-                    }, minDuration - duration);
-                } else {
-                    setAssignedServices(data);
-                    setIsLoading(false);
-                }
+            status: status === 'All' ? '' : status,
+            callBack: (data: any[]) => {
+                setAssignedServices(data || []);
+                setIsLoading(false);
             },
         });
     };
 
-    // Tab options
-    const tabs: TabFilter[] = [
+    const tabs: BookingStatus[] = [
         'New',
         'Ongoing',
         'Follow Up',
@@ -94,18 +88,6 @@ const Booking = (props: any) => {
         'Completed',
         'Complaint',
     ];
-
-    // Get count for each tab (Note: This will only show count for loaded data,
-    // maybe we need a separate count API or just match current list)
-    const getTabCount = (tab: TabFilter) => {
-        if (tab === activeTab) {
-            return assignedServices.length;
-        }
-        // Since we are fetching per tab, we might not have counts for other tabs
-        // unless we fetch them or have a separate summary API.
-        // For now, staying consistent with the request but noting this behavior.
-        return 0;
-    };
 
     const handleAcceptService = (serviceId: string) => {
         const lead = assignedServices.find((item) => item.LeadID === serviceId);
@@ -126,8 +108,11 @@ const Booking = (props: any) => {
                     setIsAcceptingLead(false);
                     if (success) {
                         acceptModalRef.current?.dismiss();
-                        setSelectedLead(null);
-                        setActiveTab('Ongoing');
+                        if (activeTab === 'Ongoing') {
+                            load('Ongoing');
+                        } else {
+                            setActiveTab('Ongoing');
+                        }
                         showToast({
                             type: 'success',
                             text1: message || 'Lead accepted successfully',
@@ -156,9 +141,10 @@ const Booking = (props: any) => {
                 callBack: (success: boolean, message: string) => {
                     setIsDenyingLead(false);
                     if (success) {
-                        load(activeTab);
-                        if (activeTab !== 'Ongoing') {
+                        if (activeTab === 'Ongoing') {
                             load('Ongoing');
+                        } else {
+                            setActiveTab('Ongoing');
                         }
                         showToast({
                             type: 'success',
@@ -185,34 +171,32 @@ const Booking = (props: any) => {
             otherRemarks: string;
         },
     ) => {
-        const lead = assignedServices.find((item) => item.LeadID === leadId);
-        if (lead) {
-            props.bookingActions('Complete_Lead_By_Vendor_Api', {
-                leadId: leadId,
-                partsDesc: data.serviceDetails,
-                remarks: data.otherRemarks || '',
-                customerAmount: data.totalBillAmount,
-                callBack: (success: boolean, message: string) => {
-                    if (success) {
-                        load(activeTab);
-                        if (activeTab !== 'Ongoing') {
-                            load('Ongoing');
-                        }
-                        showToast({
-                            type: 'success',
-                            text1: message || 'Lead completed successfully',
-                            visibilityTime: 2000,
-                        });
+        props.bookingActions('Complete_Lead_By_Vendor_Api', {
+            leadId: leadId,
+            partsDesc: data.serviceDetails,
+            remarks: data.otherRemarks || '',
+            customerAmount: data.totalBillAmount,
+            callBack: (success: boolean, message: string) => {
+                if (success) {
+                    if (activeTab === 'Ongoing') {
+                        load('Ongoing');
                     } else {
-                        showToast({
-                            type: 'error',
-                            text1: message || 'Failed to complete lead',
-                            visibilityTime: 3000,
-                        });
+                        setActiveTab('Ongoing');
                     }
-                },
-            });
-        }
+                    showToast({
+                        type: 'success',
+                        text1: message || 'Lead completed successfully',
+                        visibilityTime: 2000,
+                    });
+                } else {
+                    showToast({
+                        type: 'error',
+                        text1: message || 'Failed to complete lead',
+                        visibilityTime: 3000,
+                    });
+                }
+            },
+        });
     };
 
     const handleFollowUpLead = (
@@ -235,7 +219,11 @@ const Booking = (props: any) => {
             nextDate: formatDateForApi(data.nextFollowUpDate),
             callBack: (success: boolean, message: string) => {
                 if (success) {
-                    setActiveTab('Ongoing');
+                    if (activeTab === 'Ongoing') {
+                        load('Ongoing');
+                    } else {
+                        setActiveTab('Ongoing');
+                    }
                     showToast({
                         type: 'success',
                         text1: message || 'Follow up added successfully',
@@ -305,51 +293,6 @@ const Booking = (props: any) => {
         />
     );
 
-    // Get tab styles based on status
-    const getTabStyles = (tab: TabFilter) => {
-        const isActive = activeTab === tab;
-        if (!isActive) return { tab: {}, text: {} };
-
-        switch (tab) {
-            case 'New':
-                return {
-                    tab: { backgroundColor: '#E3F2FD' },
-                    text: { color: '#1976D2' },
-                };
-            case 'Ongoing':
-                return {
-                    tab: { backgroundColor: '#FFF3E0' },
-                    text: { color: '#F57C00' },
-                };
-            case 'Complaint':
-                return {
-                    tab: { backgroundColor: '#FFEBEE' },
-                    text: { color: '#D32F2F' },
-                };
-            case 'Completed':
-                return {
-                    tab: { backgroundColor: '#E8F5E9' },
-                    text: { color: '#388E3C' },
-                };
-            case 'Denied':
-                return {
-                    tab: { backgroundColor: '#F5F5F5' },
-                    text: { color: '#616161' },
-                };
-            case 'Follow Up':
-                return {
-                    tab: { backgroundColor: '#F3E5F5' },
-                    text: { color: '#7B1FA2' },
-                };
-            case 'All':
-            default:
-                return {
-                    tab: bookingStyles.tabActive,
-                    text: bookingStyles.tabTextActive,
-                };
-        }
-    };
-
     const renderEmptyList = () => (
         <View style={bookingStyles.emptyContainer}>
             <Text style={bookingStyles.emptyText}>
@@ -361,8 +304,6 @@ const Booking = (props: any) => {
 
     return (
         <SafeAreaView style={bookingStyles.container} edges={['top']}>
-            <StatusBar backgroundColor="#F5F6FA" barStyle="dark-content" />
-
             {/* Full Screen Loader */}
             <Modal
                 transparent={true}
@@ -374,6 +315,7 @@ const Booking = (props: any) => {
                 </View>
             </Modal>
             <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
+
             {/* Header */}
             <View style={bookingStyles.header}>
                 <TouchableOpacity
@@ -384,41 +326,41 @@ const Booking = (props: any) => {
                 <Text style={bookingStyles.headerTitle}>Leads</Text>
             </View>
 
-            {/* Tab Filter */}
+            {/* Tab Filter Grid */}
             <View style={bookingStyles.tabContainer}>
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={bookingStyles.tabScrollContent}
-                    style={bookingStyles.tabScrollView}>
+                <View style={bookingStyles.tabGrid}>
                     {tabs.map((tab) => {
                         const isActive = activeTab === tab;
-                        const tabStyles = getTabStyles(tab);
+                        const config = TAB_CONFIG[tab];
 
                         return (
                             <TouchableOpacity
                                 key={tab}
                                 style={[
                                     bookingStyles.tab,
-                                    isActive && tabStyles.tab,
+                                    isActive && bookingStyles.tabActive,
+                                    isActive && config.style,
                                 ]}
                                 onPress={() => setActiveTab(tab)}>
+                                <Ionicons
+                                    name={config.icon}
+                                    size={15}
+                                    color={isActive ? '#FFFFFF' : '#8F8F8F'}
+                                    style={bookingStyles.tabIcon}
+                                />
                                 <Text
+                                    numberOfLines={1}
                                     style={[
                                         bookingStyles.tabText,
-                                        isActive && tabStyles.text,
+                                        isActive && bookingStyles.tabTextActive,
                                     ]}>
-                                    {tab === 'All'
-                                        ? `${tab} Leads`
-                                        : `${tab} Leads`}{' '}
-                                    {isActive
-                                        ? `(${assignedServices.length})`
-                                        : ''}
+                                    {config.text}
+                                    {isActive ? ` (${assignedServices.length})` : ''}
                                 </Text>
                             </TouchableOpacity>
                         );
                     })}
-                </ScrollView>
+                </View>
             </View>
 
             {/* Booking List */}

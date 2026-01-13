@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 
 export const bookingStyles = StyleSheet.create({
     container: {
@@ -26,36 +26,58 @@ export const bookingStyles = StyleSheet.create({
 
     // Tab Filter Section
     tabContainer: {
-        backgroundColor: '#F5F6FA',
+        backgroundColor: '#FFFFFF',
         paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
+        paddingHorizontal: 12,
     },
-    tabScrollView: {
-        paddingHorizontal: 20,
-    },
-    tabScrollContent: {
-        gap: 10,
+    tabGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        rowGap: 10,
     },
     tab: {
-        paddingHorizontal: 16,
+        width: '32%',
+        flexDirection: 'row',
         paddingVertical: 8,
-        borderRadius: 20,
+        paddingHorizontal: 4,
+        borderRadius: 10,
         backgroundColor: '#F7F7FB',
-        marginRight: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        // borderWidth: 1,
+        // borderColor: '#5F60B9',
     },
-    tabActive: {
-        backgroundColor: '#5F60B9',
+    tabIcon: {
+        marginRight: 4,
     },
     tabText: {
         fontSize: 14,
+        fontWeight: 'bold',
         color: '#8F8F8F',
-        fontWeight: '500',
+    },
+    tabActive: {
+        borderColor: '#FFFFFF',
+        borderWidth: 2,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
     },
     tabTextActive: {
         color: '#FFFFFF',
-        fontWeight: '600',
+        fontWeight: 'bold',
+        fontSize: 12,
     },
+    // Status specific (Active states)
+    tabNew: { backgroundColor: '#2196F3' },
+    tabOngoing: { backgroundColor: '#FF9800' },
+    tabFollowUp: { backgroundColor: '#7B1FA2' },
+    tabDenied: { backgroundColor: '#C50F1F' },
+    tabCompleted: { backgroundColor: '#107C10' },
+    tabComplaint: { backgroundColor: '#FF9800' },
+    tabAll: { backgroundColor: '#1C1F34' },
 
     // Booking List
     listContainer: {
