@@ -152,6 +152,7 @@ const Login = (props: any) => {
                                             keyboard={'email-address'}
                                             isEditable={true}
                                             autoFocus={true}
+                                            autoCapitalize="none"
                                         />
                                     </>
                                 )}

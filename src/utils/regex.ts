@@ -28,6 +28,7 @@ export const Regex_Patterns = Object.freeze({
     numberWithMinus: /[^-\d]+/g,
     negativeAmount: /[^0-9-]+/g,
     removeSpacialCharFromFirstLetter: /^[^a-zA-Z0-9]+/g,
+    stripUnicode: /[^\x00-\x7F]/g,
 });
 
 export const regex_validation = (

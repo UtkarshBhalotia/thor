@@ -278,7 +278,7 @@ const Profile = (props: any) => {
                     onPress={() => navigation.goBack()}>
                     <Ionicons name="chevron-back" size={24} color="#1C1F34" />
                 </TouchableOpacity>
-                <Text style={profileStyles.headerTitle}>Update Profile</Text>
+                <Text style={profileStyles.headerTitle}>Profile</Text>
             </View>
 
             <ScrollView
@@ -456,7 +456,7 @@ const Profile = (props: any) => {
                             style={[
                                 profileStyles.updateButton,
                                 (!isUpdateButtonEnabled || submitting) &&
-                                    profileStyles.disabledButton,
+                                profileStyles.disabledButton,
                             ]}
                             onPress={handleSubmit(handleUpdateProfile)}
                             disabled={!isUpdateButtonEnabled || submitting}>

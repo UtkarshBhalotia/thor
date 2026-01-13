@@ -34,7 +34,7 @@ import { registerStyles } from '../../../assets/css/registerStyles';
 import SODTextInput from '../../../components/SODTextInput';
 import SODDropDown from '../../../components/SODDropDown';
 import { Character_Limit } from '../../../utils/common';
-import { regex_validation } from '../../../utils/regex';
+import { regex_validation, Regex_Patterns } from '../../../utils/regex';
 import Layout from '../../../assets/css/layout';
 import BSModal from '../../../components/BSModal';
 import LinearGradient from 'react-native-linear-gradient';
@@ -756,7 +756,7 @@ const Register = (props: any) => {
                                             style={
                                                 styles.profilePhotoOverlayIcon
                                             }>
-                                            {profileImage ? '✏️' : '➕'}
+                                            {profileImage ? '✏️' : '+'}
                                         </Text>
                                     </View>
                                 </TouchableOpacity>
@@ -811,6 +811,7 @@ const Register = (props: any) => {
                                             maxlength={Character_Limit.name}
                                             keyboard={'default'}
                                             isEditable={true}
+                                            disallowUnicode={true}
                                         />
                                     )}
                                 />
@@ -856,6 +857,8 @@ const Register = (props: any) => {
                                             maxlength={Character_Limit.email}
                                             keyboard={'email-address'}
                                             isEditable={true}
+                                            disallowUnicode={true}
+                                            autoCapitalize="none"
                                         />
                                     )}
                                 />
@@ -906,6 +909,7 @@ const Register = (props: any) => {
                                                 }
                                                 keyboard={'default'}
                                                 isEditable={true}
+                                                disallowUnicode={true}
                                                 secureTextEntry={
                                                     isPasswordSecure
                                                 }
@@ -992,6 +996,7 @@ const Register = (props: any) => {
                                                 }
                                                 keyboard={'numeric'}
                                                 isEditable={true}
+                                                disallowUnicode={true}
                                             />
 
                                             {/* Mobile Verification Section */}
@@ -1085,7 +1090,7 @@ const Register = (props: any) => {
                                         <SODTextInput
                                             ref={ref}
                                             title="alternateMobileNumber"
-                                            placeholder="Enter Alternate Mobile Number (Optional)"
+                                            placeholder="Enter Alt Mobile No. (Optional)"
                                             placeholderTextColor="#8F8F8F"
                                             onChangeText={(text: string) => {
                                                 onChange(text);
@@ -1105,6 +1110,7 @@ const Register = (props: any) => {
                                             maxlength={Character_Limit.mobile}
                                             keyboard={'numeric'}
                                             isEditable={true}
+                                            disallowUnicode={true}
                                         />
                                     )}
                                 />
@@ -1139,6 +1145,7 @@ const Register = (props: any) => {
                                             maxlength={Character_Limit.address}
                                             keyboard={'default'}
                                             isEditable={true}
+                                            disallowUnicode={true}
                                         />
                                     )}
                                 />
@@ -1175,6 +1182,7 @@ const Register = (props: any) => {
                                             }
                                             keyboard={'default'}
                                             isEditable={true}
+                                            disallowUnicode={true}
                                         />
                                     )}
                                 />
@@ -1220,6 +1228,7 @@ const Register = (props: any) => {
                                             maxlength={Character_Limit.gstin}
                                             keyboard={'default'}
                                             isEditable={true}
+                                            disallowUnicode={true}
                                         />
                                     )}
                                 />
@@ -1251,7 +1260,7 @@ const Register = (props: any) => {
                                             <SODDropDown
                                                 title="Service Types"
                                                 value={getDisplayValue()}
-                                                required={false}
+                                                required={true}
                                                 name="previousService"
                                                 disabled={false}
                                                 type="BSModal"
@@ -1540,9 +1549,7 @@ const Register = (props: any) => {
                                                             style={
                                                                 styles.documentOverlayIcon
                                                             }>
-                                                            {aadharFront
-                                                                ? '✏️'
-                                                                : '➕'}
+                                                            {aadharFront ? '✏️' : '+'}
                                                         </Text>
                                                     </View>
                                                 </TouchableOpacity>
@@ -1619,9 +1626,7 @@ const Register = (props: any) => {
                                                             style={
                                                                 styles.documentOverlayIcon
                                                             }>
-                                                            {aadharBack
-                                                                ? '✏️'
-                                                                : '➕'}
+                                                            {aadharBack ? '✏️' : '+'}
                                                         </Text>
                                                     </View>
                                                 </TouchableOpacity>
@@ -1768,15 +1773,7 @@ const Register = (props: any) => {
                                                         style={
                                                             styles.documentOverlayIcon
                                                         }>
-                                                        {(
-                                                            watchedValues.gstin &&
-                                                                watchedValues.gstin.trim() !==
-                                                                ''
-                                                                ? gstCertificate
-                                                                : panCard
-                                                        )
-                                                            ? '✏️'
-                                                            : '➕'}
+                                                        {((watchedValues.gstin && watchedValues.gstin.trim() !== '' ? gstCertificate : panCard)) ? '✏️' : '+'}
                                                     </Text>
                                                 </View>
                                             </TouchableOpacity>
@@ -1907,7 +1904,14 @@ const Register = (props: any) => {
                         <TextInput
                             style={styles.otpInput}
                             value={otpCode}
-                            onChangeText={setOtpCode}
+                            onChangeText={(text) =>
+                                setOtpCode(
+                                    text.replace(
+                                        Regex_Patterns.stripUnicode,
+                                        '',
+                                    ),
+                                )
+                            }
                             placeholder="Enter 6-digit OTP"
                             placeholderTextColor="#8F8F8F"
                             keyboardType="numeric"

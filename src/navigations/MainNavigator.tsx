@@ -73,7 +73,7 @@ const HomeTabs = () => {
             <Tab.Screen
                 name="Recharge"
                 component={Wallet}
-                options={{ tabBarLabel: 'Recharge' }}
+                options={{ tabBarLabel: 'Wallet' }}
             />
             <Tab.Screen
                 name="Profile"

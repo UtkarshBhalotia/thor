@@ -552,4 +552,11 @@ export const dashboardStyles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
     },
+    loaderOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
+    },
 });

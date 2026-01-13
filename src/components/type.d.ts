@@ -21,6 +21,8 @@ type TInputFieldProps = {
     placeholderTextColor?: string;
     autoExpand?: boolean;
     minHeight?: number;
+    disallowUnicode?: boolean;
+    autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
 };
 
 type BSModalProps = {
@@ -68,6 +70,8 @@ type BSModalProps = {
     backdropOnPress?: () => void;
     customOnDismiss?: () => void;
     headerTitleBelowComponent?: React.JSX.Element;
+    showCloseButton?: boolean;
+    onClosePress?: () => void;
 };
 
 type TSODDropDownProps = {
@@ -87,4 +91,5 @@ type TSODDropDownProps = {
     type: 'default' | 'BSModal';
     disabled: boolean;
     scrollRef?: React.RefObject<ScrollView>;
+    disallowUnicode?: boolean;
 };

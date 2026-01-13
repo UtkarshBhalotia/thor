@@ -5,7 +5,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import Common from '../assets/css/common';
 import BSModal from './BSModal';
 import { closeBSModal } from '../utils/BSModalUtils';
@@ -80,6 +80,33 @@ const DropDownModalWithCheckBox = (props: {
         <BSModal
             bsModalRef={props.dropDownModalRef}
             snapPoints={['90%']}
+            footer={
+                <View
+                    style={{
+                        padding: 16,
+                        backgroundColor: '#FFFFFF',
+                        borderTopWidth: 1,
+                        borderTopColor: '#F0F0F0',
+                    }}>
+                    <TouchableOpacity
+                        style={{
+                            backgroundColor: '#5F60B9',
+                            paddingVertical: 14,
+                            borderRadius: 12,
+                            alignItems: 'center',
+                        }}
+                        onPress={() => closeBSModal(props.dropDownModalRef)}>
+                        <Text
+                            style={{
+                                color: '#FFFFFF',
+                                fontSize: 16,
+                                fontWeight: 'bold',
+                            }}>
+                            Proceed
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            }
             onCloseRequest={() => {
                 closeBSModal(props.dropDownModalRef),
                     props.setDropDownModal(false);

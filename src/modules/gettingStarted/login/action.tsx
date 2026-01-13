@@ -86,11 +86,20 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                     validateGST: userData.ValidateGST,
                 };
 
-                showToast({
-                    type: 'success',
-                    text1: 'Login Successfully',
-                    visibilityTime: 2000,
-                });
+                if (userInfo.userType === 'A') {
+                    showToast({
+                        type: 'error',
+                        text1: 'Admin Login Not Allowed',
+                        visibilityTime: 2000,
+                    });
+                    return;
+                }
+
+                // showToast({
+                //     type: 'success',
+                //     text1: 'Login Successfully',
+                //     visibilityTime: 2000,
+                // });
 
                 yield put({
                     type: 'GLOBAL_STATE_MUTATE',

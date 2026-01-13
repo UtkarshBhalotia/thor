@@ -15,7 +15,7 @@ import StatCard from './components/StatCard';
 import ServiceCard from './components/ServiceCard';
 import ReviewCard from './components/ReviewCard';
 import ReportCard from './components/ReportCard';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useIsFocused } from '@react-navigation/native';
 import { AppDispatch, RootState } from '../../../store';
 import { connect } from 'react-redux';
 import {
@@ -35,11 +35,15 @@ import {
 import { PayUMoneyParams, PaymentResponse } from '../../config/payumoneyConfig';
 import Toast from 'react-native-toast-message';
 import PaymentWebView from '../wallet/components/PaymentWebView';
+import { ActivityIndicator, Modal, StyleSheet } from 'react-native';
+import { useCallback } from 'react';
 
 const Dashboard = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const isFocused = useIsFocused();
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
     const [rechargeAmount, setRechargeAmount] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const [selectedGateway, setSelectedGateway] = useState<
         'payumoney' | 'razorpay'
     >('payumoney');
@@ -113,15 +117,18 @@ const Dashboard = (props: any) => {
     ];
 
     useEffect(() => {
-        const task = InteractionManager.runAfterInteractions(() => {
-            load();
-        });
-        return () => {
-            task.cancel();
-        };
-    }, []);
+        if (isFocused) {
+            const task = InteractionManager.runAfterInteractions(() => {
+                load();
+            });
+            return () => {
+                task.cancel();
+            };
+        }
+    }, [isFocused]);
 
     const load = () => {
+        setIsLoading(true);
         props.dashboardActions('Get_All_Type_Vendor_Balance_Api', {
             callBack: (data: {
                 walletBalance: string;
@@ -137,6 +144,7 @@ const Dashboard = (props: any) => {
                 props.dashboardActions('Get_OnGoing_Services_List_Api', {
                     callBack: (data: any) => {
                         setAssignedServices(data);
+                        setIsLoading(false);
                     },
                 });
             },
@@ -171,8 +179,13 @@ const Dashboard = (props: any) => {
         const today = new Date();
         const todayFormatted = formatDateForApi(today);
 
+        // Calculate date 30 days ago
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        const thirtyDaysAgoFormatted = formatDateForApi(thirtyDaysAgo);
+
         props.dashboardActions('Get_Work_Report_For_Vendor_Api', {
-            fromDate: todayFormatted,
+            fromDate: thirtyDaysAgoFormatted,
             toDate: todayFormatted,
             callBack: (data: {
                 ongoing: number;
@@ -499,6 +512,17 @@ const Dashboard = (props: any) => {
     return (
         <SafeAreaView style={dashboardStyles.container} edges={['top']}>
             <StatusBar backgroundColor="#F5F6FA" barStyle="dark-content" />
+
+            {/* Full Screen Loader */}
+            <Modal
+                transparent={true}
+                animationType="none"
+                visible={isLoading}
+                onRequestClose={() => { }}>
+                <View style={dashboardStyles.loaderOverlay}>
+                    <ActivityIndicator size="large" color="#5F60B9" />
+                </View>
+            </Modal>
             {/* Header Section - Fixed at top */}
             <View style={dashboardStyles.headerSection}>
                 <View style={dashboardStyles.headerContent}>
@@ -544,9 +568,9 @@ const Dashboard = (props: any) => {
                             onPress={
                                 stat.label === 'Security Deposit'
                                     ? () => {
-                                          setSelectedGateway('razorpay');
-                                          rechargeModalRef.current?.present();
-                                      }
+                                        setSelectedGateway('razorpay');
+                                        rechargeModalRef.current?.present();
+                                    }
                                     : undefined
                             }
                         />
@@ -563,6 +587,7 @@ const Dashboard = (props: any) => {
                     ongoing={reportStats.ongoing}
                     newLeads={reportStats.new}
                     revenue={reportStats.revenue}
+                    onPress={() => navigation.navigate('Report')}
                 />
 
                 {/* Assigned Service List */}
@@ -580,7 +605,7 @@ const Dashboard = (props: any) => {
 
                 {/* Check if there are no services or all services are empty */}
                 {assignedServices.length === 0 ||
-                !assignedServices[0]?.LeadID ? (
+                    !assignedServices[0]?.LeadID ? (
                     <View style={dashboardStyles.emptyStateContainer}>
                         <Image
                             source={require('../../assets/img/OnGoingService.png')}
@@ -680,7 +705,7 @@ const Dashboard = (props: any) => {
                             style={[
                                 dashboardStyles.gatewayOption,
                                 selectedGateway === 'payumoney' &&
-                                    dashboardStyles.gatewayOptionSelected,
+                                dashboardStyles.gatewayOptionSelected,
                             ]}
                             onPress={() => {
                                 setSelectedGateway('payumoney');
@@ -699,7 +724,7 @@ const Dashboard = (props: any) => {
                                 style={[
                                     dashboardStyles.gatewayText,
                                     selectedGateway === 'payumoney' &&
-                                        dashboardStyles.gatewayTextSelected,
+                                    dashboardStyles.gatewayTextSelected,
                                 ]}>
                                 Wallet Balance
                             </Text>
@@ -709,7 +734,7 @@ const Dashboard = (props: any) => {
                             style={[
                                 dashboardStyles.gatewayOption,
                                 selectedGateway === 'razorpay' &&
-                                    dashboardStyles.gatewayOptionSelected,
+                                dashboardStyles.gatewayOptionSelected,
                             ]}
                             onPress={() => setSelectedGateway('razorpay')}>
                             <Ionicons
@@ -725,7 +750,7 @@ const Dashboard = (props: any) => {
                                 style={[
                                     dashboardStyles.gatewayText,
                                     selectedGateway === 'razorpay' &&
-                                        dashboardStyles.gatewayTextSelected,
+                                    dashboardStyles.gatewayTextSelected,
                                 ]}>
                                 Security Deposit
                             </Text>

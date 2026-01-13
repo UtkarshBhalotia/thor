@@ -1,5 +1,4 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { dashboardStyles } from '../../../assets/css/dashboardStyles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -7,16 +6,21 @@ interface ReportCardProps {
     ongoing: number | string;
     newLeads: number | string;
     revenue: number | string;
+    onPress?: () => void;
 }
 
 const ReportCard: React.FC<ReportCardProps> = ({
     ongoing,
     newLeads,
     revenue,
+    onPress,
 }) => {
     return (
         <View style={dashboardStyles.reportsContainer}>
-            <View style={dashboardStyles.reportCard}>
+            <TouchableOpacity
+                style={dashboardStyles.reportCard}
+                onPress={onPress}
+                activeOpacity={0.7}>
                 <View
                     style={[
                         dashboardStyles.reportIconContainer,
@@ -26,8 +30,11 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 </View>
                 <Text style={dashboardStyles.reportValue}>{newLeads}</Text>
                 <Text style={dashboardStyles.reportLabel}>New Leads</Text>
-            </View>
-            <View style={dashboardStyles.reportCard}>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={dashboardStyles.reportCard}
+                onPress={onPress}
+                activeOpacity={0.7}>
                 <View
                     style={[
                         dashboardStyles.reportIconContainer,
@@ -37,9 +44,12 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 </View>
                 <Text style={dashboardStyles.reportValue}>{ongoing}</Text>
                 <Text style={dashboardStyles.reportLabel}>Ongoing Leads</Text>
-            </View>
+            </TouchableOpacity>
 
-            <View style={dashboardStyles.reportCard}>
+            <TouchableOpacity
+                style={dashboardStyles.reportCard}
+                onPress={onPress}
+                activeOpacity={0.7}>
                 <View
                     style={[
                         dashboardStyles.reportIconContainer,
@@ -49,7 +59,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
                 </View>
                 <Text style={dashboardStyles.reportValue}>₹{revenue}</Text>
                 <Text style={dashboardStyles.reportLabel}>Revenue</Text>
-            </View>
+            </TouchableOpacity>
         </View>
     );
 };

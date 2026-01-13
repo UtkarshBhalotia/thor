@@ -3,6 +3,7 @@ import { Platform, Text, TextInput, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Common from '../assets/css/common';
 import SODText from '../assets/css/SODText';
+import { Regex_Patterns } from '../utils/regex';
 
 const SODTextInput = forwardRef(
     (
@@ -23,6 +24,8 @@ const SODTextInput = forwardRef(
             placeholderTextColor,
             autoExpand,
             minHeight = 50,
+            disallowUnicode,
+            autoCapitalize,
         }: TInputFieldProps,
         ref: any,
     ) => {
@@ -45,6 +48,16 @@ const SODTextInput = forwardRef(
                 setHeight(minHeight);
             }
         }, [value, autoExpand, secureTextEntry, minHeight]);
+
+        const handleChangeText = (text: string) => {
+            let filteredText = text;
+            if (disallowUnicode) {
+                filteredText = text.replace(Regex_Patterns.stripUnicode, '');
+            }
+            if (onChangeText) {
+                onChangeText(filteredText);
+            }
+        };
 
         return (
             <View style={Common.py12}>
@@ -82,7 +95,7 @@ const SODTextInput = forwardRef(
                                 }, 50);
                             }
                         }}
-                        onChangeText={onChangeText}
+                        onChangeText={handleChangeText}
                         onContentSizeChange={(event) => {
                             if (autoExpand && !secureTextEntry) {
                                 const newHeight = Math.max(
@@ -114,6 +127,7 @@ const SODTextInput = forwardRef(
                         scrollEnabled={autoExpand ? false : false}
                         keyboardType={keyboard}
                         selection={selectionState}
+                        autoCapitalize={autoCapitalize}
                         style={[
                             Common.px16,
                             SODText.MazuInputText,
@@ -122,6 +136,7 @@ const SODTextInput = forwardRef(
                             autoExpand ? {} : Common.textVerticalCenter,
                             {
                                 backgroundColor: '#F9FAFF',
+                                color: '#1E1E58',
                                 paddingHorizontal: 6,
                                 borderRadius: 5, // Slightly smaller to account for gradient border
                                 width: '100%',

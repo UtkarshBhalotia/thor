@@ -7,6 +7,7 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import type { BottomSheetModalMethods } from '@gorhom/bottom-sheet/lib/typescript/types';
 import DropDownModal from './DropDownModal';
 import DropDownModalWithCheckBox from './DropDownModalWithCheckBox';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const SODDropDown = forwardRef(
     (
@@ -89,7 +90,11 @@ const SODDropDown = forwardRef(
                             ]}>
                             {value}
                         </Text>
-                        {/* {svgs('common_svg', 'accordian_arrowdown_grey')} */}
+                        <Ionicons
+                            name="chevron-forward"
+                            size={18}
+                            color="#8F8F8F"
+                        />
                     </TouchableOpacity>
 
                     {ischeckBoxReq ? (
@@ -98,7 +103,7 @@ const SODDropDown = forwardRef(
                             dropDownFormData={dropDownFormData}
                             name={name}
                             title={title}
-                            setDropDownModal={() => {}}
+                            setDropDownModal={() => { }}
                         />
                     ) : (
                         <DropDownModal
@@ -106,7 +111,7 @@ const SODDropDown = forwardRef(
                             dropDownFormData={dropDownFormData}
                             name={name}
                             title={title}
-                            setDropDownModal={() => {}}
+                            setDropDownModal={() => { }}
                             scrollRef={scrollRef}
                             enableSearch={true}
                         />

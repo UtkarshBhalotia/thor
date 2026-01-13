@@ -16,6 +16,7 @@ import SODText from '../assets/css/SODText';
 import Common from '../assets/css/common';
 import { SODColors } from '../assets/colors';
 import { closeBSModal, useBottomSheetBackHandler } from '../utils/BSModalUtils';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const BSModal = ({
     customBackButtonFlag = false,
@@ -30,6 +31,8 @@ const BSModal = ({
     backdropOnPress,
     customOnDismiss,
     headerTitleBelowComponent,
+    showCloseButton = true,
+    onClosePress,
     ...props
 }: BSModalProps) => {
     const footer = props.footer ? props.footer : <></>;
@@ -206,23 +209,23 @@ const BSModal = ({
                                     Common.alignCenter,
                                     Common.justifyCenter,
                                 ]}>
-                                {/* <TouchableOpacity
-                                    style={[Common.mr20]}
-                                    onPress={() => {
-                                        backButtonHandler();
-                                    }}>
-                                    {backButtonVisible
-                                        ? backButtonType === 'normal'
-                                            ? svgs(
-                                                  'common_svg',
-                                                  'newBackButton',
-                                              )
-                                            : svgs(
-                                                  'common_svg',
-                                                  'newGreyBackButton',
-                                              )
-                                        : null}
-                                </TouchableOpacity> */}
+                                {showCloseButton && (
+                                    <TouchableOpacity
+                                        style={[Common.mr20]}
+                                        onPress={() => {
+                                            if (onClosePress) {
+                                                onClosePress();
+                                            } else {
+                                                closeBSModal(props.bsModalRef);
+                                            }
+                                        }}>
+                                        <Ionicons
+                                            name="chevron-back"
+                                            size={24}
+                                            color="#1C1F34"
+                                        />
+                                    </TouchableOpacity>
+                                )}
                                 <BottomSheetView style={[Common.viewHeight]}>
                                     <Text
                                         numberOfLines={2}
@@ -232,7 +235,7 @@ const BSModal = ({
                                             SODText.bold600,
                                             SODText.Black_23,
                                             props.headerTitleTextStyle &&
-                                                props.headerTitleTextStyle,
+                                            props.headerTitleTextStyle,
                                         ]}>
                                         {props.headerTitle}
                                     </Text>
@@ -246,7 +249,7 @@ const BSModal = ({
                                     Common.row,
                                     Common.alignCenter,
                                     props.headerRightButtonStyle &&
-                                        props.headerRightButtonStyle,
+                                    props.headerRightButtonStyle,
                                 ]}
                                 onPress={
                                     props.headerRightButtonOnPress &&
@@ -262,7 +265,7 @@ const BSModal = ({
                                                 Common.py4,
                                                 Common.br8,
                                                 props.headerRightButtonTextStyle &&
-                                                    props.headerRightButtonTextStyle,
+                                                props.headerRightButtonTextStyle,
                                             ]}>
                                             {props.headerRightButtonTitle}
                                         </Text>
@@ -283,13 +286,13 @@ const BSModal = ({
                         <BottomSheetScrollView
                             style={[
                                 bgGradientType === 'no gradient' &&
-                                !props?.customGradientColor
+                                    !props?.customGradientColor
                                     ? {}
                                     : {
-                                          marginHorizontal: 16,
-                                          borderTopRightRadius: 12,
-                                          borderTopLeftRadius: 12,
-                                      },
+                                        marginHorizontal: 16,
+                                        borderTopRightRadius: 12,
+                                        borderTopLeftRadius: 12,
+                                    },
                                 Common.bgWhite,
                                 props.scrollViewStyle && props.scrollViewStyle,
                             ]}

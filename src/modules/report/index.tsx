@@ -31,7 +31,11 @@ const reportActions_dispatch = (dispatch: AppDispatch) => (actionName: string, a
 
 const Report = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-    const [fromDate, setFromDate] = useState(new Date());
+    const [fromDate, setFromDate] = useState(() => {
+        const date = new Date();
+        date.setDate(date.getDate() - 30);
+        return date;
+    });
     const [toDate, setToDate] = useState(new Date());
     const [showFromPicker, setShowFromPicker] = useState(false);
     const [showToPicker, setShowToPicker] = useState(false);
