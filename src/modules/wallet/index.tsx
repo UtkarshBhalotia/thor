@@ -286,7 +286,7 @@ const Wallet = (props: any) => {
 
     return (
         <SafeAreaView style={walletStyles.container} edges={['top']}>
-            <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
+            <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent={true} />
             {/* Header */}
             <View style={walletStyles.header}>
                 <TouchableOpacity

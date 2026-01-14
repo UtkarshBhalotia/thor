@@ -38,6 +38,7 @@ import { regex_validation, Regex_Patterns } from '../../../utils/regex';
 import Layout from '../../../assets/css/layout';
 import BSModal from '../../../components/BSModal';
 import LinearGradient from 'react-native-linear-gradient';
+import { RootStackParamList } from '../../../navigations/navigation';
 
 const Register = (props: any) => {
     const insets = useSafeAreaInsets();
@@ -676,7 +677,7 @@ const Register = (props: any) => {
 
     return (
         <View style={loginStyles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#5F60B9" />
+            <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
             <LinearGradient
                 colors={['#5F60B9', '#8A8BDD', '#B5B6E8', '#E6E5F7', '#FFFFFF']}
                 style={loginStyles.gradientBackground}
@@ -709,7 +710,7 @@ const Register = (props: any) => {
                             Platform.OS === 'ios' ? 'interactive' : 'on-drag'
                         }>
                         {/* Header */}
-                        <View style={registerPageStyles.headerContainer}>
+                        <View style={[registerPageStyles.headerContainer, { paddingTop: insets.top + 20 }]}>
                             <Text style={registerPageStyles.title}>
                                 Partner Registration
                             </Text>

@@ -562,7 +562,7 @@ const Dashboard = (props: any) => {
 
     return (
         <SafeAreaView style={dashboardStyles.container} edges={['top']}>
-            <StatusBar backgroundColor="#F5F6FA" barStyle="dark-content" />
+            <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent={true} />
 
             {/* Full Screen Loader */}
             <Modal

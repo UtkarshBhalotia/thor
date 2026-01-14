@@ -260,13 +260,13 @@ const Booking = (props: any) => {
         <ServiceCard
             key={index}
             leadId={item.LeadID}
-            leadNo={item.LeadNo}
-            leadType={item.ServiceTypeName}
-            leadAmt={item.LeadAmount}
+            leadNo={item.LeadNo || item.ComplaintNo || item.No}
+            leadType={item.ServiceTypeName || item.ComplaintType || item.ServiceType}
+            leadAmt={item.LeadAmount || item.CustomerAmt}
             leadStatus={item.LeadStatus}
             leadDate={item.LeadDate}
             leadCity={item.CityName + ', ' + item.StateName}
-            leadDescription={item.Desc}
+            leadDescription={item.Desc || item.Description || item.PartsDesc}
             leadBrand={`${item.BrandName} (${item.ModelName})`}
             deniedReason={item.Reason}
             deniedDateStatus={`${item.DeniedDate} \ ${item.DeniedStatus}`}
@@ -314,7 +314,7 @@ const Booking = (props: any) => {
                     <ActivityIndicator size="large" color="#5F60B9" />
                 </View>
             </Modal>
-            <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
+            <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent={true} />
 
             {/* Header */}
             <View style={bookingStyles.header}>
@@ -368,6 +368,7 @@ const Booking = (props: any) => {
                 data={assignedServices}
                 renderItem={renderServiceCard}
                 keyExtractor={(item, index) => item.LeadID || index.toString()}
+                style={{ backgroundColor: '#F5F6FA' }}
                 contentContainerStyle={bookingStyles.listContainer}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={renderEmptyList}

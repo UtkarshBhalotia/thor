@@ -3,7 +3,7 @@ import { StyleSheet, Dimensions } from 'react-native';
 export const bookingStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F6FA',
+        backgroundColor: '#FFFFFF',
     },
     header: {
         flexDirection: 'row',

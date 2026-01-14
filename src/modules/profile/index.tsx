@@ -36,6 +36,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { registerActions_dispatch } from '../../../store/action/mainTypedAction';
 
 import LogoutModal from '../../components/LogoutModal';
+import { RootStackParamList } from '../../navigations/navigation';
 
 const Profile = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -271,7 +272,7 @@ const Profile = (props: any) => {
 
     return (
         <SafeAreaView style={profileStyles.container} edges={['top']}>
-            <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
+            <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent={true} />
             <View style={profileStyles.headerContainer}>
                 <TouchableOpacity
                     style={profileStyles.backButton}

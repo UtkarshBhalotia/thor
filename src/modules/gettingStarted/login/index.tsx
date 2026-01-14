@@ -15,7 +15,8 @@ import {
 } from 'react-native-safe-area-context';
 import { loginStyles } from '../../../assets/css/loginStyles';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { AppDispatch, RootState } from '../../../../store';
 import { connect } from 'react-redux';
@@ -29,11 +30,12 @@ import { commonIcons } from '../../../assets/svg';
 import BSModal from '../../../components/BSModal';
 import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import LinearGradient from 'react-native-linear-gradient';
+import { RootStackParamList } from '../../../navigations/navigation';
 
 const Login = (props: any) => {
     const insets = useSafeAreaInsets();
     const [isPasswordSecure, setIsPasswordSecure] = useState(true);
-    const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const forgotPasswordModalRef = React.useRef<BottomSheetModal>(null);
     const [forgotPasswordMobile, setForgotPasswordMobile] = useState('');
 
@@ -77,14 +79,14 @@ const Login = (props: any) => {
         props.loginActions('UserAuth_Login_Api', {
             ...data,
             callBack: () => {
-                navigation.navigate('HomeTabs');
+                navigation.navigate('HomeTabs', { screen: 'Home' });
             },
         });
     };
 
     return (
         <View style={loginStyles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="#5F60B9" />
+            <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
             <LinearGradient
                 colors={['#5F60B9', '#8A8BDD', '#B5B6E8', '#E6E5F7', '#FFFFFF']}
                 style={loginStyles.gradientBackground}
@@ -99,7 +101,7 @@ const Login = (props: any) => {
                     keyboardVerticalOffset={insets.top}
                     style={[Layout.viewHeight]}>
                     {/* Header */}
-                    <View style={loginStyles.headerContainer}>
+                    <View style={[loginStyles.headerContainer, { paddingTop: insets.top + 20 }]}>
                         <Text style={loginStyles.title}>SOD Partner APP</Text>
                         <Text style={loginStyles.subtitle}>
                             Service On Doors

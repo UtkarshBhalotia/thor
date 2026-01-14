@@ -52,15 +52,9 @@ const App = () => {
                         }}>
                         <GestureHandlerRootView style={[Layout.viewHeight]}>
                             <StatusBar
-                                hidden={false}
+                                translucent={true}
+                                backgroundColor={'transparent'}
                                 barStyle={'dark-content'}
-                                backgroundColor={
-                                    colorScheme === 'dark'
-                                        ? Theme.dark.colors.themeColor
-                                              .backgroundColor
-                                        : Theme.light.colors.themeColor
-                                              .backgroundColor
-                                }
                             />
                             <KeyboardProvider>
                                 <BottomSheetModalProvider>
