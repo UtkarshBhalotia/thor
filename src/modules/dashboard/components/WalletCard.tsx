@@ -5,11 +5,12 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 interface WalletCardProps {
     balance: string;
+    openingBalance?: string;
     onPress?: () => void;
     onRechargePress?: () => void;
 }
 
-const WalletCard: React.FC<WalletCardProps> = ({ balance, onPress, onRechargePress }) => {
+const WalletCard: React.FC<WalletCardProps> = ({ balance, openingBalance, onPress, onRechargePress }) => {
     console.log('WalletCard', balance);
     const CardWrapper = onPress ? TouchableOpacity : View;
 
@@ -24,7 +25,7 @@ const WalletCard: React.FC<WalletCardProps> = ({ balance, onPress, onRechargePre
                 justifyContent: 'space-between',
                 alignItems: 'center',
             }}>
-                <View>
+                <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
                         <Ionicons
                             name="wallet-outline"
@@ -35,6 +36,12 @@ const WalletCard: React.FC<WalletCardProps> = ({ balance, onPress, onRechargePre
                         <Text style={dashboardStyles.walletLabel}>Wallet Balance</Text>
                     </View>
                     <Text style={dashboardStyles.walletBalance}>₹ {balance}</Text>
+
+                    {openingBalance && (
+                        <Text style={[dashboardStyles.walletLabel, { marginTop: 8, opacity: 0.9 }]}>
+                            Opening Balance: ₹ {openingBalance}
+                        </Text>
+                    )}
                 </View>
                 <TouchableOpacity
                     style={dashboardStyles.walletRechargeButton}

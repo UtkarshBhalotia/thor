@@ -6,6 +6,7 @@ export const GlobalInitialState: IGlobalInitialState = {
     companyName: '',
     gstNo: '',
     userType: '',
+    stateId: '',
     isActive: '',
     fcmToken: '',
     minRechargeAmount: '',

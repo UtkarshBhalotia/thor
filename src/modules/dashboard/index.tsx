@@ -31,6 +31,7 @@ import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RazorpayService } from '../../services/RazorpayService';
 import { RAZORPAY_CONFIG } from '../../config/razorpayConfig';
+import { Comp_State_ID } from '../../services/env';
 import {
     validateRechargeAmount,
     createPaymentParams,
@@ -57,6 +58,11 @@ const Dashboard = (props: any) => {
         null,
     );
     const [minRechargeAmount, setMinRechargeAmount] = useState<string>('');
+    const amountAsFloat = parseFloat(rechargeAmount) || 0;
+    const baseAmount = amountAsFloat / 1.18;
+    const totalGst = amountAsFloat - baseAmount;
+    const gstPart = totalGst / 2;
+    const isSameState = String(props.globalState?.stateId) === String(Comp_State_ID);
 
     // Sample data - replace with actual data from API/Redux
 
@@ -214,6 +220,7 @@ const Dashboard = (props: any) => {
         props.walletActions('Get_Vendor_Min_Recharge_Amt_Api', {
             callBack: (minAmount: string) => {
                 setMinRechargeAmount(minAmount);
+                setRechargeAmount(minAmount);
             },
         });
     };
@@ -620,6 +627,7 @@ const Dashboard = (props: any) => {
                                 stat.label === 'Security Deposit'
                                     ? () => {
                                         setSelectedGateway('razorpay');
+                                        setRechargeAmount('5000');
                                         rechargeModalRef.current?.present();
                                     }
                                     : undefined
@@ -737,7 +745,7 @@ const Dashboard = (props: any) => {
             <BSModal
                 bsModalRef={rechargeModalRef}
                 headerTitle="Recharge Wallet"
-                snapPoints={['55%']}
+                snapPoints={['65%']}
                 customOnDismiss={() => {
                     setRechargeAmount('');
                     setMinRechargeAmount('');
@@ -784,7 +792,10 @@ const Dashboard = (props: any) => {
                                 selectedGateway === 'razorpay' &&
                                 dashboardStyles.gatewayOptionSelected,
                             ]}
-                            onPress={() => setSelectedGateway('razorpay')}>
+                            onPress={() => {
+                                setSelectedGateway('razorpay');
+                                setRechargeAmount('5000');
+                            }}>
                             <Ionicons
                                 name="shield-checkmark-outline"
                                 size={24}
@@ -841,6 +852,32 @@ const Dashboard = (props: any) => {
                             onChangeText={setRechargeAmount}
                         />
                     </View>
+
+                    {selectedGateway === 'payumoney' && amountAsFloat > 0 && (
+                        <View style={dashboardStyles.gstContainer}>
+                            {isSameState ? (
+                                <>
+                                    <View style={dashboardStyles.gstRow}>
+                                        <Text style={dashboardStyles.gstLabel}>CGST :</Text>
+                                        <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
+                                    </View>
+                                    <View style={dashboardStyles.gstRow}>
+                                        <Text style={dashboardStyles.gstLabel}>SGST :</Text>
+                                        <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <View style={dashboardStyles.gstRow}>
+                                    <Text style={dashboardStyles.gstLabel}>IGST :</Text>
+                                    <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
+                                </View>
+                            )}
+                            <View style={dashboardStyles.gstRow}>
+                                <Text style={dashboardStyles.gstLabel}>Amount after GST :</Text>
+                                <Text style={dashboardStyles.gstValue}>₹ {baseAmount.toFixed(2)}</Text>
+                            </View>
+                        </View>
+                    )}
 
                     <TouchableOpacity
                         style={dashboardStyles.rechargeButton}

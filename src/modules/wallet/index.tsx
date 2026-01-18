@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { walletStyles } from '../../assets/css/walletStyles';
 import PaymentHistoryCard from './components/PaymentHistoryCard';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useIsFocused } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { AppDispatch, RootState } from '../../../store';
 import { connect } from 'react-redux';
@@ -36,11 +36,15 @@ import Toast from 'react-native-toast-message';
 import PaymentWebView from './components/PaymentWebView';
 import CalendarPicker from 'react-native-calendar-picker';
 import { RootStackParamList } from '../../navigations/navigation';
+import WalletCard from '../dashboard/components/WalletCard';
+import { dashboardStyles } from '../../assets/css/dashboardStyles';
+import { Comp_State_ID } from '../../services/env';
 
 const Wallet = (props: any) => {
     console.log(props, 'Props');
 
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+    const isFocused = useIsFocused();
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
     const [rechargeAmount, setRechargeAmount] = useState('');
     const [showPaymentWebView, setShowPaymentWebView] = useState(false);
@@ -66,15 +70,23 @@ const Wallet = (props: any) => {
     const [showFromPicker, setShowFromPicker] = useState(false);
     const [showToPicker, setShowToPicker] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [minRechargeAmount, setMinRechargeAmount] = useState<string>('');
+    const amountAsFloat = parseFloat(rechargeAmount) || 0;
+    const baseAmount = amountAsFloat / 1.18;
+    const totalGst = amountAsFloat - baseAmount;
+    const gstPart = totalGst / 2;
+    const isSameState = String(props.globalState?.stateId) === String(Comp_State_ID);
 
     useEffect(() => {
-        const task = InteractionManager.runAfterInteractions(() => {
-            load();
-        });
-        return () => {
-            task.cancel();
-        };
-    }, []);
+        if (isFocused) {
+            const task = InteractionManager.runAfterInteractions(() => {
+                load();
+            });
+            return () => {
+                task.cancel();
+            };
+        }
+    }, [isFocused]);
 
 
     const onDateChange = (date: any) => {
@@ -98,6 +110,15 @@ const Wallet = (props: any) => {
     };
 
 
+    const fetchMinRechargeAmount = () => {
+        props.walletActions('Get_Vendor_Min_Recharge_Amt_Api', {
+            callBack: (minAmount: string) => {
+                setMinRechargeAmount(minAmount);
+                setRechargeAmount(minAmount);
+            },
+        });
+    };
+
     const load = () => {
         setIsLoading(true);
         // Fetch wallet balance
@@ -109,7 +130,13 @@ const Wallet = (props: any) => {
                     toDate: formatDate(toDate),
                     callBack: (data: IRechargeHistoryItem[]) => {
                         console.log('Recharge history:', data);
-                        setOpeningBalance(data[0].Amount);
+                        if (data && data.length > 0) {
+                            const amount = parseFloat(data[0].Amount || '0').toLocaleString('en-IN', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                            });
+                            setOpeningBalance(amount + ' (' + data[0].Date + ')');
+                        }
                         setRechargeHistory(data);
                         setIsLoading(false);
                     },
@@ -265,7 +292,6 @@ const Wallet = (props: any) => {
     };
 
     const handlePaymentCancel = () => {
-        console.log('Payment Cancelled');
         setShowPaymentWebView(false);
 
         Toast.show({
@@ -300,23 +326,16 @@ const Wallet = (props: any) => {
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}>
-                {/* Wallet Balance Card - White Background */}
-                <View style={walletStyles.balanceCard}>
-                    <Text style={walletStyles.balanceAmount}>
-                        Wallet Balance: ₹ {walletBalance}
-                        CR
-                    </Text>
-                    <Text style={walletStyles.openingBalance}>
-                        Opening Balance: ₹
-                        {parseFloat(openingBalance || '0').toLocaleString(
-                            'en-IN',
-                            {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                            },
-                        )}{' '}
-                        CR
-                    </Text>
+                <View style={{ paddingHorizontal: 4, marginTop: 10 }}>
+                    <WalletCard
+                        balance={walletBalance}
+                        openingBalance={openingBalance}
+                        onRechargePress={() => {
+                            setSelectedGateway('payumoney');
+                            rechargeModalRef.current?.present();
+                            fetchMinRechargeAmount();
+                        }}
+                    />
                 </View>
 
                 {/* Filter Section */}
@@ -508,7 +527,7 @@ const Wallet = (props: any) => {
             <BSModal
                 bsModalRef={rechargeModalRef}
                 headerTitle="Recharge Wallet"
-                snapPoints={['55%']}>
+                snapPoints={['65%']}>
                 <View style={walletStyles.bottomSheetContent}>
                     <Text style={walletStyles.inputLabel}>
                         Select Recharge Type
@@ -520,7 +539,10 @@ const Wallet = (props: any) => {
                                 selectedGateway === 'payumoney' &&
                                 walletStyles.gatewayOptionSelected,
                             ]}
-                            onPress={() => setSelectedGateway('payumoney')}>
+                            onPress={() => {
+                                setSelectedGateway('payumoney');
+                                fetchMinRechargeAmount();
+                            }}>
                             <Ionicons
                                 name="wallet-outline"
                                 size={24}
@@ -546,7 +568,10 @@ const Wallet = (props: any) => {
                                 selectedGateway === 'razorpay' &&
                                 walletStyles.gatewayOptionSelected,
                             ]}
-                            onPress={() => setSelectedGateway('razorpay')}>
+                            onPress={() => {
+                                setSelectedGateway('razorpay');
+                                setRechargeAmount('5000');
+                            }}>
                             <Ionicons
                                 name="shield-checkmark-outline"
                                 size={24}
@@ -569,7 +594,31 @@ const Wallet = (props: any) => {
 
                     <View style={walletStyles.amountInputContainer}>
                         <Text style={walletStyles.inputLabel}>
-                            Enter Amount (Min: ₹{RAZORPAY_CONFIG.MIN_AMOUNT})
+                            Enter Amount
+                            {selectedGateway === 'payumoney' &&
+                                minRechargeAmount &&
+                                parseFloat(minRechargeAmount) > 0 && (
+                                    <Text
+                                        style={{
+                                            fontSize: 14,
+                                            color: '#5F60B9',
+                                            fontWeight: '500',
+                                        }}>
+                                        {' '}
+                                        (Minimum: ₹ {minRechargeAmount})
+                                    </Text>
+                                )}
+                            {selectedGateway === 'razorpay' && (
+                                <Text
+                                    style={{
+                                        fontSize: 14,
+                                        color: '#5F60B9',
+                                        fontWeight: '500',
+                                    }}>
+                                    {' '}
+                                    (Minimum: ₹ 5000)
+                                </Text>
+                            )}
                         </Text>
                         <BottomSheetTextInput
                             style={walletStyles.amountInput}
@@ -579,6 +628,32 @@ const Wallet = (props: any) => {
                             onChangeText={setRechargeAmount}
                         />
                     </View>
+
+                    {selectedGateway === 'payumoney' && amountAsFloat > 0 && (
+                        <View style={dashboardStyles.gstContainer}>
+                            {isSameState ? (
+                                <>
+                                    <View style={dashboardStyles.gstRow}>
+                                        <Text style={dashboardStyles.gstLabel}>CGST :</Text>
+                                        <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
+                                    </View>
+                                    <View style={dashboardStyles.gstRow}>
+                                        <Text style={dashboardStyles.gstLabel}>SGST :</Text>
+                                        <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
+                                    </View>
+                                </>
+                            ) : (
+                                <View style={dashboardStyles.gstRow}>
+                                    <Text style={dashboardStyles.gstLabel}>IGST :</Text>
+                                    <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
+                                </View>
+                            )}
+                            <View style={dashboardStyles.gstRow}>
+                                <Text style={dashboardStyles.gstLabel}>Amount after GST :</Text>
+                                <Text style={dashboardStyles.gstValue}>₹ {baseAmount.toFixed(2)}</Text>
+                            </View>
+                        </View>
+                    )}
 
                     <TouchableOpacity
                         style={walletStyles.rechargeActionButton}
@@ -591,16 +666,18 @@ const Wallet = (props: any) => {
             </BSModal>
 
             {/* Payment WebView Modal */}
-            {paymentParams && (
-                <PaymentWebView
-                    visible={showPaymentWebView}
-                    paymentParams={paymentParams}
-                    onSuccess={handlePaymentSuccess}
-                    onFailure={handlePaymentFailure}
-                    onCancel={handlePaymentCancel}
-                />
-            )}
-        </SafeAreaView>
+            {
+                paymentParams && (
+                    <PaymentWebView
+                        visible={showPaymentWebView}
+                        paymentParams={paymentParams}
+                        onSuccess={handlePaymentSuccess}
+                        onFailure={handlePaymentFailure}
+                        onCancel={handlePaymentCancel}
+                    />
+                )
+            }
+        </SafeAreaView >
     );
 };
 

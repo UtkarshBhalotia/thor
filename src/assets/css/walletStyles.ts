@@ -27,31 +27,6 @@ export const walletStyles = StyleSheet.create({
     },
 
     // Wallet Balance Card
-    balanceCard: {
-        backgroundColor: '#FFFFFF',
-        marginHorizontal: 20,
-        marginTop: 20,
-        marginBottom: 15,
-        padding: 24,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E0E0E0',
-    },
-    balanceLabel: {
-        fontSize: 14,
-        color: '#8F8F8F',
-        marginBottom: 8,
-    },
-    balanceAmount: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#5F60B9',
-        marginBottom: 8,
-    },
-    openingBalance: {
-        fontSize: 14,
-        color: '#8F8F8F',
-    },
 
     // Section Header
     sectionHeader: {
@@ -204,31 +179,6 @@ export const walletStyles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
         color: '#1C1F34',
-    },
-    // Recharge Button in Card
-    rechargeButtonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        marginTop: -10,
-    },
-    walletRechargeButton: {
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-    },
-    walletRechargeText: {
-        fontSize: 13,
-        color: '#FFFFFF',
-        fontWeight: '600',
-        marginLeft: 4,
-    },
-    walletRechargeIcon: {
-        marginRight: 2,
     },
     // Bottom Sheet Styles
     bottomSheetContent: {

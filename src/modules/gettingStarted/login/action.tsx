@@ -79,6 +79,7 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                     companyName: userData.CompanyName,
                     gstNo: userData.GstNo,
                     userType: userData.UserType,
+                    stateId: userData.StateID,
                     isActive: userData.IsActive,
                     fcmToken: userData.FCMTokenID,
                     minRechargeAmount: userData.MinRechargeAmt,

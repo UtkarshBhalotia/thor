@@ -12,6 +12,7 @@ export const BASE_ENV = {
 export const NEW_URL = 'https://testcrm.dooda.in/api';
 
 export const BaseUrl = BASE_ENV[ENV].API_HOST;
+export const Comp_State_ID = 8;
 
 const apiListing = {
     loginUrl: `${BaseUrl}ValidateMobileUser`,

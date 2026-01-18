@@ -184,9 +184,9 @@ function* Get_All_Type_Vendor_Balance_Api_Response(
             const responseData = response.body.data.response;
 
             // Extract balance data from the API response
-            const walletBalance = String(responseData.Balance || 0);
-            const securityDeposit = String(responseData.DepositeAmt || 0);
-            const systemCharges = String(responseData.MaintenanceAmt || 0);
+            const walletBalance = String(responseData.SBalance || 0);
+            const securityDeposit = String(responseData.SDepositeAmt || 0);
+            const systemCharges = String(responseData.SMaintenanceAmt || 0);
 
             callBack({
                 walletBalance,

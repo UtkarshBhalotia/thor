@@ -6,6 +6,7 @@ type IGlobalInitialState = {
     companyName: string;
     gstNo: string;
     userType: string;
+    stateId: string;
     isActive: string;
     fcmToken: string;
     minRechargeAmount: string;

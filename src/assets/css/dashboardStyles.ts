@@ -559,4 +559,28 @@ export const dashboardStyles = StyleSheet.create({
         alignItems: 'center',
         zIndex: 9999,
     },
+    // GST Display Styles
+    gstContainer: {
+        backgroundColor: '#F8F9FF',
+        padding: 12,
+        borderRadius: 10,
+        marginBottom: 15,
+        borderWidth: 1,
+        borderColor: '#E6E6F7',
+    },
+    gstRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 6,
+    },
+    gstLabel: {
+        fontSize: 13,
+        color: '#666666',
+        fontWeight: '500',
+    },
+    gstValue: {
+        fontSize: 13,
+        color: '#1C1F34',
+        fontWeight: '600',
+    },
 });
