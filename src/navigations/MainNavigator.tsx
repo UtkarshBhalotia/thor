@@ -12,10 +12,12 @@ import More from '../modules/more';
 import ChangePassword from '../modules/changePassword';
 import Onboarding from '../modules/gettingStarted/onboarding';
 import Report from '../modules/report';
+import IdVerification from '../modules/idVerification';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getItem, STORAGE_KEYS } from '../utils/storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import type { RootStackParamList, TabParamList } from './navigation';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -173,6 +175,11 @@ const MainNavigator = () => {
                 <Stack.Screen
                     name="Report"
                     component={Report}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="IdVerification"
+                    component={IdVerification}
                     options={{ headerShown: false }}
                 />
             </Stack.Group>

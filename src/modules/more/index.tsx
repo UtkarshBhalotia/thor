@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { removeItem, STORAGE_KEYS } from '../../utils/storage';
 import { RootState } from '../../../store';
 import LogoutModal from '../../components/LogoutModal';
+import { RootStackParamList } from '../../navigations/navigation';
 
 const More = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -23,6 +24,10 @@ const More = () => {
         }
         if (title === 'Report') {
             navigation.navigate('Report');
+            return;
+        }
+        if (title === 'ID verification') {
+            navigation.navigate('IdVerification');
             return;
         }
         Alert.alert(title, `Functionality for ${title} coming soon.`);
@@ -52,6 +57,7 @@ const More = () => {
 
     const accountMenu = [
         { title: 'Change password', ionicon: 'lock-closed-outline' },
+        { title: 'ID verification', ionicon: 'id-card-outline' },
     ];
 
     const supportMenu = [

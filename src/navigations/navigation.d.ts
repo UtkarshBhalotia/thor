@@ -13,6 +13,7 @@ export type RootStackParamList = {
     More: undefined;
     ChangePassword: undefined;
     Report: undefined;
+    IdVerification: undefined;
 };
 
 export type TabParamList = {

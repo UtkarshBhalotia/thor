@@ -8,6 +8,7 @@ import {
     StatusBar,
     ActivityIndicator,
     Modal,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
@@ -21,6 +22,7 @@ import { connect } from 'react-redux';
 import { bookingActions_dispatch } from '../../../store/action/mainTypedAction';
 import { showToast } from '../../utils/common';
 import { RootStackParamList } from '../../navigations/navigation';
+import { dashboardStyles } from '../../assets/css/dashboardStyles';
 
 type BookingStatus =
     | 'New'
@@ -47,7 +49,7 @@ const Booking = (props: any) => {
 
     const [activeTab, setActiveTab] = useState<TabFilter>(initialTab || 'New');
     const [assignedServices, setAssignedServices] = useState<any[]>([]);
-    const [selectedLead, setSelectedLead] = useState<any | null>(null);
+    const [selectedLead, setSelectedLead] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isAcceptingLead, setIsAcceptingLead] = useState(false);
     const [isDenyingLead, setIsDenyingLead] = useState(false);
@@ -277,14 +279,8 @@ const Booking = (props: any) => {
             customerAddress={item.Address}
             acceptLeadDate={item.AcceptDate}
             onAccept={() => handleAcceptService(item.LeadID)}
-            onDenied={(leadId: string, reason: string) =>
-                handleDeniedLead(leadId, reason)
-            }
-            onCompleted={(data: {
-                totalBillAmount: string;
-                serviceDetails: string;
-                otherRemarks: string;
-            }) => handleCompletedLead(item.LeadID, data)}
+            onDenied={handleDeniedLead}
+            onCompleted={(data) => handleCompletedLead(item.LeadID, data)}
             onFollowUp={(data: {
                 nextFollowUpDate: Date;
                 followUpDetails: string;
@@ -294,10 +290,17 @@ const Booking = (props: any) => {
     );
 
     const renderEmptyList = () => (
-        <View style={bookingStyles.emptyContainer}>
-            <Text style={bookingStyles.emptyText}>
-                No {activeTab === 'All' ? '' : activeTab.toLowerCase()} leads
-                found
+        <View style={dashboardStyles.emptyStateContainer}>
+            <Image
+                source={require('../../assets/img/OnGoingService.png')}
+                style={dashboardStyles.emptyStateImage}
+            />
+            <Text style={dashboardStyles.emptyStateTitle}>
+                No {activeTab} Leads Found
+            </Text>
+            <Text style={dashboardStyles.emptyStateDescription}>
+                You don't have any {activeTab.toLowerCase()} leads at the
+                moment. New requests will appear here once assigned.
             </Text>
         </View>
     );

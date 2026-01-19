@@ -10,6 +10,7 @@ import {
     Platform,
     Dimensions,
     ActivityIndicator,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { walletStyles } from '../../assets/css/walletStyles';
@@ -303,9 +304,17 @@ const Wallet = (props: any) => {
     };
 
     const renderEmptyList = () => (
-        <View style={walletStyles.emptyContainer}>
-            <Text style={walletStyles.emptyText}>
-                No recharge history found
+        <View style={dashboardStyles.emptyStateContainer}>
+            <Image
+                source={require('../../assets/img/OnGoingService.png')}
+                style={dashboardStyles.emptyStateImage}
+            />
+            <Text style={dashboardStyles.emptyStateTitle}>
+                No Transaction History
+            </Text>
+            <Text style={dashboardStyles.emptyStateDescription}>
+                You don't have any wallet transactions for the selected date
+                range. Your recharge and penalty history will appear here.
             </Text>
         </View>
     );

@@ -19,6 +19,7 @@ import { connect } from 'react-redux';
 import { loginActions_dispatch } from '../../../store/action/mainTypedAction';
 import { AppDispatch, RootState } from '../../../store';
 import { getItem, setItem, STORAGE_KEYS } from '../../utils/storage';
+import { RootStackParamList } from '../../navigations/navigation';
 
 const ChangePassword = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -122,6 +123,7 @@ const ChangePassword = (props: any) => {
                                     secureTextEntry={true}
                                     isEditable={true}
                                     placeholder="Enter current password"
+                                    placeholderTextColor="#8F8F8F"
                                     errorMsg={errors.currentPassword?.message}
                                 />
                             )}
@@ -139,6 +141,7 @@ const ChangePassword = (props: any) => {
                                     secureTextEntry={true}
                                     isEditable={true}
                                     placeholder="Enter new password"
+                                    placeholderTextColor="#8F8F8F"
                                     errorMsg={errors.newPassword?.message}
                                 />
                             )}
@@ -156,6 +159,7 @@ const ChangePassword = (props: any) => {
                                     secureTextEntry={true}
                                     isEditable={true}
                                     placeholder="Re-enter new password"
+                                    placeholderTextColor="#8F8F8F"
                                     errorMsg={errors.recheckPassword?.message}
                                 />
                             )}
