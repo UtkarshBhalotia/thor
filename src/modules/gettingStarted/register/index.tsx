@@ -39,6 +39,7 @@ import Layout from '../../../assets/css/layout';
 import BSModal from '../../../components/BSModal';
 import LinearGradient from 'react-native-linear-gradient';
 import { RootStackParamList } from '../../../navigations/navigation';
+import { getFcmToken } from '../../../utils/FirebaseNotifications';
 
 const Register = (props: any) => {
     const insets = useSafeAreaInsets();
@@ -659,7 +660,7 @@ const Register = (props: any) => {
                         RoleID: '1',
                         IsActive: '0',
 
-                        FCMTokenID: 'fcm_token_sample_123', // Placeholder or get from device info
+                        FCMTokenID: (await getFcmToken()) || '',
 
                         ServiceTypeList: selectedServices,
 

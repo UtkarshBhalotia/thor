@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "482575058241",
+    "firebase_url": "https://serviceondoors-26ca1.firebaseio.com",
+    "project_id": "serviceondoors-26ca1",
+    "storage_bucket": "serviceondoors-26ca1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:482575058241:android:a4e13f25da8248fc3a4dc0",
+        "android_client_info": {
+          "package_name": "com.roservice.partner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "482575058241-stnrkuu4hd0sn94aif1b1g8tr87e91dl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.roservice.partner",
+            "certificate_hash": "e7288b4189239fe9db051244cde09c839d34d19c"
+          }
+        },
+        {
+          "client_id": "482575058241-0olopo5u922nkncf7ujb0hmstvhig87t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHxY9pt36NfzKYUozS9bxYgs3ZKqrBVUg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "482575058241-0olopo5u922nkncf7ujb0hmstvhig87t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

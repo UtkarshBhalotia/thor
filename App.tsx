@@ -26,6 +26,7 @@ import Layout from './src/assets/css/layout';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import Toast, { ToastConfig } from 'react-native-toast-message';
 import ErrorToast from './src/components/ErrorToast';
+import { notificationListener, requestUserPermission } from './src/utils/FirebaseNotifications';
 
 const App = () => {
     const colorScheme = useColorScheme();
@@ -33,8 +34,11 @@ const App = () => {
         mazuError: (props) => <ErrorToast {...props} />,
     };
     useEffect(() => {
+        requestUserPermission();
+        const unsubscribe = notificationListener();
         return () => {
             (isReadyRef as any).current = false;
+            unsubscribe();
         };
     }, []);
 
