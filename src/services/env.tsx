@@ -42,6 +42,7 @@ const apiListing = {
     insertLeadDeniedByVendorUrl: `${BaseUrl}LeadDeniedByVendor`,
     getVendorMinRechargeAmtUrl: `${BaseUrl}GetVendorMinRechargeAmt`,
     getVendorDetailsByIDUrl: `${BaseUrl}GetVendorDetailsByID`,
+    insertReComplaintCompletedByVendorUrl: `${BaseUrl}ReComplaintCompletedByVendor`,
 
     getAllTypeVendorBalanceUrl: `${NEW_URL}/get_all_type_vendor_balance`,
     getVendorLedgerWithOpeningBalanceUrl: `${NEW_URL}/vendor_ledger_with_opening_bal`,

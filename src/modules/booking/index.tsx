@@ -171,13 +171,17 @@ const Booking = (props: any) => {
             totalBillAmount: string;
             serviceDetails: string;
             otherRemarks: string;
+            reComplaintId?: string;
         },
+        status: string,
     ) => {
         props.bookingActions('Complete_Lead_By_Vendor_Api', {
             leadId: leadId,
             partsDesc: data.serviceDetails,
             remarks: data.otherRemarks || '',
             customerAmount: data.totalBillAmount,
+            status: status,
+            reComplaintId: data.reComplaintId,
             callBack: (success: boolean, message: string) => {
                 if (success) {
                     if (activeTab === 'Ongoing') {
@@ -281,14 +285,15 @@ const Booking = (props: any) => {
             deniedReason={item.Reason}
             deniedDateStatus={`${item.DeniedDate} \ ${item.DeniedStatus}`}
             completedDate={item.CompletedDate}
-            completedAmout={item.CustomerAmount}
+            completedAmout={item.CustomerAmount || item.CustomerAmt}
+            reComplaintId={item.ComplaintID}
             customerName={item.CustomerName}
             customerMobile={item.MobileNo}
             customerAddress={item.Address}
             acceptLeadDate={item.AcceptDate}
             onAccept={() => handleAcceptService(item.LeadID)}
             onDenied={handleDeniedLead}
-            onCompleted={(data) => handleCompletedLead(item.LeadID, data)}
+            onCompleted={(data) => handleCompletedLead(item.LeadID, data, item.LeadStatus)}
             onFollowUp={(data: {
                 nextFollowUpDate: Date;
                 followUpDetails: string;

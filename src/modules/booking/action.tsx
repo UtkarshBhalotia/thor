@@ -302,15 +302,26 @@ function* CompleteLeadByVendorApi(actionParam: TCompleteLeadByVendorParam) {
             (state: RootState) => state.globalState,
         );
 
-        const dataObj = {
-            LeadID: actionParam.leadId,
-            UserID: GlobalState.userId,
-            PartsDesc: actionParam.partsDesc,
-            Remarks: actionParam.remarks || '',
-            CustomerAmount: actionParam.customerAmount,
-        };
+        const isReComplaint =
+            actionParam.status?.trim().toLowerCase() === 're-complaint';
+
+        const dataObj = isReComplaint
+            ? {
+                LeadID: actionParam.leadId,
+                ReComplaintID: actionParam.reComplaintId,
+            }
+            : {
+                LeadID: actionParam.leadId,
+                UserID: GlobalState.userId,
+                PartsDesc: actionParam.partsDesc,
+                Remarks: actionParam.remarks || '',
+                CustomerAmount: actionParam.customerAmount,
+            };
+
         const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.insertLeadCompletedByVendorUrl,
+            url: isReComplaint
+                ? projectEnv.insertReComplaintCompletedByVendorUrl
+                : projectEnv.insertLeadCompletedByVendorUrl,
             data: dataObj,
         });
 

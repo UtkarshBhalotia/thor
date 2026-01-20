@@ -76,7 +76,7 @@ export const bookingStyles = StyleSheet.create({
     tabFollowUp: { backgroundColor: '#7B1FA2' },
     tabDenied: { backgroundColor: '#C50F1F' },
     tabCompleted: { backgroundColor: '#107C10' },
-    tabComplaint: { backgroundColor: '#FF9800' },
+    tabComplaint: { backgroundColor: '#d32f71ff' },
     tabAll: { backgroundColor: '#1C1F34' },
 
     // Booking List

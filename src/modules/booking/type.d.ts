@@ -45,6 +45,8 @@ type TCompleteLeadByVendorParam = {
     partsDesc: string;
     remarks: string;
     customerAmount: string;
+    status?: string;
+    reComplaintId?: string;
     callBack: (success: boolean, message: string) => void;
 };
 

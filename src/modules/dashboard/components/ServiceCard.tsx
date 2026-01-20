@@ -38,6 +38,7 @@ interface ServiceCardProps {
     deniedDateStatus?: string;
     completedDate?: string;
     completedAmout?: string;
+    reComplaintId?: string;
     // Customer details
     customerName?: string;
     customerMobile?: string;
@@ -80,6 +81,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     deniedDateStatus,
     completedDate,
     completedAmout,
+    reComplaintId,
     customerName,
     customerMobile,
     customerAddress,
@@ -153,13 +155,23 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     };
 
     const handleCompletedPress = () => {
-        completedModalRef.current?.present();
+        if (isReComplaint) {
+            handleCompletedSubmit({
+                totalBillAmount: '0',
+                serviceDetails: 'Re-Complaint Completed',
+                otherRemarks: '',
+                reComplaintId: reComplaintId,
+            });
+        } else {
+            completedModalRef.current?.present();
+        }
     };
 
     const handleCompletedSubmit = (data: {
         totalBillAmount: string;
         serviceDetails: string;
         otherRemarks: string;
+        reComplaintId?: string;
     }) => {
         if (onCompleted) {
             onCompleted(data);
@@ -215,7 +227,17 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                     accent: '#D32F2F',
                     icon: '⚠️',
                 };
+            case 're-Complaint':
+            case 're-complaint':
+                return {
+                    badge: { backgroundColor: '#E0F2F1' },
+                    text: { color: '#004D40' },
+                    accent: '#004D40',
+                    icon: '⚠️',
+                };
             case 'Completed':
+            case 'Re-Completed':
+            case 're-completed':
                 return {
                     badge: { backgroundColor: '#E8F5E9' },
                     text: { color: '#388E3C' },
@@ -249,17 +271,23 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     };
 
     const statusConfig = getStatusConfig();
+    const statusLower = leadStatus?.trim().toLowerCase();
+    const isReStatus =
+        statusLower === 're-completed' || statusLower === 're-complaint';
+    const isReComplaint = statusLower === 're-complaint';
 
     const DetailRow = ({
         label,
         value,
         highlight = false,
         fullText = false,
+        highlightColor,
     }: {
         label: string;
         value: string;
         highlight?: boolean;
         fullText?: boolean;
+        highlightColor?: string;
     }) => (
         <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>{label}</Text>
@@ -267,7 +295,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                 style={[
                     styles.detailValue,
                     highlight && {
-                        color: statusConfig.accent,
+                        color: highlightColor || statusConfig.accent,
                         fontWeight: '700',
                     },
                 ]}
@@ -326,9 +354,20 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                         <View style={styles.detailsRow}>
                             <DetailRow label="Service Type" value={leadType} />
                             <DetailRow
-                                label="Lead Amount"
-                                value={`₹ ${leadAmt}`}
-                                highlight
+                                label={
+                                    isReStatus
+                                        ? 'Completed Amount'
+                                        : 'Lead Amount'
+                                }
+                                value={
+                                    isReStatus
+                                        ? `₹ ${completedAmout || leadAmt}`
+                                        : `₹ ${leadAmt}`
+                                }
+                                highlight={true}
+                                highlightColor={
+                                    isReStatus ? '#388E3C' : undefined
+                                }
                             />
                         </View>
 
@@ -370,6 +409,19 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                             </View>
                         )}
 
+                        {isReStatus && (
+                            <View style={styles.detailsRow}>
+                                <DetailRow
+                                    label="Completed Date"
+                                    value={completedDate || '-'}
+                                />
+                                <DetailRow
+                                    label="Re-Complaint Date"
+                                    value={leadDate || '-'}
+                                />
+                            </View>
+                        )}
+
                         <View style={styles.detailsRow}>
                             <DetailRow label="City" value={leadCity} />
                             <DetailRow
@@ -407,7 +459,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                     {(leadStatus?.trim().toLowerCase() === 'ongoing' ||
                         leadStatus?.trim().toLowerCase() === 'follow up' ||
                         leadStatus?.trim().toLowerCase() === 'followup' ||
-                        leadStatus?.trim().toLowerCase() === 'follow-up') && (
+                        leadStatus?.trim().toLowerCase() === 'follow-up' ||
+                        leadStatus?.trim().toLowerCase() === 're-complaint') && (
                             <>
                                 <View style={styles.divider} />
 
@@ -511,23 +564,27 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
 
                                         {/* Three Action Buttons - Shown after customer details expanded */}
                                         <View style={styles.ongoingButtonsRow}>
-                                            <TouchableOpacity
-                                                activeOpacity={0.8}
-                                                onPress={handleFollowUpPress}
-                                                style={styles.followUpBtn}>
-                                                <Text
-                                                    style={styles.followUpBtnText}>
-                                                    📞 Follow Up
-                                                </Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                activeOpacity={0.8}
-                                                onPress={handleDeniedPress}
-                                                style={styles.deniedBtn}>
-                                                <Text style={styles.deniedBtnText}>
-                                                    ✕ Denied
-                                                </Text>
-                                            </TouchableOpacity>
+                                            {!isReComplaint && (
+                                                <>
+                                                    <TouchableOpacity
+                                                        activeOpacity={0.8}
+                                                        onPress={handleFollowUpPress}
+                                                        style={styles.followUpBtn}>
+                                                        <Text
+                                                            style={styles.followUpBtnText}>
+                                                            📞 Follow Up
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity
+                                                        activeOpacity={0.8}
+                                                        onPress={handleDeniedPress}
+                                                        style={styles.deniedBtn}>
+                                                        <Text style={styles.deniedBtnText}>
+                                                            ✕ Denied
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                </>
+                                            )}
                                             <TouchableOpacity
                                                 activeOpacity={0.8}
                                                 onPress={handleCompletedPress}
