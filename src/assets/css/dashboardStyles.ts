@@ -3,10 +3,13 @@ import { StyleSheet } from 'react-native';
 export const dashboardStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F6FA',
+        backgroundColor: '#FFFFFF',
     },
     scrollContent: {
         paddingBottom: 24,
+    },
+    mainContent: {
+        backgroundColor: '#F5F6FA',
     },
 
     // Header Section
@@ -14,7 +17,7 @@ export const dashboardStyles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 12,
         paddingBottom: 12,
-        backgroundColor: '#F5F6FA',
+        backgroundColor: '#FFFFFF',
         borderBottomWidth: 1,
         borderBottomColor: '#EAEAF0',
     },

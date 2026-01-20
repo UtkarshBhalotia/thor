@@ -14,6 +14,7 @@ export type RootStackParamList = {
     ChangePassword: undefined;
     Report: undefined;
     IdVerification: undefined;
+    WebViewScreen: { url: string; title: string };
 };
 
 export type TabParamList = {

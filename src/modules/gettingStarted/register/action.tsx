@@ -45,6 +45,8 @@ export function* conditionActions<
 }
 
 function* VendorRegistrationApi(actionParam: TUserVendorRegistrationParam) {
+    console.log('VendorAPI');
+
     try {
         const response: IResponseParam = yield call(clientPostHandler, {
             url: projectEnv.vendorRegistrationUrl,
@@ -60,9 +62,11 @@ function* VendorRegistrationApi_Response(
     callBack: (data: any) => void,
 ) {
     try {
-        if (response && response.body) {
+        if (response.body.status === 'success') {
             const responseData = response.body;
             callBack(responseData);
+        } else if (response.body.status === 'error') {
+            callBack(response.body);
         } else {
             callBack(null);
         }

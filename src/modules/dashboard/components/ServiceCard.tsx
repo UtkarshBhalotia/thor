@@ -61,6 +61,9 @@ interface ServiceCardProps {
         leadId: string,
         callBack: (data: any) => void,
     ) => void;
+    onFetchDeniedReasons?: (
+        callBack: (data: any[]) => void,
+    ) => void;
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({
@@ -87,6 +90,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     onDenied,
     onCompleted,
     onCustomerDetailsClick,
+    onFetchDeniedReasons,
 }) => {
     const [isCustomerDetailsExpanded, setIsCustomerDetailsExpanded] =
         useState(false);
@@ -104,6 +108,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     const deniedModalRef = useRef<BottomSheetModal>(null);
     const completedModalRef = useRef<BottomSheetModal>(null);
     const followUpModalRef = useRef<BottomSheetModal>(null);
+    const [deniedReasons, setDeniedReasons] = useState<{ id: string | number; reason: string }[]>([]);
+    const [isLoadingDeniedReasons, setIsLoadingDeniedReasons] = useState(false);
 
     const handleFollowUpPress = () => {
         followUpModalRef.current?.present();
@@ -119,7 +125,25 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     };
 
     const handleDeniedPress = () => {
-        deniedModalRef.current?.present();
+        if (onFetchDeniedReasons) {
+            setIsLoadingDeniedReasons(true);
+            deniedModalRef.current?.present();
+            onFetchDeniedReasons((data: any[]) => {
+                const reasons = data?.map((item: any, index: number) => {
+                    if (typeof item === 'string') {
+                        return { id: index, reason: item };
+                    }
+                    return {
+                        id: item.ID || item.id || index,
+                        reason: item.ResionName || item.Reason || item.reason || item.name || '',
+                    };
+                }) || [];
+                setDeniedReasons(reasons);
+                setIsLoadingDeniedReasons(false);
+            });
+        } else {
+            deniedModalRef.current?.present();
+        }
     };
 
     const handleDeniedSubmit = (reason: string) => {
@@ -525,6 +549,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
             <DeniedLeadFormModal
                 ref={deniedModalRef}
                 onSubmit={handleDeniedSubmit}
+                deniedReasons={deniedReasons}
+                isLoadingReasons={isLoadingDeniedReasons}
             />
 
             {/* Completed Lead Form Modal */}

@@ -48,7 +48,7 @@ const Register = (props: any) => {
     const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
 
     // Mobile verification states
-    const [isMobileVerified, setIsMobileVerified] = useState(false);
+    const [isMobileVerified, setIsMobileVerified] = useState(true);
     const [otpCode, setOtpCode] = useState('');
     const [otpSending, setOtpSending] = useState(false);
     const [otpVerifying, setOtpVerifying] = useState(false);
@@ -593,6 +593,41 @@ const Register = (props: any) => {
     const onSignupPress = async (formData: any) => {
         setSubmitting(true);
         try {
+            if (!isSignupEnabled) {
+                let missingMessage = 'Please fill all mandatory fields.';
+
+                if (!areMandatoryFieldsFilled()) {
+                    if ((watchedValues.count || 0) === 0) {
+                        missingMessage = 'Please select at least one service type.';
+                    } else {
+                        missingMessage = 'Please fill all mandatory personal and company details.';
+                    }
+                } else if (!acceptTerms) {
+                    missingMessage = 'Please accept the Terms and Conditions.';
+                } else if (!areAllValidationsPassing()) {
+                    missingMessage = 'Please fix the errors in the form.';
+                } else if (!isMobileVerified) {
+                    missingMessage = 'Mobile number verification is required.';
+                } else if (!areDocumentsUploaded()) {
+                    const hasGst = watchedValues.gstin && watchedValues.gstin.trim() !== '';
+                    if (!aadharFront || !aadharBack) {
+                        missingMessage = 'Please upload both front and back of Aadhar card.';
+                    } else if (hasGst && !gstCertificate) {
+                        missingMessage = 'Please upload GST Certificate.';
+                    } else if (!hasGst && !panCard) {
+                        missingMessage = 'Please upload PAN Card.';
+                    }
+                }
+
+                Toast.show({
+                    type: 'error',
+                    text1: 'Incomplete Form',
+                    text2: missingMessage,
+                });
+                setSubmitting(false);
+                return;
+            }
+
             const countryData = countries.find(
                 (c) => c.CountryName === formData.country,
             );
@@ -634,6 +669,9 @@ const Register = (props: any) => {
                         PanImageType: getImageType(panCard?.type),
                         PanImageBase64: panCard?.base64 || '',
 
+                        GstFileType: getImageType(gstCertificate?.type),
+                        GstFileBase64: gstCertificate?.base64 || '',
+
                         AadhaarFrontImageType: getImageType(aadharFront?.type),
                         AadhaarFrontImageBase64: aadharFront?.base64 || '',
 
@@ -651,7 +689,7 @@ const Register = (props: any) => {
                         Toast.show({
                             type: 'success',
                             text1: 'Registration Successful',
-                            text2: 'Redirecting to login...',
+                            text2: response?.msg || 'Redirecting to login...',
                         });
                         setTimeout(() => {
                             navigation.navigate('Login' as any);
@@ -660,7 +698,7 @@ const Register = (props: any) => {
                         Toast.show({
                             type: 'error',
                             text1: 'Registration Failed',
-                            text2: response?.message || 'Please try again later',
+                            text2: response?.msg || 'Please try again later',
                         });
                     }
                 },
@@ -979,11 +1017,11 @@ const Register = (props: any) => {
                                                     onChange(text);
                                                     clearErrors('mobileNumber');
                                                     // Reset verification status if mobile number changes
-                                                    if (isMobileVerified) {
-                                                        setIsMobileVerified(
-                                                            false,
-                                                        );
-                                                    }
+                                                    // if (isMobileVerified) {
+                                                    //     setIsMobileVerified(
+                                                    //         false,
+                                                    //     );
+                                                    // }
                                                 }}
                                                 onBlurText={() => {
                                                     trigger('mobileNumber');
@@ -1001,7 +1039,7 @@ const Register = (props: any) => {
                                             />
 
                                             {/* Mobile Verification Section */}
-                                            {value &&
+                                            {/* {value &&
                                                 !error &&
                                                 regex_validation(
                                                     'indiaMobile',
@@ -1061,7 +1099,7 @@ const Register = (props: any) => {
                                                             </TouchableOpacity>
                                                         )}
                                                     </View>
-                                                )}
+                                                )} */}
                                         </View>
                                     )}
                                 />
@@ -1836,10 +1874,10 @@ const Register = (props: any) => {
                                                 <Text
                                                     style={styles.termsLink}
                                                     onPress={() => {
-                                                        // Navigate to web view for terms and conditions
-                                                        console.log(
-                                                            'Navigate to terms and conditions',
-                                                        );
+                                                        navigation.navigate('WebViewScreen', {
+                                                            url: 'https://serviceondoors.com/Terms-And-Conditions',
+                                                            title: 'Terms and Conditions',
+                                                        });
                                                     }}>
                                                     Terms and Conditions
                                                 </Text>
@@ -1851,16 +1889,17 @@ const Register = (props: any) => {
                                 <TouchableOpacity
                                     style={[
                                         registerPageStyles.signupButton,
-                                        !isSignupEnabled &&
-                                        styles.disabledButton,
+                                        // !isSignupEnabled &&
+                                        // styles.disabledButton,
                                     ]}
                                     onPress={handleSubmit(onSignupPress)}
-                                    disabled={submitting || !isSignupEnabled}>
+                                    // disabled={submitting || !isSignupEnabled}
+                                    disabled={submitting}>
                                     <Text
                                         style={[
                                             registerPageStyles.signupButtonText,
-                                            !isSignupEnabled &&
-                                            styles.disabledButtonText,
+                                            // !isSignupEnabled &&
+                                            // styles.disabledButtonText,
                                         ]}>
                                         {submitting
                                             ? 'PROCESSING...'
@@ -1888,7 +1927,7 @@ const Register = (props: any) => {
             </LinearGradient>
 
             {/* OTP Verification Modal */}
-            <BSModal
+            {/* <BSModal
                 bsModalRef={otpModalRef}
                 index={0}
                 snapPoints={['40%']}
@@ -1963,7 +2002,7 @@ const Register = (props: any) => {
                         </TouchableOpacity>
                     </View>
                 </View>
-            </BSModal>
+            </BSModal> */}
 
             {/* Profile Photo Upload Modal */}
             <BSModal

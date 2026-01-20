@@ -13,6 +13,7 @@ import ChangePassword from '../modules/changePassword';
 import Onboarding from '../modules/gettingStarted/onboarding';
 import Report from '../modules/report';
 import IdVerification from '../modules/idVerification';
+import WebViewScreen from '../components/WebViewScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getItem, STORAGE_KEYS } from '../utils/storage';
 import { useDispatch, useSelector } from 'react-redux';
@@ -180,6 +181,11 @@ const MainNavigator = () => {
                 <Stack.Screen
                     name="IdVerification"
                     component={IdVerification}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="WebViewScreen"
+                    component={WebViewScreen}
                     options={{ headerShown: false }}
                 />
             </Stack.Group>

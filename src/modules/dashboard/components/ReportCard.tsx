@@ -6,6 +6,9 @@ interface ReportCardProps {
     ongoing: number | string;
     newLeads: number | string;
     revenue: number | string;
+    onNewLeadsPress?: () => void;
+    onOngoingLeadsPress?: () => void;
+    onRevenuePress?: () => void;
     onPress?: () => void;
 }
 
@@ -13,13 +16,16 @@ const ReportCard: React.FC<ReportCardProps> = ({
     ongoing,
     newLeads,
     revenue,
+    onNewLeadsPress,
+    onOngoingLeadsPress,
+    onRevenuePress,
     onPress,
 }) => {
     return (
         <View style={dashboardStyles.reportsContainer}>
             <TouchableOpacity
                 style={dashboardStyles.reportCard}
-                onPress={onPress}
+                onPress={onNewLeadsPress || onPress}
                 activeOpacity={0.7}>
                 <View
                     style={[
@@ -33,7 +39,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
             </TouchableOpacity>
             <TouchableOpacity
                 style={dashboardStyles.reportCard}
-                onPress={onPress}
+                onPress={onOngoingLeadsPress || onPress}
                 activeOpacity={0.7}>
                 <View
                     style={[
@@ -48,7 +54,7 @@ const ReportCard: React.FC<ReportCardProps> = ({
 
             <TouchableOpacity
                 style={dashboardStyles.reportCard}
-                onPress={onPress}
+                onPress={onRevenuePress || onPress}
                 activeOpacity={0.7}>
                 <View
                     style={[

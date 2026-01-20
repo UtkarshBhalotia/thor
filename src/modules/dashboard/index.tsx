@@ -381,6 +381,14 @@ const Dashboard = (props: any) => {
         });
     };
 
+    const handleFetchDeniedReasons = (
+        callBack: (data: any[]) => void,
+    ) => {
+        props.bookingActions('Get_Denied_Reason_List_Api', {
+            callBack: callBack,
+        });
+    };
+
     const handleRecharge = () => {
         // Map recharge type to payment gateway
         const mappedGateway =
@@ -604,6 +612,7 @@ const Dashboard = (props: any) => {
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
+                style={dashboardStyles.mainContent}
                 contentContainerStyle={dashboardStyles.scrollContent}>
                 {/* Wallet Card */}
                 <WalletCard
@@ -646,7 +655,19 @@ const Dashboard = (props: any) => {
                     ongoing={reportStats.ongoing}
                     newLeads={reportStats.new}
                     revenue={reportStats.revenue}
-                    onPress={() => navigation.navigate('Report')}
+                    onNewLeadsPress={() =>
+                        navigation.navigate('HomeTabs', {
+                            screen: 'Bookings',
+                            params: { initialTab: 'New' },
+                        })
+                    }
+                    onOngoingLeadsPress={() =>
+                        navigation.navigate('HomeTabs', {
+                            screen: 'Bookings',
+                            params: { initialTab: 'Ongoing' },
+                        })
+                    }
+                    onRevenuePress={() => navigation.navigate('Report')}
                 />
 
                 {/* Assigned Service List */}
@@ -718,6 +739,7 @@ const Dashboard = (props: any) => {
                                 otherRemarks: string;
                             }) => handleCompleted(service.LeadID, data)}
                             onCustomerDetailsClick={handleCustomerDetailsClick}
+                            onFetchDeniedReasons={handleFetchDeniedReasons}
                         />
                     ))
                 )}

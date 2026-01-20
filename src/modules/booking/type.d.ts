@@ -4,7 +4,8 @@ type TUserBookingConditionParamActionName =
     | 'Accept_Lead_By_Vendor_Api'
     | 'Deny_Lead_By_Vendor_Api'
     | 'Complete_Lead_By_Vendor_Api'
-    | 'FollowUp_Lead_By_Vendor_Api';
+    | 'FollowUp_Lead_By_Vendor_Api'
+    | 'Get_Denied_Reason_List_Api';
 
 interface IUserBookingActionConditionParam<
     T extends TUserBookingConditionParamActionName,
@@ -54,6 +55,10 @@ type TFollowUpLeadByVendorParam = {
     callBack: (success: boolean, message: string) => void;
 };
 
+type TGetDeniedReasonListParam = {
+    callBack: (data: any[]) => void;
+};
+
 type TUserBookingConditionParamActionParam<
     T extends TUserBookingConditionParamActionName,
 > = T extends 'Get_Leads_List_Api'
@@ -68,4 +73,6 @@ type TUserBookingConditionParamActionParam<
     ? TCompleteLeadByVendorParam
     : T extends 'FollowUp_Lead_By_Vendor_Api'
     ? TFollowUpLeadByVendorParam
+    : T extends 'Get_Denied_Reason_List_Api'
+    ? TGetDeniedReasonListParam
     : never;

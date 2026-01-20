@@ -44,6 +44,11 @@ export function* conditionActions<
                 actionParam as TFollowUpLeadByVendorParam,
             );
             break;
+        case 'Get_Denied_Reason_List_Api':
+            yield call(
+                GetDeniedReasonListApi,
+                actionParam as TGetDeniedReasonListParam,
+            );
             break;
     }
 }
@@ -417,6 +422,52 @@ function* FollowUpLeadByVendorApi_Response(
         showToast({
             type: 'error',
             text1: 'An error occurred while adding follow up',
+            visibilityTime: 3000,
+        });
+    }
+}
+
+function* GetDeniedReasonListApi(actionParam: TGetDeniedReasonListParam) {
+    try {
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.getDeniedReasonListUrl,
+            data: {},
+        });
+
+        yield GetDeniedReasonListApi_Response(response, actionParam.callBack);
+    } catch (error) {
+        actionParam.callBack([]);
+    }
+}
+
+function* GetDeniedReasonListApi_Response(
+    response: IResponseParam,
+    callBack: (data: any[]) => void,
+) {
+    try {
+        if (response.body.status === 'success') {
+            let reasons = [];
+            try {
+                // The API returns a stringified JSON array in data.response
+                reasons = JSON.parse(response.body.data.response);
+            } catch (e) {
+                console.error('Error parsing denied reasons:', e);
+                reasons = [];
+            }
+            callBack(Array.isArray(reasons) ? reasons : []);
+        } else {
+            callBack([]);
+            showToast({
+                type: 'error',
+                text1: response.body.msg || response.body.message || 'Failed to fetch denied reasons',
+                visibilityTime: 3000,
+            });
+        }
+    } catch (error) {
+        callBack([]);
+        showToast({
+            type: 'error',
+            text1: 'Failed to fetch denied reasons',
             visibilityTime: 3000,
         });
     }

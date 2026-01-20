@@ -51,7 +51,7 @@ const More = () => {
     };
 
     const businessMenu = [
-        { title: 'Tax invoice', ionicon: 'receipt-outline' },
+        // { title: 'Tax invoice', ionicon: 'receipt-outline' },
         { title: 'Report', ionicon: 'bar-chart-outline' },
     ];
 
