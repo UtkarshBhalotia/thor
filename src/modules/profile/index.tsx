@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -16,6 +16,7 @@ import {
     CommonActions,
     NavigationProp,
     useNavigation,
+    useFocusEffect,
 } from '@react-navigation/native';
 import { removeItem, STORAGE_KEYS } from '../../utils/storage';
 import { useDispatch, useSelector, connect } from 'react-redux';
@@ -83,21 +84,22 @@ const Profile = (props: any) => {
     const validateGST = watch('ValidateGST');
 
     // Calculate editable states based on flags
-    const isCompanyNameEditable = profileLocked === 0 && validateGST === 1;
+    const isCompanyNameEditable = profileLocked === 0 && validateGST === 0;
     const isMobileEditable = profileLocked === 0;
     const isAddressEditable = profileLocked === 0;
-    const isGSTINEditable = profileLocked === 0 && validateGST === 1;
+    const isGSTINEditable = profileLocked === 0 && validateGST === 0;
     const isStateEditable = profileLocked === 0;
     const isCityEditable = profileLocked === 0;
 
     // Update button is enabled only if ProfileLocked is 0 (user can edit at least some fields)
     const isUpdateButtonEnabled = profileLocked === 0 && !submitting;
 
-    // Load country list and set default states
-    useEffect(() => {
-        loadVendorDetails();
-        //   loadCountryList();
-    }, []);
+    // Load vendor details every time the profile screen comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            loadVendorDetails();
+        }, [])
+    );
 
     const loadVendorDetails = () => {
         const userId = globalState.userId;
@@ -290,7 +292,8 @@ const Profile = (props: any) => {
                     <View style={profileStyles.profilePhotoContainer}>
                         <TouchableOpacity
                             style={profileStyles.profilePhotoButton}
-                            onPress={handleProfilePhotoUpload}>
+                            onPress={profileLocked === 0 ? handleProfilePhotoUpload : undefined}
+                            activeOpacity={profileLocked === 0 ? 0.7 : 1}>
                             {profileImage ? (
                                 <Image
                                     source={{ uri: profileImage }}
@@ -320,7 +323,7 @@ const Profile = (props: any) => {
                                 </Text>
                             </View>
                         </TouchableOpacity>
-                        {profileImage && (
+                        {profileImage && profileLocked === 0 && (
                             <TouchableOpacity
                                 style={profileStyles.removePhotoButton}
                                 onPress={handleRemovePhoto}>
