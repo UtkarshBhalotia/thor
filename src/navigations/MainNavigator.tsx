@@ -8,6 +8,7 @@ import Dashboard from '../modules/dashboard';
 import Booking from '../modules/booking';
 import Wallet from '../modules/wallet';
 import Profile from '../modules/profile';
+import ServiceLocation from '../modules/profile/ServiceLocation';
 import More from '../modules/more';
 import ChangePassword from '../modules/changePassword';
 import Onboarding from '../modules/gettingStarted/onboarding';
@@ -161,6 +162,11 @@ const MainNavigator = () => {
                 <Stack.Screen
                     name="Profile"
                     component={Profile}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="ServiceLocation"
+                    component={ServiceLocation}
                     options={{ headerShown: false }}
                 />
                 <Stack.Screen

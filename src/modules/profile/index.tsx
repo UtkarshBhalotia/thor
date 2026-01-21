@@ -38,6 +38,8 @@ import { registerActions_dispatch } from '../../../store/action/mainTypedAction'
 
 import LogoutModal from '../../components/LogoutModal';
 import { RootStackParamList } from '../../navigations/navigation';
+import { showToast } from '../../utils/common';
+import * as RootNavigation from '../../utils/rootNavigation';
 
 const Profile = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -54,6 +56,8 @@ const Profile = (props: any) => {
     const [states, setStates] = useState<any[]>([]);
     const [cities, setCities] = useState<string[]>([]);
     const [citiesWithCheckbox, setCitiesWithCheckbox] = useState<any[]>([]);
+
+    const photoUploadSnapPoints = React.useMemo(() => ['30%'], []);
 
     const formMethods = useForm({
         defaultValues: {
@@ -210,6 +214,19 @@ const Profile = (props: any) => {
         photoUploadModalRef.current?.present();
     };
 
+    const handleNavigateToLocationSelection = () => {
+        navigation.navigate('ServiceLocation', {
+            state: watchedValues.state,
+            city: watchedValues.city,
+            citiesWithCheckbox: watchedValues.cityCheckboxes,
+            onSave: (data: { state: string; city: string; citiesWithCheckbox: any[] }) => {
+                setValue('state', data.state);
+                setValue('city', data.city);
+                setValue('cityCheckboxes', data.citiesWithCheckbox as any);
+            }
+        });
+    };
+
     const handleCamera = () => {
         photoUploadModalRef.current?.dismiss();
         const options = {
@@ -247,12 +264,63 @@ const Profile = (props: any) => {
 
     const handleUpdateProfile = (data: any) => {
         console.log('Update Profile Data:', data);
+        const userId = globalState.userId;
+        if (!userId) {
+            Alert.alert('Error', 'User ID not found');
+            return;
+        }
+
         setSubmitting(true);
-        // Simulate API call
-        setTimeout(() => {
-            setSubmitting(false);
-            Alert.alert('Success', 'Profile updated successfully');
-        }, 2000);
+        props.registerActions('Update_Vendor_Profile_Api', {
+            UserID: userId,
+            CompanyName: data.companyName,
+            GSTNo: data.gstin,
+            MobileNo: data.mobileNumber,
+            Address: data.address,
+            callBack: async (response: any) => {
+                setSubmitting(false);
+                // The user's manual change to action.tsx implies response will be 1 on success
+                if (response === 1) {
+                    // Update Global State and AsyncStorage
+                    const updatedUserInfo = {
+                        ...globalState,
+                        companyName: data.companyName,
+                        gstNo: data.gstin,
+                        mobile: data.mobileNumber,
+                        // Address is not in globalState yet but we can add it if needed
+                        // address: data.address, 
+                    };
+
+                    // Persist to AsyncStorage
+                    const { setItem, STORAGE_KEYS } = require('../../utils/storage');
+                    await setItem(STORAGE_KEYS.USER_INFO, updatedUserInfo);
+
+                    // Update Redux Global State
+                    dispatch({
+                        type: 'GLOBAL_STATE_MUTATE',
+                        value: updatedUserInfo,
+                    });
+
+                    showToast({
+                        type: 'mazuSuccess',
+                        text1: 'Profile updated successfully',
+                    });
+
+                    setTimeout(() => {
+                        RootNavigation.navigate('HomeTabs');
+                    }, 1000);
+
+                    loadVendorDetails(); // Refresh local form data
+                } else {
+                    Alert.alert(
+                        'Error',
+                        response && response[0]?.Message
+                            ? response[0].Message
+                            : 'Failed to update profile',
+                    );
+                }
+            },
+        });
     };
 
     const confirmLogout = async () => {
@@ -420,40 +488,35 @@ const Profile = (props: any) => {
                             )}
                         />
 
-                        {/* State Dropdown */}
-                        <Controller
-                            control={control}
-                            name="state"
-                            render={({ field: { value } }) => (
-                                <SODDropDown
-                                    title="Select State"
-                                    value={value || 'Select State'}
-                                    dropDownFormData={states.map(
-                                        (s) => s.StateName,
-                                    )}
-                                    name="state"
-                                    type="default"
-                                    disabled={!isStateEditable}
-                                />
-                            )}
-                        />
-
-                        {/* City Dropdown (Multi-select) */}
-                        <Controller
-                            control={control}
-                            name="city"
-                            render={({ field: { value } }) => (
-                                <SODDropDown
-                                    title="Select City"
-                                    value={value || 'Select City'}
-                                    ischeckBoxReq={true}
-                                    name="cityCheckboxes"
-                                    dropDownFormData={citiesWithCheckbox}
-                                    type="default"
-                                    disabled={!isCityEditable}
-                                />
-                            )}
-                        />
+                        {/* Location Selection CTA */}
+                        <TouchableOpacity
+                            style={[
+                                profileStyles.locationCTA,
+                                profileLocked === 1 && profileStyles.disabledButton,
+                            ]}
+                            onPress={profileLocked === 0 ? handleNavigateToLocationSelection : undefined}
+                            disabled={profileLocked === 1}
+                            activeOpacity={0.7}>
+                            <View style={profileStyles.locationCTALeft}>
+                                <Text style={profileStyles.locationCTATitle}>Service Locations</Text>
+                                <Text
+                                    numberOfLines={1}
+                                    style={
+                                        watchedValues.city
+                                            ? profileStyles.locationCTAValue
+                                            : profileStyles.locationCTAPlaceholder
+                                    }>
+                                    {watchedValues.city
+                                        ? `${watchedValues.city}, ${watchedValues.state}`
+                                        : 'Select State and City'}
+                                </Text>
+                            </View>
+                            <Ionicons
+                                name="chevron-forward"
+                                size={20}
+                                color={profileLocked === 1 ? '#8F8F8F' : '#5F60B9'}
+                            />
+                        </TouchableOpacity>
 
                         {/* Update Button */}
                         <TouchableOpacity
@@ -476,7 +539,7 @@ const Profile = (props: any) => {
             <BSModal
                 bsModalRef={photoUploadModalRef}
                 index={0}
-                snapPoints={['30%']}
+                snapPoints={photoUploadSnapPoints}
                 headerTitle="Profile Photo">
                 <View style={profileStyles.uploadModalContainer}>
                     <TouchableOpacity
@@ -497,6 +560,7 @@ const Profile = (props: any) => {
                     </TouchableOpacity>
                 </View>
             </BSModal>
+
             {/* Logout Modal */}
             <LogoutModal
                 visible={showLogoutModal}

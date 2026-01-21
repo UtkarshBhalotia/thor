@@ -4,7 +4,9 @@ type TUserRegisterConditionParamActionName =
     | 'Get_State_List_Api'
     | 'Get_City_List_Api'
     | 'Get_Vendor_Details_By_ID_Api'
-    | 'Vendor_Registration_Api';
+    | 'Vendor_Registration_Api'
+    | 'Update_Vendor_Profile_Api'
+    | 'Map_City_List_By_Vendor_Api';
 
 interface IUserRegisterActionConditionParam<
     T extends TUserRegisterConditionParamActionName,
@@ -44,6 +46,21 @@ type TUserVendorRegistrationParam = {
     callBack: (response: any) => void;
 };
 
+type TUserUpdateVendorProfileParam = {
+    UserID: string | number;
+    CompanyName: string;
+    GSTNo: string;
+    MobileNo: string;
+    Address: string;
+    callBack: (response: any) => void;
+};
+
+type TUserMapCityListByVendorParam = {
+    UserID: string | number;
+    jsonString: string;
+    callBack: (response: any) => void;
+};
+
 type TUserRegisterConditionParamActionParam<
     T extends TUserRegisterConditionParamActionName,
 > = T extends 'Get_Service_Types_Api'
@@ -58,5 +75,9 @@ type TUserRegisterConditionParamActionParam<
     ? TUserGetVendorDetailsByIDParam
     : T extends 'Vendor_Registration_Api'
     ? TUserVendorRegistrationParam
+    : T extends 'Update_Vendor_Profile_Api'
+    ? TUserUpdateVendorProfileParam
+    : T extends 'Map_City_List_By_Vendor_Api'
+    ? TUserMapCityListByVendorParam
     : never;
 

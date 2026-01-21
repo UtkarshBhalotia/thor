@@ -41,6 +41,18 @@ export function* conditionActions<
                 actionParam as TUserVendorRegistrationParam,
             );
             break;
+        case 'Update_Vendor_Profile_Api':
+            yield call(
+                UpdateVendorProfileApi,
+                actionParam as TUserUpdateVendorProfileParam,
+            );
+            break;
+        case 'Map_City_List_By_Vendor_Api':
+            yield call(
+                MapCityListByVendorApi,
+                actionParam as TUserMapCityListByVendorParam,
+            );
+            break;
     }
 }
 
@@ -258,6 +270,90 @@ function* GetVendorDetailsByIDApi_Response(
                     visibilityTime: 2000,
                 });
             }
+        }
+    } catch (error) {
+        callBack(null);
+    }
+}
+function* UpdateVendorProfileApi(actionParam: TUserUpdateVendorProfileParam) {
+    try {
+        const dataObj = {
+            UserID: actionParam.UserID,
+            CompanyName: actionParam.CompanyName,
+            GSTNo: actionParam.GSTNo,
+            MobileNo: actionParam.MobileNo,
+            Address: actionParam.Address,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.updateVendorProfileUrl,
+            data: dataObj,
+        });
+
+        yield UpdateVendorProfileApi_Response(response, actionParam.callBack);
+    } catch (error) {
+        actionParam.callBack(null);
+    }
+}
+
+function* UpdateVendorProfileApi_Response(
+    response: IResponseParam,
+    callBack: (data: any) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+
+            if (responseData.d === "1") {
+                const parsedData = JSON.parse(responseData.d);
+                callBack(parsedData);
+            } else {
+                callBack(null);
+                showToast({
+                    type: 'error',
+                    text1: 'Failed to update profile',
+                    visibilityTime: 2000,
+                });
+            }
+        } else {
+            callBack(null);
+        }
+    } catch (error) {
+        callBack(null);
+    }
+}
+
+function* MapCityListByVendorApi(actionParam: TUserMapCityListByVendorParam) {
+    try {
+        const dataObj = {
+            UserID: actionParam.UserID,
+            jsonString: actionParam.jsonString,
+        };
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.mapCityListByVendorUrl,
+            data: dataObj,
+        });
+
+        yield MapCityListByVendorApi_Response(response, actionParam.callBack);
+    } catch (error) {
+        actionParam.callBack(null);
+    }
+}
+
+function* MapCityListByVendorApi_Response(
+    response: IResponseParam,
+    callBack: (data: any) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+
+            if (responseData.d === '1') {
+                callBack(responseData.d);
+            } else {
+                callBack(null);
+            }
+        } else {
+            callBack(null);
         }
     } catch (error) {
         callBack(null);

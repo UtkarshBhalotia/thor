@@ -291,4 +291,37 @@ export const profileStyles = StyleSheet.create({
         color: '#FF9800',
         fontWeight: '500',
     },
+
+    // Location CTA Styles
+    locationCTA: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        backgroundColor: '#F0F4FD',
+        borderRadius: 14,
+        marginTop: 15,
+        borderWidth: 1,
+        borderColor: '#E0E7FF',
+    },
+    locationCTALeft: {
+        flex: 1,
+    },
+    locationCTATitle: {
+        fontSize: 13,
+        color: '#8F8F8F',
+        marginBottom: 4,
+        fontWeight: '500',
+    },
+    locationCTAValue: {
+        fontSize: 15,
+        color: '#1C1F34',
+        fontWeight: '600',
+    },
+    locationCTAPlaceholder: {
+        fontSize: 15,
+        color: '#8F8F8F',
+        fontWeight: '400',
+    },
 });

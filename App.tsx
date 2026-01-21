@@ -26,12 +26,14 @@ import Layout from './src/assets/css/layout';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import Toast, { ToastConfig } from 'react-native-toast-message';
 import ErrorToast from './src/components/ErrorToast';
+import SuccessToast from './src/components/SuccessToast';
 import { notificationListener, requestUserPermission } from './src/utils/FirebaseNotifications';
 
 const App = () => {
     const colorScheme = useColorScheme();
     const toastConfig: ToastConfig = {
         mazuError: (props) => <ErrorToast {...props} />,
+        mazuSuccess: (props) => <SuccessToast {...props} />,
     };
     useEffect(() => {
         requestUserPermission();

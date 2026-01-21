@@ -15,6 +15,12 @@ export type RootStackParamList = {
     Report: undefined;
     IdVerification: undefined;
     WebViewScreen: { url: string; title: string };
+    ServiceLocation: {
+        state?: string;
+        city?: string;
+        citiesWithCheckbox?: { name: string; isChecked: boolean }[];
+        onSave: (data: { state: string; city: string; citiesWithCheckbox: { name: string; isChecked: boolean }[] }) => void;
+    };
 };
 
 export type TabParamList = {

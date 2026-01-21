@@ -46,6 +46,15 @@ export const showToast = ({
             onPress,
             topOffset: 70,
         });
+    } else if (type === 'mazuSuccess') {
+        Toast.show({
+            text1: text1,
+            type: 'mazuSuccess',
+            text2,
+            visibilityTime,
+            onPress,
+            topOffset: 70,
+        });
     } else {
         Toast.show({
             type,
