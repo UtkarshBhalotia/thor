@@ -504,13 +504,6 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                                     Customer Mobile
                                                 </Text>
                                                 <View style={styles.customerMobileValueContainer}>
-                                                    <Text
-                                                        style={
-                                                            styles.customerDetailValue
-                                                        }>
-                                                        {customerDetails.customerMobile ||
-                                                            '-'}
-                                                    </Text>
                                                     {customerDetails.customerMobile && (
                                                         <TouchableOpacity
                                                             onPress={() =>
@@ -523,11 +516,18 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                                             }>
                                                             <Ionicons
                                                                 name="call"
-                                                                size={18}
-                                                                color="#5F60B9"
+                                                                size={14}
+                                                                color="#FFFFFF"
                                                             />
                                                         </TouchableOpacity>
                                                     )}
+                                                    <Text
+                                                        style={
+                                                            styles.customerMobileValue
+                                                        }>
+                                                        {customerDetails.customerMobile ||
+                                                            '-'}
+                                                    </Text>
                                                 </View>
                                             </View>
                                             <View style={styles.customerDetailRow}>
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
     customerDetailRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-start',
+        alignItems: 'center',
     },
     customerDetailLabel: {
         fontSize: 12,
@@ -822,13 +822,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-end',
-        gap: 8,
+        gap: 6,
+    },
+    customerMobileValue: {
+        fontSize: 13,
+        color: '#1C1F34',
+        fontWeight: '600',
     },
     callIconButton: {
-        backgroundColor: '#F0F0F5',
-        padding: 6,
-        borderRadius: 20,
-        marginLeft: 4,
+        backgroundColor: '#5F60B9',
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });
 

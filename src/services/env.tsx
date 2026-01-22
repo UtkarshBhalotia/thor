@@ -15,7 +15,7 @@ export const BaseUrl = BASE_ENV[ENV].API_HOST;
 export const Comp_State_ID = 8;
 
 const apiListing = {
-    loginUrl: `${BaseUrl}ValidateMobileUser`,
+    loginUrl: `${BaseUrl}ValidateMobileUserPartner`,
     registerUrl: `${BaseUrl}InsertUserMaster`,
     getStateListUrl: `${BaseUrl}GetAllActiveStateList`,
     getCityListUrl: `${BaseUrl}GetAllActiveCityList`,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Alert, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, ScrollView, Alert, TouchableOpacity, StatusBar, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moreStyles } from '../../assets/css/moreStyles';
 import ProfileMenuItem from '../profile/components/ProfileMenuItem';
@@ -26,7 +26,7 @@ const More = () => {
             navigation.navigate('Report');
             return;
         }
-        if (title === 'ID verification') {
+        if (title === 'Document verification') {
             navigation.navigate('IdVerification');
             return;
         }
@@ -50,6 +50,14 @@ const More = () => {
         setShowLogoutModal(true);
     };
 
+    const toggleAvailability = () => {
+        const newValue = !globalState.isOnline;
+        dispatch({
+            type: 'GLOBAL_STATE_MUTATE',
+            value: { ...globalState, isOnline: newValue },
+        });
+    };
+
     const businessMenu = [
         // { title: 'Tax invoice', ionicon: 'receipt-outline' },
         { title: 'Report', ionicon: 'bar-chart-outline' },
@@ -57,7 +65,7 @@ const More = () => {
 
     const accountMenu = [
         { title: 'Change password', ionicon: 'lock-closed-outline' },
-        { title: 'ID verification', ionicon: 'id-card-outline' },
+        { title: 'Document verification', ionicon: 'id-card-outline' },
     ];
 
     const supportMenu = [
@@ -116,6 +124,23 @@ const More = () => {
                     </View>
                     <Ionicons name="chevron-forward" size={20} color="#ADB5BD" style={moreStyles.editProfileIcon} />
                 </TouchableOpacity>
+
+                {/* Availability Section */}
+                <View style={moreStyles.availabilityCard}>
+                    <View style={moreStyles.availabilityHeader}>
+                        <Text style={moreStyles.availabilityTitle}>Availability</Text>
+                        <Switch
+                            value={globalState.isOnline}
+                            onValueChange={toggleAvailability}
+                            trackColor={{ false: '#E9ECEF', true: '#4CAF50' }}
+                            thumbColor="#FFFFFF"
+                            ios_backgroundColor="#E9ECEF"
+                        />
+                    </View>
+                    <Text style={moreStyles.availabilitySubtext}>
+                        When Offline, customers can't assign leads
+                    </Text>
+                </View>
 
                 {/* Menu Sections */}
                 {renderMenuSection('Business & Reports', businessMenu)}

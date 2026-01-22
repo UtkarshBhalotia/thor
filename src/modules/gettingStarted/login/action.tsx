@@ -33,6 +33,7 @@ function* UserAuth_login_Api(param: TUserLoginParam) {
         const dataObj = {
             email: param.email,
             password: param.password,
+            FCMTokenID: param.fcmTokenID,
         };
         const response: IResponseParam = yield call(clientPostHandler, {
             url: `${projectEnv.loginUrl}`,

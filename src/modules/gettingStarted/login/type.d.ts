@@ -26,6 +26,8 @@ interface IUserLoginActionConditionParam<
 type TUserLoginParam = {
     email: string;
     password: string;
+    fcmTokenID: string;
+
     callBack: () => void;
 };
 

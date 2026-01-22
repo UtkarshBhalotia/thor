@@ -31,6 +31,7 @@ import BSModal from '../../../components/BSModal';
 import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import LinearGradient from 'react-native-linear-gradient';
 import { RootStackParamList } from '../../../navigations/navigation';
+import { getFcmToken } from '../../../utils/FirebaseNotifications';
 
 const Login = (props: any) => {
     const insets = useSafeAreaInsets();
@@ -76,8 +77,10 @@ const Login = (props: any) => {
     }, [email_watch, password_watch, errors.email, errors.password]);
 
     const onLoginPress = async (data: { email: string; password: string }) => {
+        const fcmToken = await getFcmToken();
         props.loginActions('UserAuth_Login_Api', {
             ...data,
+            fcmTokenID: fcmToken || '',
             callBack: () => {
                 navigation.navigate('HomeTabs', { screen: 'Home' });
             },

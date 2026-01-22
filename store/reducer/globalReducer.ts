@@ -12,6 +12,7 @@ export const GlobalInitialState: IGlobalInitialState = {
     minRechargeAmount: '',
     profileLocked: '',
     validateGST: '',
+    isOnline: true,
 };
 
 export const GlobalReducer = (

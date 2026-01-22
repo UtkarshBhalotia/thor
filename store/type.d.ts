@@ -12,6 +12,7 @@ type IGlobalInitialState = {
     minRechargeAmount: string;
     profileLocked: string;
     validateGST: string;
+    isOnline: boolean;
 };
 
 type TLoginConditionParamActionName = 'LOGIN_API';

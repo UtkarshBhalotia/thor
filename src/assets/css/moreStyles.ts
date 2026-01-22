@@ -95,6 +95,31 @@ export const moreStyles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#E9ECEF',
     },
+    // Availability Section
+    availabilityCard: {
+        backgroundColor: '#FFFFFF',
+        marginHorizontal: 16,
+        marginTop: 16,
+        padding: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: '#E9ECEF',
+    },
+    availabilityHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    availabilityTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#1C1F34',
+    },
+    availabilitySubtext: {
+        fontSize: 13,
+        color: '#8F8F8F',
+        marginTop: 4,
+    },
     // Logout Button
     logoutContainer: {
         marginTop: 32,
