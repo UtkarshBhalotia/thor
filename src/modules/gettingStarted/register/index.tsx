@@ -916,7 +916,7 @@ const Register = (props: any) => {
                                                     value,
                                                 )
                                             ) {
-                                                return 'Password must be at least 8 characters';
+                                                return 'Password must be at least 6 characters';
                                             }
                                             return true;
                                         },
@@ -1269,6 +1269,7 @@ const Register = (props: any) => {
                                             keyboard={'default'}
                                             isEditable={true}
                                             disallowUnicode={true}
+                                            autoCapitalize={'characters'}
                                         />
                                     )}
                                 />

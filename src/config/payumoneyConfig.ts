@@ -6,15 +6,14 @@
 export const PAYUMONEY_CONFIG = {
     // Merchant Credentials (Test Mode)
     // Valid Test UPI IDs: success@payu (for success), failure@payu (for failure)
-    MERCHANT_KEY: 'I89qgr',
-    MERCHANT_SALT: 'BiauCp5XvBooGy3c8dZqbyE1n3eX4n3p',
+    MERCHANT_KEY: '2vCCF0',
+    MERCHANT_SALT: 'HiQ2FCQ8',
 
     // Environment
-    IS_PRODUCTION: false,
+    IS_PRODUCTION: true,
 
     // PayU URLs
-    BASE_URL: 'https://test.payu.in', // Test environment
-    // PRODUCTION_URL: 'https://secure.payu.in', // Production environment
+    BASE_URL: 'https://secure.payu.in', // Production environment
 
     // Payment Options
     PAYMENT_OPTIONS: {

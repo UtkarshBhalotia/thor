@@ -68,14 +68,16 @@ export const createPaymentParams = (
     userEmail: string,
     userName: string,
     userPhone: string,
-    userId: string
+    userId: string,
+    providedHash?: string,
+    txnid?: string,
 ): PayUMoneyParams => {
-    const txnid = generateTransactionId();
+    const finalTxnid = txnid || generateTransactionId();
     const amountStr = amount.toFixed(2);
 
     const params: PayUMoneyParams = {
         key: PAYUMONEY_CONFIG.MERCHANT_KEY,
-        txnid: txnid,
+        txnid: finalTxnid,
         amount: amountStr,
         productinfo: PAYUMONEY_CONFIG.PRODUCT_INFO,
         firstname: userName,
@@ -88,7 +90,7 @@ export const createPaymentParams = (
     };
 
     // Generate hash
-    params.hash = generatePaymentHash(params);
+    params.hash = providedHash || generatePaymentHash(params);
 
     return params;
 };

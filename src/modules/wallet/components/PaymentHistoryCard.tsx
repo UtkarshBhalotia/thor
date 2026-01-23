@@ -64,4 +64,4 @@ const PaymentHistoryCard: React.FC<PaymentHistoryCardProps> = ({
     );
 };
 
-export default PaymentHistoryCard;
+export default React.memo(PaymentHistoryCard);

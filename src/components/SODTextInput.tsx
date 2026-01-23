@@ -21,7 +21,7 @@ const SODTextInput = forwardRef(
             autoFocus,
             isEditable,
             placeholder,
-            placeholderTextColor,
+            placeholderTextColor = "#8F8F8F",
             autoExpand,
             minHeight = 50,
             disallowUnicode,

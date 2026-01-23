@@ -2,7 +2,7 @@ export const Regex_Patterns = Object.freeze({
     email: /^[a-zA-Z0-9+]+(?:[.+_-][a-zA-Z0-9]+)*@[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/,
     indiaMobile: /^[5-9]{1}[0-9]{9}$/,
     otherMobile: /^[0-9]{3,}$/,
-    password: /^.{8,}$/,
+    password: /^.{6,}$/,
     common: /^\s*[A-Za-z0-9]*[A-Za-z0-9\s-()&]*[A-Za-z0-9)]\s*$/,
     createPassword: /^.{8,}$/,
     pan: /[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}/,

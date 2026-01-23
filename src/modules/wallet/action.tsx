@@ -3,6 +3,18 @@ import { clientPostHandler } from "../../services/request";
 import { RootState } from "../../../store";
 import projectEnv from "../../services/env";
 import { showToast } from "../../utils/common";
+import {
+    TWalletConditionParamActionName,
+    IWalletActionConditionParam,
+    TWalletBalanceParam,
+    TGetRechargeHistoryParam,
+    TInitiatePaymentParam,
+    TProcessPaymentResponseParam,
+    TInsertSecurityDepositParam,
+    TGetVendorMinRechargeAmtParam,
+    TGenerateHashkeyParam,
+    IRechargeHistoryItem
+} from "./type";
 
 export function* conditionActions<T extends TWalletConditionParamActionName>
     (param: IWalletActionConditionParam<T>) {
@@ -25,6 +37,9 @@ export function* conditionActions<T extends TWalletConditionParamActionName>
             break;
         case 'Get_Vendor_Min_Recharge_Amt_Api':
             yield call(Get_Vendor_Min_Recharge_Amt_Api, actionParam as TGetVendorMinRechargeAmtParam);
+            break;
+        case 'Generate_Hashkey_Api':
+            yield call(Generate_Hashkey_Api, actionParam as TGenerateHashkeyParam);
             break;
     }
 }
@@ -302,4 +317,47 @@ function* Get_Vendor_Min_Recharge_Amt_Api_Response(response: IResponseParam, cal
         callBack('0');
     }
 }
+
+function* Generate_Hashkey_Api(actionParam: TGenerateHashkeyParam) {
+    console.log("generateHashKeyAPi");
+
+    try {
+        const dataObj = {
+            data: [{
+                amount: parseFloat(actionParam.amount),
+                name: actionParam.name,
+                emailid: actionParam.emailid,
+                userid: actionParam.userid,
+            }]
+        };
+
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.generate_hashkey_for_rechargeUrl,
+            data: dataObj,
+        });
+
+        console.log(response, "@@@@@@@@@");
+
+        if (response && response.body && response.body.status === 'success') {
+            const hash = response.body.data.response.HashKey;
+            const txnid = response.body.data.response.TxnID;
+            actionParam.callBack(true, hash, txnid);
+        } else {
+            showToast({
+                type: 'error',
+                text1: response.body?.msg || 'Failed to generate hash key',
+                visibilityTime: 2000,
+            });
+            actionParam.callBack(false, '', '');
+        }
+    } catch (error) {
+        showToast({
+            type: 'error',
+            text1: 'Error generating hash key',
+            visibilityTime: 2000,
+        });
+        actionParam.callBack(false, '', '');
+    }
+}
+
 

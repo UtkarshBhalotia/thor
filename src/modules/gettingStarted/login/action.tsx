@@ -63,7 +63,7 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                 showToast({
                     type: 'error',
                     text1: responseData.d,
-                    visibilityTime: 2000,
+                    visibilityTime: 5000,
                 });
                 return;
             }
@@ -92,7 +92,7 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                     showToast({
                         type: 'error',
                         text1: 'Admin Login Not Allowed',
-                        visibilityTime: 2000,
+                        visibilityTime: 5000,
                     });
                     return;
                 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import {
     View,
     Text,
@@ -22,6 +22,7 @@ import { connect } from 'react-redux';
 import { walletActions_dispatch } from '../../../store/action/mainTypedAction';
 import BSModal from '../../components/BSModal';
 import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { IRechargeHistoryItem } from './type';
 import {
     validateRechargeAmount,
     createPaymentParams,
@@ -40,6 +41,7 @@ import { RootStackParamList } from '../../navigations/navigation';
 import WalletCard from '../dashboard/components/WalletCard';
 import { dashboardStyles } from '../../assets/css/dashboardStyles';
 import { Comp_State_ID } from '../../services/env';
+import RechargeModalContent from './components/RechargeModalContent';
 
 const Wallet = (props: any) => {
     console.log(props, 'Props');
@@ -47,7 +49,6 @@ const Wallet = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const isFocused = useIsFocused();
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
-    const [rechargeAmount, setRechargeAmount] = useState('');
     const [showPaymentWebView, setShowPaymentWebView] = useState(false);
     const [paymentParams, setPaymentParams] = useState<PayUMoneyParams | null>(
         null,
@@ -58,9 +59,6 @@ const Wallet = (props: any) => {
     const [rechargeHistory, setRechargeHistory] = useState<
         IRechargeHistoryItem[]
     >([]);
-    const [selectedGateway, setSelectedGateway] = useState<
-        'payumoney' | 'razorpay'
-    >('payumoney');
     // Filter and sort state
     const [fromDate, setFromDate] = useState<Date>(() => {
         const date = new Date();
@@ -72,11 +70,23 @@ const Wallet = (props: any) => {
     const [showToPicker, setShowToPicker] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [minRechargeAmount, setMinRechargeAmount] = useState<string>('');
-    const amountAsFloat = parseFloat(rechargeAmount) || 0;
-    const baseAmount = amountAsFloat / 1.18;
-    const totalGst = amountAsFloat - baseAmount;
-    const gstPart = totalGst / 2;
-    const isSameState = String(props.globalState?.stateId) === String(Comp_State_ID);
+
+    const isSameState = useMemo(() => String(props.globalState?.stateId) === String(Comp_State_ID), [props.globalState?.stateId]);
+
+    const renderedHistory = useMemo(() => {
+        return rechargeHistory.map((item) => (
+            <PaymentHistoryCard
+                entryType={item.EntryType}
+                key={item.TxnID}
+                balance={item.Balance}
+                tranDate={item.Date}
+                drCr={item.DrCr}
+                amount={item.Amount}
+                remarks={item.Remarks || 'Transaction'}
+                paymentId={item.TxnID}
+            />
+        ));
+    }, [rechargeHistory]);
 
     useEffect(() => {
         if (isFocused) {
@@ -101,26 +111,25 @@ const Wallet = (props: any) => {
         }
     };
 
-    const formatDate = (date: Date) => {
+    const formatDate = useCallback((date: Date) => {
         if (!date) return '';
         const d = new Date(date);
         const day = d.getDate().toString().padStart(2, '0');
         const month = (d.getMonth() + 1).toString().padStart(2, '0');
         const year = d.getFullYear();
         return `${year}-${month}-${day}`;
-    };
+    }, []);
 
 
-    const fetchMinRechargeAmount = () => {
+    const fetchMinRechargeAmount = useCallback(() => {
         props.walletActions('Get_Vendor_Min_Recharge_Amt_Api', {
             callBack: (minAmount: string) => {
                 setMinRechargeAmount(minAmount);
-                setRechargeAmount(minAmount);
             },
         });
-    };
+    }, [props.walletActions]);
 
-    const load = () => {
+    const load = useCallback(() => {
         setIsLoading(true);
         // Fetch wallet balance
         props.walletActions('Wallet_Balance_Api', {
@@ -144,19 +153,18 @@ const Wallet = (props: any) => {
                 });
             },
         });
-    };
+    }, [props.walletActions, fromDate, toDate, formatDate]);
 
-    const handleRecharge = () => {
+    const handleRecharge = useCallback((amountStr: string, gateway: 'payumoney' | 'razorpay') => {
         // Map recharge type to payment gateway
-        const mappedGateway =
-            selectedGateway === 'razorpay' ? 'razorpay' : 'payumoney';
+        const mappedGateway = gateway;
 
         // Validate amount
         const validateService =
             mappedGateway === 'razorpay'
                 ? RazorpayService
                 : { validateAmount: validateRechargeAmount };
-        const validation = validateService.validateAmount(rechargeAmount);
+        const validation = validateService.validateAmount(amountStr);
 
         if (!validation.valid) {
             Toast.show({
@@ -167,7 +175,7 @@ const Wallet = (props: any) => {
             return;
         }
 
-        const amount = parseFloat(rechargeAmount);
+        const amount = parseFloat(amountStr);
 
         // Get user details from global state
         const userEmail = props.globalState.email || 'test@example.com';
@@ -188,30 +196,50 @@ const Wallet = (props: any) => {
                 description: RAZORPAY_CONFIG.PRODUCT_INFO,
             }).then((response) => {
                 if (response.status === 'success') {
-                    handleRazorpaySuccess(response);
+                    handleRazorpaySuccess(response, amountStr);
                 } else {
                     handleRazorpayFailure(response);
                 }
             });
         } else {
-            // Create PayUMoney payment parameters
-            const paymentParams = createPaymentParams(
-                amount,
-                userEmail,
-                userName,
-                userPhone,
-                userId,
-            );
+            // Step 1: Generate hash key from backend
+            props.walletActions('Generate_Hashkey_Api', {
+                amount: amount.toString(),
+                name: userName,
+                emailid: userEmail,
+                userid: userId,
+                callBack: (success: boolean, hash: string, txnid: string) => {
+                    if (success && hash) {
+                        // Step 2: Create payment params with generated hash and backend txnid
+                        const paymentParams = createPaymentParams(
+                            amount,
+                            userEmail,
+                            userName,
+                            userPhone,
+                            userId,
+                            hash,
+                            txnid,
+                        );
 
-            console.log('PayUMoney Payment Params:', paymentParams);
+                        console.log('PayUMoney Payment Params with Backend Hash:', paymentParams);
 
-            // Set payment params and show WebView
-            setPaymentParams(paymentParams);
-            setShowPaymentWebView(true);
+                        // Step 3: Show WebView
+                        setPaymentParams(paymentParams);
+                        setShowPaymentWebView(true);
+                    } else {
+                        Toast.show({
+                            type: 'error',
+                            text1: 'Payment Failed',
+                            text2: 'Could not generate secure payment hash',
+                            visibilityTime: 3000,
+                        });
+                    }
+                },
+            });
         }
-    };
+    }, [props.walletActions, props.globalState, RazorpayService]);
 
-    const handleRazorpaySuccess = (response: any) => {
+    const handleRazorpaySuccess = useCallback((response: any, amount: string) => {
         console.log('Razorpay Success:', response);
 
         // Process payment response
@@ -221,7 +249,7 @@ const Wallet = (props: any) => {
             paymentResponse: {
                 status: 'success',
                 txnid: response.razorpay_payment_id,
-                amount: rechargeAmount,
+                amount: amount,
                 productinfo: RAZORPAY_CONFIG.PRODUCT_INFO,
                 firstname: props.globalState?.name || 'User',
                 email: props.globalState?.email || '',
@@ -236,14 +264,12 @@ const Wallet = (props: any) => {
                         text2: message,
                         visibilityTime: 3000,
                     });
-                    // Clear the recharge amount
-                    setRechargeAmount('');
                     // Reload wallet balance and history
                     load();
                 }
             },
         });
-    };
+    }, [props.walletActions, props.globalState, load]);
 
     const handleRazorpayFailure = (response: any) => {
         console.log('Razorpay Failure:', response);
@@ -256,7 +282,7 @@ const Wallet = (props: any) => {
         });
     };
 
-    const handlePaymentSuccess = (response: PaymentResponse) => {
+    const handlePaymentSuccess = useCallback((response: PaymentResponse) => {
         console.log('Payment Success:', response);
         setShowPaymentWebView(false);
 
@@ -271,14 +297,12 @@ const Wallet = (props: any) => {
                         text2: message,
                         visibilityTime: 3000,
                     });
-                    // Clear the recharge amount
-                    setRechargeAmount('');
                     // Reload wallet balance and history
                     load();
                 }
             },
         });
-    };
+    }, [props.walletActions, load]);
 
     const handlePaymentFailure = (response: PaymentResponse) => {
         console.log('Payment Failure:', response);
@@ -303,7 +327,7 @@ const Wallet = (props: any) => {
         });
     };
 
-    const renderEmptyList = () => (
+    const renderEmptyList = useCallback(() => (
         <View style={dashboardStyles.emptyStateContainer}>
             <Image
                 source={require('../../assets/img/OnGoingService.png')}
@@ -317,7 +341,7 @@ const Wallet = (props: any) => {
                 range. Your recharge and penalty history will appear here.
             </Text>
         </View>
-    );
+    ), []);
 
     return (
         <SafeAreaView style={walletStyles.container} edges={['top']}>
@@ -339,11 +363,10 @@ const Wallet = (props: any) => {
                     <WalletCard
                         balance={walletBalance}
                         openingBalance={openingBalance}
-                        onRechargePress={() => {
-                            setSelectedGateway('payumoney');
+                        onRechargePress={useCallback(() => {
                             rechargeModalRef.current?.present();
                             fetchMinRechargeAmount();
-                        }}
+                        }, [fetchMinRechargeAmount])}
                     />
                 </View>
 
@@ -405,20 +428,7 @@ const Wallet = (props: any) => {
 
                 {/* Transaction History List */}
                 {rechargeHistory.length > 0
-                    ? rechargeHistory.map((item) => {
-                        return (
-                            <PaymentHistoryCard
-                                entryType={item.EntryType}
-                                key={item.TxnID}
-                                balance={item.Balance}
-                                tranDate={item.Date}
-                                drCr={item.DrCr}
-                                amount={item.Amount}
-                                remarks={item.Remarks || 'Transaction'}
-                                paymentId={item.TxnID}
-                            />
-                        );
-                    })
+                    ? renderedHistory
                     : renderEmptyList()}
             </ScrollView>
 
@@ -537,141 +547,11 @@ const Wallet = (props: any) => {
                 bsModalRef={rechargeModalRef}
                 headerTitle="Recharge Wallet"
                 snapPoints={['65%']}>
-                <View style={walletStyles.bottomSheetContent}>
-                    <Text style={walletStyles.inputLabel}>
-                        Select Recharge Type
-                    </Text>
-                    <View style={walletStyles.gatewayContainer}>
-                        <TouchableOpacity
-                            style={[
-                                walletStyles.gatewayOption,
-                                selectedGateway === 'payumoney' &&
-                                walletStyles.gatewayOptionSelected,
-                            ]}
-                            onPress={() => {
-                                setSelectedGateway('payumoney');
-                                fetchMinRechargeAmount();
-                            }}>
-                            <Ionicons
-                                name="wallet-outline"
-                                size={24}
-                                color={
-                                    selectedGateway === 'payumoney'
-                                        ? '#5F60B9'
-                                        : '#1C1F34'
-                                }
-                            />
-                            <Text
-                                style={[
-                                    walletStyles.gatewayText,
-                                    selectedGateway === 'payumoney' &&
-                                    walletStyles.gatewayTextSelected,
-                                ]}>
-                                Wallet Balance
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[
-                                walletStyles.gatewayOption,
-                                selectedGateway === 'razorpay' &&
-                                walletStyles.gatewayOptionSelected,
-                            ]}
-                            onPress={() => {
-                                setSelectedGateway('razorpay');
-                                setRechargeAmount('5000');
-                            }}>
-                            <Ionicons
-                                name="shield-checkmark-outline"
-                                size={24}
-                                color={
-                                    selectedGateway === 'razorpay'
-                                        ? '#5F60B9'
-                                        : '#1C1F34'
-                                }
-                            />
-                            <Text
-                                style={[
-                                    walletStyles.gatewayText,
-                                    selectedGateway === 'razorpay' &&
-                                    walletStyles.gatewayTextSelected,
-                                ]}>
-                                Security Deposit
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={walletStyles.amountInputContainer}>
-                        <Text style={walletStyles.inputLabel}>
-                            Enter Amount
-                            {selectedGateway === 'payumoney' &&
-                                minRechargeAmount &&
-                                parseFloat(minRechargeAmount) > 0 && (
-                                    <Text
-                                        style={{
-                                            fontSize: 14,
-                                            color: '#5F60B9',
-                                            fontWeight: '500',
-                                        }}>
-                                        {' '}
-                                        (Minimum: ₹ {minRechargeAmount})
-                                    </Text>
-                                )}
-                            {selectedGateway === 'razorpay' && (
-                                <Text
-                                    style={{
-                                        fontSize: 14,
-                                        color: '#5F60B9',
-                                        fontWeight: '500',
-                                    }}>
-                                    {' '}
-                                    (Minimum: ₹ 5000)
-                                </Text>
-                            )}
-                        </Text>
-                        <BottomSheetTextInput
-                            style={walletStyles.amountInput}
-                            placeholder="₹ 0.00"
-                            keyboardType="numeric"
-                            value={rechargeAmount}
-                            onChangeText={setRechargeAmount}
-                        />
-                    </View>
-
-                    {selectedGateway === 'payumoney' && amountAsFloat > 0 && (
-                        <View style={dashboardStyles.gstContainer}>
-                            {isSameState ? (
-                                <>
-                                    <View style={dashboardStyles.gstRow}>
-                                        <Text style={dashboardStyles.gstLabel}>CGST :</Text>
-                                        <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
-                                    </View>
-                                    <View style={dashboardStyles.gstRow}>
-                                        <Text style={dashboardStyles.gstLabel}>SGST :</Text>
-                                        <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
-                                    </View>
-                                </>
-                            ) : (
-                                <View style={dashboardStyles.gstRow}>
-                                    <Text style={dashboardStyles.gstLabel}>IGST :</Text>
-                                    <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
-                                </View>
-                            )}
-                            <View style={dashboardStyles.gstRow}>
-                                <Text style={dashboardStyles.gstLabel}>Amount after GST :</Text>
-                                <Text style={dashboardStyles.gstValue}>₹ {baseAmount.toFixed(2)}</Text>
-                            </View>
-                        </View>
-                    )}
-
-                    <TouchableOpacity
-                        style={walletStyles.rechargeActionButton}
-                        onPress={handleRecharge}>
-                        <Text style={walletStyles.rechargeActionButtonText}>
-                            Recharge
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+                <RechargeModalContent
+                    minRechargeAmount={minRechargeAmount}
+                    onRecharge={handleRecharge}
+                    userStateId={props.globalState?.stateId}
+                />
             </BSModal>
 
             {/* Payment WebView Modal */}

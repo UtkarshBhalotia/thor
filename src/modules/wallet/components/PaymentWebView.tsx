@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { PayUMoneyParams, PaymentResponse } from '../../../config/payumoneyConfig';
+import { PAYUMONEY_CONFIG, PayUMoneyParams, PaymentResponse } from '../../../config/payumoneyConfig';
 
 interface PaymentWebViewProps {
     visible: boolean;
@@ -80,7 +80,7 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
                     <div class="spinner"></div>
                     <p>Redirecting to payment gateway...</p>
                 </div>
-                <form id="payuForm" action="https://test.payu.in/_payment" method="POST">
+                <form id="payuForm" action="${PAYUMONEY_CONFIG.BASE_URL}/_payment" method="POST">
                     ${formFields}
                 </form>
                 <script>

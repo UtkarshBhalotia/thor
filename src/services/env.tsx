@@ -50,6 +50,7 @@ const apiListing = {
     getVendorLedgerWithOpeningBalanceUrl: `${NEW_URL}/vendor_ledger_with_opening_bal`,
     vendorRegistrationUrl: `${NEW_URL}/vendor_registration`,
     getDeniedReasonListUrl: `${NEW_URL}/denied_resion_list`,
+    generate_hashkey_for_rechargeUrl: `${NEW_URL}/generate_hashkey_for_recharge`,
 
     // PayUMoney endpoints (mock for now, replace with actual backend endpoints when available)
     initiatePaymentUrl: `${BaseUrl}InitiatePayment`, // Will generate payment hash on backend

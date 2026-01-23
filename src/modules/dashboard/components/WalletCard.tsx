@@ -60,4 +60,4 @@ const WalletCard: React.FC<WalletCardProps> = ({ balance, openingBalance, onPres
     );
 };
 
-export default WalletCard;
+export default React.memo(WalletCard);
