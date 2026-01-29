@@ -427,6 +427,11 @@ const Wallet = (props: any) => {
                 </View>
 
                 {/* Transaction History List */}
+                <View style={walletStyles.transactionHistoryContainer}>
+                    <Text style={walletStyles.transactionHistoryTitle}>
+                        Recharge History
+                    </Text>
+                </View>
                 {rechargeHistory.length > 0
                     ? renderedHistory
                     : renderEmptyList()}

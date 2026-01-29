@@ -210,6 +210,15 @@ export const walletStyles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
     },
+    transactionHistoryContainer: {
+        marginHorizontal: 20,
+    },
+    transactionHistoryTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#1C1F34',
+        marginBottom: 12,
+    },
     rechargeActionButtonText: {
         color: '#FFFFFF',
         fontSize: 16,

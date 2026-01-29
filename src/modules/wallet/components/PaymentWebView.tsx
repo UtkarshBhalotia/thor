@@ -93,45 +93,67 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
 
     const handleNavigationChange = (navState: any) => {
         const { url } = navState;
-        console.log('Navigation URL:', url);
+        console.log('Navigation URL State Change:', url);
+        handleResponseUrl(url);
+    };
 
+    const getQueryParam = (url: string, param: string): string => {
+        const query = url.split('?')[1];
+        if (!query) return '';
+        const pairs = query.split('&');
+        for (const pair of pairs) {
+            const [key, value] = pair.split('=');
+            if (decodeURIComponent(key) === param) {
+                return decodeURIComponent(value || '');
+            }
+        }
+        return '';
+    };
+
+    const handleResponseUrl = (url: string) => {
         // Check for success URL
-        if (url.includes('payumoney://payu/success') || url.includes('success')) {
+        if (url.includes('payumoney://payu/success') || url.includes('/success')) {
+            console.log('Detected Success URL:', url);
             // Parse the URL parameters
-            const urlParams = new URLSearchParams(url.split('?')[1]);
             const response: PaymentResponse = {
                 status: 'success',
-                txnid: urlParams.get('txnid') || paymentParams.txnid,
-                amount: urlParams.get('amount') || paymentParams.amount,
+                txnid: getQueryParam(url, 'txnid') || paymentParams.txnid,
+                amount: getQueryParam(url, 'amount') || paymentParams.amount,
                 productinfo: paymentParams.productinfo,
                 firstname: paymentParams.firstname,
                 email: paymentParams.email,
                 phone: paymentParams.phone,
-                mihpayid: urlParams.get('mihpayid') || `MOJO${Date.now()}`,
+                mihpayid: getQueryParam(url, 'mihpayid') || `MOJO${Date.now()}`,
             };
             onSuccess(response);
+            return false; // Stop loading
         }
 
         // Check for failure URL
-        if (url.includes('payumoney://payu/failure') || url.includes('failure')) {
-            const urlParams = new URLSearchParams(url.split('?')[1]);
+        if (url.includes('payumoney://payu/failure') || url.includes('/failure')) {
+            console.log('Detected Failure URL:', url);
             const response: PaymentResponse = {
                 status: 'failure',
-                txnid: urlParams.get('txnid') || paymentParams.txnid,
+                txnid: getQueryParam(url, 'txnid') || paymentParams.txnid,
                 amount: paymentParams.amount,
                 productinfo: paymentParams.productinfo,
                 firstname: paymentParams.firstname,
                 email: paymentParams.email,
                 phone: paymentParams.phone,
-                error_Message: urlParams.get('error_Message') || 'Payment failed',
+                error_Message: getQueryParam(url, 'error_Message') || 'Payment failed',
             };
             onFailure(response);
+            return false; // Stop loading
         }
 
         // Check for cancel URL
-        if (url.includes('payumoney://payu/cancel') || url.includes('cancel')) {
+        if (url.includes('payumoney://payu/cancel') || url.includes('/cancel')) {
+            console.log('Detected Cancel URL:', url);
             onCancel();
+            return false; // Stop loading
         }
+
+        return true; // Continue loading
     };
 
     return (
@@ -160,10 +182,15 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
                     source={{ html: getPaymentHTML() }}
                     onLoad={() => setLoading(false)}
                     onNavigationStateChange={handleNavigationChange}
+                    onShouldStartLoadWithRequest={(request) => {
+                        console.log('Should start load with request:', request.url);
+                        return handleResponseUrl(request.url);
+                    }}
                     style={styles.webview}
                     javaScriptEnabled={true}
                     domStorageEnabled={true}
                     startInLoadingState={true}
+                    originWhitelist={['*']}
                 />
             </View>
         </Modal>

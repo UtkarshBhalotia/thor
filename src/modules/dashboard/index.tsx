@@ -412,35 +412,6 @@ const Dashboard = (props: any) => {
 
         const amount = parseFloat(rechargeAmount);
 
-        // Validate minimum amount for wallet balance recharge
-        if (
-            selectedGateway === 'payumoney' &&
-            minRechargeAmount &&
-            parseFloat(minRechargeAmount) > 0
-        ) {
-            if (amount < parseFloat(minRechargeAmount)) {
-                Toast.show({
-                    type: 'error',
-                    text1: `Minimum recharge amount is ₹ ${minRechargeAmount}`,
-                    visibilityTime: 3000,
-                });
-                return;
-            }
-        }
-
-        // Validate minimum amount for security deposit recharge
-        if (selectedGateway === 'razorpay') {
-            const minSecurityDepositAmount = 5000;
-            if (amount < minSecurityDepositAmount) {
-                Toast.show({
-                    type: 'error',
-                    text1: `Minimum recharge amount is ₹ ${minSecurityDepositAmount}`,
-                    visibilityTime: 3000,
-                });
-                return;
-            }
-        }
-
         // Get user details from global state
         const userEmail = props.globalState?.email || 'test@example.com';
         const userName = props.globalState?.name || 'Test User';

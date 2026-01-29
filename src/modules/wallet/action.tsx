@@ -324,10 +324,10 @@ function* Generate_Hashkey_Api(actionParam: TGenerateHashkeyParam) {
     try {
         const dataObj = {
             data: [{
-                amount: parseFloat(actionParam.amount),
+                amount: "1.00",
                 name: actionParam.name,
                 emailid: actionParam.emailid,
-                userid: actionParam.userid,
+                userid: 40,
             }]
         };
 

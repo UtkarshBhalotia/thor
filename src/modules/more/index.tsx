@@ -138,7 +138,7 @@ const More = () => {
                         />
                     </View>
                     <Text style={moreStyles.availabilitySubtext}>
-                        When Offline, customers can't assign leads
+                        When Offline, admin can't assign leads
                     </Text>
                 </View>
 

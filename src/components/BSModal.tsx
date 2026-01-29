@@ -300,7 +300,7 @@ const BSModal = ({
                                 props.scrollViewContentContainerStyle &&
                                 props.scrollViewContentContainerStyle
                             }
-                            showsVerticalScrollIndicator={false}
+                            showsVerticalScrollIndicator={true}
                             ref={props.scrollViewRef}
                             enableFooterMarginAdjustment={true}
                             keyboardShouldPersistTaps={'handled'}>

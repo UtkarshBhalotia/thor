@@ -51,7 +51,7 @@ const DeniedLeadFormModal = forwardRef<
         <BSModal
             bsModalRef={ref as React.RefObject<BottomSheetModal>}
             headerTitle="Denied Lead"
-            snapPoints={isOthersSelected ? ['70%'] : ['55%']}
+            snapPoints={isOthersSelected ? ['100%'] : ['75%']}
             customOnDismiss={handleDismiss}>
             <View style={styles.container}>
                 <View style={[styles.inputContainer, { flex: undefined }]}>
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     reasonsScrollView: {
-        maxHeight: 250,
+        maxHeight: 400,
     },
     radioOption: {
         flexDirection: 'row',

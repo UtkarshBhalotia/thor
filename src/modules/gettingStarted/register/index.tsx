@@ -2192,7 +2192,6 @@ const styles = {
         borderStyle: 'dashed' as const,
         justifyContent: 'center' as const,
         alignItems: 'center' as const,
-        overflow: 'hidden' as const,
     },
     profileImage: {
         width: 120,
@@ -2214,11 +2213,11 @@ const styles = {
     },
     profilePhotoOverlay: {
         position: 'absolute' as const,
-        bottom: 0,
-        right: 0,
-        width: 32,
-        height: 32,
-        borderRadius: 16,
+        bottom: 5,
+        right: 8,
+        width: 26,
+        height: 26,
+        borderRadius: 13,
         backgroundColor: '#5F60B9',
         justifyContent: 'center' as const,
         alignItems: 'center' as const,
@@ -2226,7 +2225,7 @@ const styles = {
         borderColor: '#FFFFFF',
     },
     profilePhotoOverlayIcon: {
-        fontSize: 14,
+        fontSize: 12,
         color: '#FFFFFF',
     },
     removePhotoButton: {
