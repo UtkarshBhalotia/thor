@@ -324,10 +324,10 @@ function* Generate_Hashkey_Api(actionParam: TGenerateHashkeyParam) {
     try {
         const dataObj = {
             data: [{
-                amount: "1.00",
+                amount: parseFloat(actionParam.amount).toFixed(2),
                 name: actionParam.name,
                 emailid: actionParam.emailid,
-                userid: 40,
+                userid: (actionParam.userid).toString(),
             }]
         };
 
@@ -336,19 +336,19 @@ function* Generate_Hashkey_Api(actionParam: TGenerateHashkeyParam) {
             data: dataObj,
         });
 
-        console.log(response, "@@@@@@@@@");
-
         if (response && response.body && response.body.status === 'success') {
             const hash = response.body.data.response.HashKey;
             const txnid = response.body.data.response.TxnID;
-            actionParam.callBack(true, hash, txnid);
+            const PayUKey = response.body.data.response.PayUKey;
+            const ProductDetails = response.body.data.response.ProductDetails;
+            actionParam.callBack(true, hash, txnid, PayUKey, ProductDetails);
         } else {
             showToast({
                 type: 'error',
                 text1: response.body?.msg || 'Failed to generate hash key',
                 visibilityTime: 2000,
             });
-            actionParam.callBack(false, '', '');
+            actionParam.callBack(false, '', '', '', '');
         }
     } catch (error) {
         showToast({
@@ -356,7 +356,7 @@ function* Generate_Hashkey_Api(actionParam: TGenerateHashkeyParam) {
             text1: 'Error generating hash key',
             visibilityTime: 2000,
         });
-        actionParam.callBack(false, '', '');
+        actionParam.callBack(false, '', '', '', '');
     }
 }
 

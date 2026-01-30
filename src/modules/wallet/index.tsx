@@ -208,7 +208,7 @@ const Wallet = (props: any) => {
                 name: userName,
                 emailid: userEmail,
                 userid: userId,
-                callBack: (success: boolean, hash: string, txnid: string) => {
+                callBack: (success: boolean, hash: string, txnid: string, PayUKey: string, ProductDetails: string) => {
                     if (success && hash) {
                         // Step 2: Create payment params with generated hash and backend txnid
                         const paymentParams = createPaymentParams(
@@ -219,6 +219,8 @@ const Wallet = (props: any) => {
                             userId,
                             hash,
                             txnid,
+                            PayUKey,
+                            ProductDetails
                         );
 
                         console.log('PayUMoney Payment Params with Backend Hash:', paymentParams);
@@ -258,6 +260,9 @@ const Wallet = (props: any) => {
             },
             callBack: (success: boolean, message: string) => {
                 if (success) {
+                    // Dismiss the recharge modal
+                    rechargeModalRef.current?.dismiss();
+                    
                     Toast.show({
                         type: 'success',
                         text1: 'Payment Successful',
@@ -291,6 +296,9 @@ const Wallet = (props: any) => {
             paymentResponse: response,
             callBack: (success: boolean, message: string) => {
                 if (success) {
+                    // Dismiss the recharge modal
+                    rechargeModalRef.current?.dismiss();
+                    
                     Toast.show({
                         type: 'success',
                         text1: 'Payment Successful',

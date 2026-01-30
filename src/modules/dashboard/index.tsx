@@ -437,20 +437,45 @@ const Dashboard = (props: any) => {
                 }
             });
         } else {
-            // Create PayUMoney payment parameters
-            const paymentParams = createPaymentParams(
-                amount,
-                userEmail,
-                userName,
-                userPhone,
-                userId,
-            );
+            // Generate hash from server for PayUMoney
+            setIsLoading(true);
+            props.walletActions('Generate_Hashkey_Api', {
+                amount: amount.toString(),
+                name: userName,
+                emailid: userEmail,
+                userid: userId,
+                callBack: (success: boolean, hash: string, txnid: string, PayUKey: string, ProductDetails: string) => {
+                    setIsLoading(false);
+                    
+                    if (success) {
+                        // Create PayUMoney payment parameters with API-provided values
+                        const paymentParams = createPaymentParams(
+                            amount,
+                            userEmail,
+                            userName,
+                            userPhone,
+                            userId,
+                            hash,
+                            txnid,
+                            PayUKey,
+                            ProductDetails,
+                        );
 
-            console.log('PayUMoney Payment Params:', paymentParams);
+                        console.log('PayUMoney Payment Params:', paymentParams);
 
-            // Set payment params and show WebView
-            setPaymentParams(paymentParams);
-            setShowPaymentWebView(true);
+                        // Set payment params and show WebView
+                        setPaymentParams(paymentParams);
+                        setShowPaymentWebView(true);
+                    } else {
+                        Toast.show({
+                            type: 'error',
+                            text1: 'Failed to initialize payment',
+                            text2: 'Unable to generate payment hash',
+                            visibilityTime: 3000,
+                        });
+                    }
+                },
+            });
         }
     };
 
@@ -507,6 +532,9 @@ const Dashboard = (props: any) => {
             paymentResponse: response,
             callBack: (success: boolean, message: string) => {
                 if (success) {
+                    // Dismiss the recharge modal
+                    rechargeModalRef.current?.dismiss();
+                    
                     Toast.show({
                         type: 'success',
                         text1: 'Payment Successful',

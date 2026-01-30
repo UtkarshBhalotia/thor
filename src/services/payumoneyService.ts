@@ -19,8 +19,10 @@ export const generateTransactionId = (): string => {
  * Generate SHA512 hash for PayUMoney
  * Format: key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||salt
  * 
- * NOTE: In production, this MUST be done on the server for security
- * This is a mock implementation for frontend testing only
+ * @deprecated This function should NOT be used in production. 
+ * Hash generation MUST be done on the server for security.
+ * Use the Generate_Hashkey_Api action to get hash from server.
+ * This function is kept only for backward compatibility and testing.
  */
 export const generatePaymentHash = (params: {
     key: string;
@@ -62,6 +64,19 @@ export const generatePaymentHash = (params: {
 
 /**
  * Create payment parameters for PayUMoney
+ * 
+ * @param amount - Payment amount
+ * @param userEmail - User's email address
+ * @param userName - User's name
+ * @param userPhone - User's phone number
+ * @param userId - User ID to store in udf1
+ * @param providedHash - Hash from server (REQUIRED in production)
+ * @param txnid - Transaction ID from server (REQUIRED in production)
+ * @param PayUKey - Merchant key from server (REQUIRED in production)
+ * @param ProductDetails - Product info from server (REQUIRED in production)
+ * 
+ * IMPORTANT: In production, ALL parameters (hash, txnid, PayUKey, ProductDetails) 
+ * MUST be provided from server via Generate_Hashkey_Api.
  */
 export const createPaymentParams = (
     amount: number,
@@ -71,25 +86,28 @@ export const createPaymentParams = (
     userId: string,
     providedHash?: string,
     txnid?: string,
+    PayUKey?: string,
+    ProductDetails?: string,
+    
 ): PayUMoneyParams => {
     const finalTxnid = txnid || generateTransactionId();
     const amountStr = amount.toFixed(2);
 
     const params: PayUMoneyParams = {
-        key: PAYUMONEY_CONFIG.MERCHANT_KEY,
-        txnid: finalTxnid,
+        key: PayUKey || PAYUMONEY_CONFIG.MERCHANT_KEY,
+        txnid:  finalTxnid,
         amount: amountStr,
-        productinfo: PAYUMONEY_CONFIG.PRODUCT_INFO,
+        productinfo: ProductDetails || PAYUMONEY_CONFIG.PRODUCT_INFO,
         firstname: userName,
         email: userEmail,
         phone: userPhone,
         surl: PAYUMONEY_CONFIG.SUCCESS_URL,
         furl: PAYUMONEY_CONFIG.FAILURE_URL,
-        hash: '', // Will be generated next
-        udf1: userId, // Store user ID for reference
+        hash: '', // Will be set next
+        udf1: userId.toString(), // Store user ID for reference
     };
 
-    // Generate hash
+    // Use provided hash from server, or generate locally (deprecated for production)
     params.hash = providedHash || generatePaymentHash(params);
 
     return params;

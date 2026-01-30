@@ -52,7 +52,7 @@ export type TGenerateHashkeyParam = {
     name: string;
     emailid: string;
     userid: string;
-    callBack: (success: boolean, hash: string, txnid: string) => void;
+    callBack: (success: boolean, hash: string, txnid: string, PayUKey: string, ProductDetails: string) => void;
 };
 
 export type TWalletConditionParamActionParam<T extends TWalletConditionParamActionName> =

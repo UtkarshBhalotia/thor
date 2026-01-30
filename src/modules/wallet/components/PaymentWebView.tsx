@@ -3,7 +3,7 @@
  * Handles payment gateway redirect using WebView
  */
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
     View,
     StyleSheet,
@@ -33,6 +33,14 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
 }) => {
     const webViewRef = useRef<WebView>(null);
     const [loading, setLoading] = useState(true);
+    const paymentProcessedRef = useRef(false);
+
+    // Reset payment processed flag when modal becomes visible
+    useEffect(() => {
+        if (visible) {
+            paymentProcessedRef.current = false;
+        }
+    }, [visible]);
 
     // Generate HTML form for PayUMoney
     const getPaymentHTML = () => {
@@ -111,9 +119,17 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
     };
 
     const handleResponseUrl = (url: string) => {
+        // Prevent duplicate processing
+        if (paymentProcessedRef.current) {
+            console.log('Payment already processed, ignoring duplicate call');
+            return false;
+        }
+
         // Check for success URL
         if (url.includes('payumoney://payu/success') || url.includes('/success')) {
             console.log('Detected Success URL:', url);
+            paymentProcessedRef.current = true;
+            
             // Parse the URL parameters
             const response: PaymentResponse = {
                 status: 'success',
@@ -132,6 +148,8 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
         // Check for failure URL
         if (url.includes('payumoney://payu/failure') || url.includes('/failure')) {
             console.log('Detected Failure URL:', url);
+            paymentProcessedRef.current = true;
+            
             const response: PaymentResponse = {
                 status: 'failure',
                 txnid: getQueryParam(url, 'txnid') || paymentParams.txnid,
@@ -149,6 +167,7 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
         // Check for cancel URL
         if (url.includes('payumoney://payu/cancel') || url.includes('/cancel')) {
             console.log('Detected Cancel URL:', url);
+            paymentProcessedRef.current = true;
             onCancel();
             return false; // Stop loading
         }

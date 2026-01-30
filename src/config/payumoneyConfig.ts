@@ -26,7 +26,7 @@ export const PAYUMONEY_CONFIG = {
     },
 
     // Default values
-    PRODUCT_INFO: 'Wallet Recharge',
+    PRODUCT_INFO: 'Recharge Wallet',
     SUCCESS_URL: 'payumoney://payu/success',
     FAILURE_URL: 'payumoney://payu/failure',
     CANCEL_URL: 'payumoney://payu/cancel',
