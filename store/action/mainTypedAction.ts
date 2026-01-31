@@ -74,3 +74,18 @@ export const registerActions_dispatch =
                 },
             });
         };
+
+export const idVerificationActions_dispatch =
+    (dispatch: AppDispatch) =>
+        <T extends TIdVerificationConditionParamActionName>(
+            actionName: T,
+            arg: TIdVerificationConditionParamActionParam<T>,
+        ) => {
+            dispatch({
+                type: 'IdVerification_Actions',
+                payload: { actionName, actionParam: arg } as {
+                    actionName: T;
+                    actionParam: TIdVerificationConditionParamActionParam<T>;
+                },
+            });
+        };

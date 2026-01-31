@@ -44,10 +44,15 @@ export function* conditionActions<
                 actionParam as TFollowUpLeadByVendorParam,
             );
             break;
-        case 'Get_Denied_Reason_List_Api':
             yield call(
                 GetDeniedReasonListApi,
                 actionParam as TGetDeniedReasonListParam,
+            );
+            break;
+        case 'Get_FollowUp_Reason_List_Api':
+            yield call(
+                GetFollowUpReasonListApi,
+                actionParam as TGetFollowUpReasonListParam,
             );
             break;
     }
@@ -451,6 +456,7 @@ function* GetDeniedReasonListApi(actionParam: TGetDeniedReasonListParam) {
     }
 }
 
+
 function* GetDeniedReasonListApi_Response(
     response: IResponseParam,
     callBack: (data: any[]) => void,
@@ -479,6 +485,52 @@ function* GetDeniedReasonListApi_Response(
         showToast({
             type: 'error',
             text1: 'Failed to fetch denied reasons',
+            visibilityTime: 3000,
+        });
+    }
+}
+
+function* GetFollowUpReasonListApi(actionParam: TGetFollowUpReasonListParam) {
+    try {
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.getFollowupReasonListUrl,
+            data: {},
+        });
+
+        yield GetFollowUpReasonListApi_Response(response, actionParam.callBack);
+    } catch (error) {
+        actionParam.callBack([]);
+    }
+}
+
+function* GetFollowUpReasonListApi_Response(
+    response: IResponseParam,
+    callBack: (data: any[]) => void,
+) {
+    try {
+        if (response.body.status === 'success') {
+            let reasons = [];
+            try {
+                // The API returns a stringified JSON array in data.response
+                reasons = JSON.parse(response.body.data.response);
+            } catch (e) {
+                console.error('Error parsing follow up reasons:', e);
+                reasons = [];
+            }
+            callBack(Array.isArray(reasons) ? reasons : []);
+        } else {
+            callBack([]);
+            showToast({
+                type: 'error',
+                text1: response.body.msg || response.body.message || 'Failed to fetch follow up reasons',
+                visibilityTime: 3000,
+            });
+        }
+    } catch (error) {
+        callBack([]);
+        showToast({
+            type: 'error',
+            text1: 'Failed to fetch follow up reasons',
             visibilityTime: 3000,
         });
     }

@@ -264,6 +264,14 @@ const Booking = (props: any) => {
         });
     };
 
+    const handleFetchFollowUpReasons = (
+        callBack: (data: any[]) => void,
+    ) => {
+        props.bookingActions('Get_FollowUp_Reason_List_Api', {
+            callBack: callBack,
+        });
+    };
+
     const renderServiceCard = ({
         item,
         index,
@@ -300,6 +308,7 @@ const Booking = (props: any) => {
             }) => handleFollowUpLead(item.LeadID, data)}
             onCustomerDetailsClick={handleCustomerDetailsClick}
             onFetchDeniedReasons={handleFetchDeniedReasons}
+            onFetchFollowUpReasons={handleFetchFollowUpReasons}
         />
     );
 

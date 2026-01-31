@@ -6,8 +6,8 @@
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
-      android:icon="@drawable/ic_launcher_latest"
-      android:roundIcon="@drawable/ic_launcher_latest"
+      android:icon="@drawable/ic_launcher_ia"
+      android:roundIcon="@drawable/ic_launcher_ia"
       android:allowBackup="false"
       android:theme="@style/AppTheme"
       android:supportsRtl="true">

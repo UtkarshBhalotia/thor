@@ -40,3 +40,9 @@ type TGlobalReducerValue<T extends TGlobalReducerType> =
     : T extends 'GLOBAL_RESET'
     ? void
     : never;
+
+type TIdVerificationConditionParamActionName = 'ID_VERIFICATION_API';
+type TIdVerificationConditionParamActionParam<T> =
+    T extends TIdVerificationConditionParamActionName
+    ? TIdVerificationConditionParamActionParam<T>
+    : never;

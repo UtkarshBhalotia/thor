@@ -51,6 +51,9 @@ const apiListing = {
     vendorRegistrationUrl: `${NEW_URL}/vendor_registration`,
     getDeniedReasonListUrl: `${NEW_URL}/denied_resion_list`,
     generate_hashkey_for_rechargeUrl: `${NEW_URL}/generate_hashkey_for_recharge`,
+    vendor_douments_statusUrl: `${NEW_URL}/vendor_douments_status`,
+    getFollowupReasonListUrl: `${NEW_URL}/followup_resion_list`,
+    vendor_document_updateUrl: `${NEW_URL}/vendor_document_update`,
 
     // PayUMoney endpoints (mock for now, replace with actual backend endpoints when available)
     initiatePaymentUrl: `${BaseUrl}InitiatePayment`, // Will generate payment hash on backend

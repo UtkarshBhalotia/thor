@@ -6,9 +6,15 @@ import {
     TouchableOpacity,
     Modal,
     ScrollView,
+    ActivityIndicator,
 } from 'react-native';
-import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { BottomSheetModal, BottomSheetTextInput, BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import BSModal from './BSModal';
+
+interface FollowUpReason {
+    id: string | number;
+    reason: string;
+}
 
 interface FollowUpLeadFormData {
     nextFollowUpDate: Date;
@@ -17,17 +23,25 @@ interface FollowUpLeadFormData {
 
 interface FollowUpLeadFormModalProps {
     onSubmit: (data: FollowUpLeadFormData) => void;
+    followUpReasons?: FollowUpReason[];
+    isLoadingReasons?: boolean;
 }
 
 const FollowUpLeadFormModal = forwardRef<
     BottomSheetModal,
     FollowUpLeadFormModalProps
->(({ onSubmit }, ref) => {
+>(({ onSubmit, followUpReasons = [], isLoadingReasons = false }, ref) => {
     const [nextFollowUpDate, setNextFollowUpDate] = useState<Date>(new Date());
-    const [followUpDetails, setFollowUpDetails] = useState('');
+    const [selectedReason, setSelectedReason] = useState<string>('');
+    const [customReason, setCustomReason] = useState<string>('');
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    const isFormValid = followUpDetails.trim();
+    const isOthersSelected = selectedReason.toLowerCase() === 'others';
+    // Valid if reason is selected (and custom reason if "others") OR (fallback to just text if no reasons)
+    // Actually, following logic: If reasons exist, user MUST select one. If "others", MUST enter text.
+    // If no reasons passed (fallback), maybe just rely on text? But API is implemented now.
+    
+    const isReasonValid = isOthersSelected ? customReason.trim().length > 0 : selectedReason !== '';
 
     const formatDate = (date: Date) => {
         const day = date.getDate().toString().padStart(2, '0');
@@ -37,10 +51,10 @@ const FollowUpLeadFormModal = forwardRef<
     };
 
     const handleSubmit = () => {
-        if (isFormValid) {
+        if (isReasonValid) {
             onSubmit({
                 nextFollowUpDate,
-                followUpDetails,
+                followUpDetails: isOthersSelected ? customReason.trim() : selectedReason,
             });
             resetForm();
             if (ref && 'current' in ref && ref.current) {
@@ -51,12 +65,20 @@ const FollowUpLeadFormModal = forwardRef<
 
     const resetForm = () => {
         setNextFollowUpDate(new Date());
-        setFollowUpDetails('');
+        setSelectedReason('');
+        setCustomReason('');
         setShowDatePicker(false);
     };
 
     const handleDismiss = () => {
         resetForm();
+    };
+
+    const handleReasonSelect = (reason: string) => {
+        setSelectedReason(reason);
+        if (reason.toLowerCase() !== 'others') {
+            setCustomReason('');
+        }
     };
 
     // Generate next 30 days for selection
@@ -110,12 +132,15 @@ const FollowUpLeadFormModal = forwardRef<
 
     const dateOptions = generateDateOptions();
 
+    // Snap points: if others selected (keyboard shown), expand to 90% or 100%. Else ~60-70%
+    const snapPoints = isOthersSelected ? ['90%'] : ['70%'];
+
     return (
         <>
             <BSModal
                 bsModalRef={ref as React.RefObject<BottomSheetModal>}
                 headerTitle="Follow Up Lead"
-                snapPoints={['55%']}
+                snapPoints={snapPoints}
                 customOnDismiss={handleDismiss}>
                 <View style={styles.container}>
                     {/* Next Follow Up Date */}
@@ -132,30 +157,74 @@ const FollowUpLeadFormModal = forwardRef<
                         </TouchableOpacity>
                     </View>
 
-                    {/* Follow Up Details */}
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Follow Up Details</Text>
-                        <BottomSheetTextInput
-                            style={styles.textArea}
-                            placeholder="Enter follow up details..."
-                            placeholderTextColor="#999"
-                            multiline
-                            numberOfLines={4}
-                            textAlignVertical="top"
-                            value={followUpDetails}
-                            onChangeText={setFollowUpDetails}
-                        />
+                    {/* Reasons List */}
+                    <View style={[styles.inputContainer, { flex: 1, marginBottom: 0 }]}>
+                        <Text style={styles.label}>Select Follow Up Reason</Text>
+
+                         {isLoadingReasons ? (
+                            <View style={styles.loadingContainer}>
+                                <ActivityIndicator size="large" color="#7B1FA2" />
+                                <Text style={styles.loadingText}>Loading reasons...</Text>
+                            </View>
+                        ) : followUpReasons.length > 0 ? (
+                            <BottomSheetScrollView style={styles.reasonsScrollView}>
+                                {followUpReasons.map((item, index) => (
+                                    <TouchableOpacity
+                                        key={item.id || index}
+                                        style={[
+                                            styles.radioOption,
+                                            selectedReason === item.reason && styles.radioOptionSelected,
+                                        ]}
+                                        onPress={() => handleReasonSelect(item.reason)}
+                                        activeOpacity={0.7}>
+                                        <View style={styles.radioCircle}>
+                                            {selectedReason === item.reason && (
+                                                <View style={styles.radioCircleInner} />
+                                            )}
+                                        </View>
+                                        <Text
+                                            style={[
+                                                styles.radioText,
+                                                selectedReason === item.reason && styles.radioTextSelected,
+                                            ]}>
+                                            {item.reason}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </BottomSheetScrollView>
+                        ) : (
+                            <View style={styles.noReasonsContainer}>
+                                <Text style={styles.noReasonsText}>No reasons available</Text>
+                                {/* Fallback to manual entry if needed, but for now enforcing selection */}
+                            </View>
+                        )}
+                        
+                        {isOthersSelected && (
+                            <View style={styles.customReasonContainer}>
+                                <Text style={styles.label}>Follow Up Details *</Text>
+                                <BottomSheetTextInput
+                                    style={styles.textArea}
+                                    placeholder="Enter follow up details..."
+                                    placeholderTextColor="#999"
+                                    multiline
+                                    numberOfLines={4}
+                                    textAlignVertical="top"
+                                    value={customReason}
+                                    onChangeText={setCustomReason}
+                                />
+                            </View>
+                        )}
                     </View>
 
                     <TouchableOpacity
                         style={[
                             styles.submitButton,
-                            !isFormValid && styles.submitButtonDisabled,
+                            !isReasonValid && styles.submitButtonDisabled,
                         ]}
                         onPress={handleSubmit}
-                        disabled={!isFormValid}
+                        disabled={!isReasonValid}
                         activeOpacity={0.8}>
-                        <Text style={styles.submitButtonText}>Send</Text>
+                        <Text style={styles.submitButtonText}>Submit</Text>
                     </TouchableOpacity>
                 </View>
             </BSModal>
@@ -224,6 +293,7 @@ const FollowUpLeadFormModal = forwardRef<
 const styles = StyleSheet.create({
     container: {
         padding: 16,
+        paddingBottom: 20, // Reduced from 30 to fit better
         flex: 1,
     },
     inputContainer: {
@@ -253,6 +323,51 @@ const styles = StyleSheet.create({
     calendarIcon: {
         fontSize: 18,
     },
+    reasonsScrollView: {
+        maxHeight: 250, // Limit height
+    },
+    radioOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F7F8FA',
+        borderRadius: 10,
+        padding: 14,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#E8E8E8',
+    },
+    radioOptionSelected: {
+        backgroundColor: '#F3E5F5',
+        borderColor: '#7B1FA2',
+    },
+    radioCircle: {
+        width: 22,
+        height: 22,
+        borderRadius: 11,
+        borderWidth: 2,
+        borderColor: '#7B1FA2',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    radioCircleInner: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        backgroundColor: '#7B1FA2',
+    },
+    radioText: {
+        fontSize: 14,
+        color: '#1C1F34',
+        flex: 1,
+    },
+    radioTextSelected: {
+        fontWeight: '600',
+        color: '#7B1FA2',
+    },
+    customReasonContainer: {
+        marginTop: 10,
+    },
     textArea: {
         backgroundColor: '#F7F8FA',
         borderRadius: 10,
@@ -262,6 +377,26 @@ const styles = StyleSheet.create({
         minHeight: 100,
         borderWidth: 1,
         borderColor: '#E8E8E8',
+        marginBottom: 10,
+    },
+    loadingContainer: {
+        height: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 14,
+        color: '#8F8F8F',
+    },
+    noReasonsContainer: {
+        height: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    noReasonsText: {
+        fontSize: 14,
+        color: '#8F8F8F',
     },
     submitButton: {
         backgroundColor: '#7B1FA2',

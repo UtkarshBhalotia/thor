@@ -177,6 +177,8 @@ function* Get_All_Type_Vendor_Balance_Api_Response(
         walletBalance: string;
         securityDeposit: string;
         systemCharges: string;
+        totalNewLead: number;
+        totalOngoingLead: number;
     }) => void,
 ) {
     try {
@@ -187,11 +189,15 @@ function* Get_All_Type_Vendor_Balance_Api_Response(
             const walletBalance = String(responseData.SBalance || 0);
             const securityDeposit = String(responseData.SDepositeAmt || 0);
             const systemCharges = String(responseData.SMaintenanceAmt || 0);
+            const totalNewLead = Number(responseData.ToltalNewLead || 0);
+            const totalOngoingLead = Number(responseData.TotalOngoingLead || 0);
 
             callBack({
                 walletBalance,
                 securityDeposit,
                 systemCharges,
+                totalNewLead,
+                totalOngoingLead,
             });
 
         } else if (response.body.status === 'error') {
@@ -199,6 +205,8 @@ function* Get_All_Type_Vendor_Balance_Api_Response(
                 walletBalance: '0',
                 securityDeposit: '0',
                 systemCharges: '0',
+                totalNewLead: 0,
+                totalOngoingLead: 0,
             });
             showToast({
                 type: 'error',

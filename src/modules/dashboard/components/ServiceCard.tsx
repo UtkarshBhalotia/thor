@@ -65,6 +65,9 @@ interface ServiceCardProps {
     onFetchDeniedReasons?: (
         callBack: (data: any[]) => void,
     ) => void;
+    onFetchFollowUpReasons?: (
+        callBack: (data: any[]) => void,
+    ) => void;
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({
@@ -93,6 +96,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     onCompleted,
     onCustomerDetailsClick,
     onFetchDeniedReasons,
+    onFetchFollowUpReasons,
 }) => {
     const [isCustomerDetailsExpanded, setIsCustomerDetailsExpanded] =
         useState(false);
@@ -112,9 +116,29 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     const followUpModalRef = useRef<BottomSheetModal>(null);
     const [deniedReasons, setDeniedReasons] = useState<{ id: string | number; reason: string }[]>([]);
     const [isLoadingDeniedReasons, setIsLoadingDeniedReasons] = useState(false);
+    const [followUpReasons, setFollowUpReasons] = useState<{ id: string | number; reason: string }[]>([]);
+    const [isLoadingFollowUpReasons, setIsLoadingFollowUpReasons] = useState(false);
 
     const handleFollowUpPress = () => {
-        followUpModalRef.current?.present();
+        if (onFetchFollowUpReasons) {
+            setIsLoadingFollowUpReasons(true);
+            followUpModalRef.current?.present();
+            onFetchFollowUpReasons((data: any[]) => {
+                const reasons = data?.map((item: any, index: number) => {
+                    if (typeof item === 'string') {
+                        return { id: index, reason: item };
+                    }
+                    return {
+                        id: item.ID || item.id || index,
+                        reason: item.ResionName || item.Reason || item.reason || item.name || '',
+                    };
+                }) || [];
+                setFollowUpReasons(reasons);
+                setIsLoadingFollowUpReasons(false);
+            });
+        } else {
+            followUpModalRef.current?.present();
+        }
     };
 
     const handleFollowUpSubmit = (data: {
@@ -620,6 +644,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
             <FollowUpLeadFormModal
                 ref={followUpModalRef}
                 onSubmit={handleFollowUpSubmit}
+                followUpReasons={followUpReasons}
+                isLoadingReasons={isLoadingFollowUpReasons}
             />
         </TouchableOpacity>
     );

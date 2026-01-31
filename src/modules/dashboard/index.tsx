@@ -191,12 +191,19 @@ const Dashboard = (props: any) => {
                 walletBalance: string;
                 securityDeposit: string;
                 systemCharges: string;
+                totalNewLead: number;
+                totalOngoingLead: number;
             }) => {
                 setWalletBalance(data.walletBalance);
                 setTotalSecurityDeposit({
                     DepositeAmt: data.securityDeposit,
                     MaintenanceAmt: data.systemCharges,
                 });
+                setReportStats((prev) => ({
+                    ...prev,
+                    new: data.totalNewLead,
+                    ongoing: data.totalOngoingLead,
+                }));
                 fetchReportData();
                 props.dashboardActions('Get_OnGoing_Services_List_Api', {
                     callBack: (data: any) => {
@@ -250,11 +257,10 @@ const Dashboard = (props: any) => {
                 new: number;
                 revenue: number;
             }) => {
-                setReportStats({
-                    ongoing: data.ongoing,
-                    new: data.new,
+                setReportStats((prev) => ({
+                    ...prev,
                     revenue: data.revenue,
-                });
+                }));
             },
         });
     };
@@ -385,6 +391,14 @@ const Dashboard = (props: any) => {
         callBack: (data: any[]) => void,
     ) => {
         props.bookingActions('Get_Denied_Reason_List_Api', {
+            callBack: callBack,
+        });
+    };
+
+    const handleFetchFollowUpReasons = (
+        callBack: (data: any[]) => void,
+    ) => {
+        props.bookingActions('Get_FollowUp_Reason_List_Api', {
             callBack: callBack,
         });
     };
@@ -739,6 +753,7 @@ const Dashboard = (props: any) => {
                             }) => handleCompleted(service.LeadID, data)}
                             onCustomerDetailsClick={handleCustomerDetailsClick}
                             onFetchDeniedReasons={handleFetchDeniedReasons}
+                            onFetchFollowUpReasons={handleFetchFollowUpReasons}
                         />
                     ))
                 )}
