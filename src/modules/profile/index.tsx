@@ -355,6 +355,16 @@ const Profile = (props: any) => {
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={profileStyles.scrollContent}>
+                
+                {profileLocked === 1 && (
+                    <View style={profileStyles.lockedMessageContainer}>
+                        <Ionicons name="lock-closed" size={20} color="#D32F2F" />
+                        <Text style={profileStyles.lockedMessageText}>
+                            Profile is Locked. Please contact admin to update details.
+                        </Text>
+                    </View>
+                )}
+
                 <View style={profileStyles.formSection}>
                     {/* Profile Photo Section */}
                     <View style={profileStyles.profilePhotoContainer}>

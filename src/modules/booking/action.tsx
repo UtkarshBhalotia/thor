@@ -44,6 +44,7 @@ export function* conditionActions<
                 actionParam as TFollowUpLeadByVendorParam,
             );
             break;
+        case 'Get_Denied_Reason_List_Api':
             yield call(
                 GetDeniedReasonListApi,
                 actionParam as TGetDeniedReasonListParam,

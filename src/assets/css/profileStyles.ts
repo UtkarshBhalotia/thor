@@ -324,4 +324,23 @@ export const profileStyles = StyleSheet.create({
         color: '#8F8F8F',
         fontWeight: '400',
     },
+    // Locked Message
+    lockedMessageContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFEBEE',
+        padding: 12,
+        borderRadius: 8,
+        marginHorizontal: 16,
+        marginTop: 16,
+        borderWidth: 1,
+        borderColor: '#FFCDD2',
+    },
+    lockedMessageText: {
+        fontSize: 13,
+        color: '#D32F2F',
+        marginLeft: 8,
+        flex: 1,
+        fontWeight: '500',
+    },
 });

@@ -176,6 +176,22 @@ const Wallet = (props: any) => {
         }
 
         const amount = parseFloat(amountStr);
+        let minAmount = 0;
+
+        if (mappedGateway === 'payumoney') {
+            minAmount = parseFloat(minRechargeAmount || '0');
+        } else if (mappedGateway === 'razorpay') {
+            minAmount = 5000;
+        }
+
+        if (amount < minAmount) {
+            Toast.show({
+                type: 'error',
+                text1: `Minimum recharge amount is ₹${minAmount}`,
+                visibilityTime: 2000,
+            });
+            return;
+        }
 
         // Get user details from global state
         const userEmail = props.globalState.email || 'test@example.com';
@@ -239,7 +255,7 @@ const Wallet = (props: any) => {
                 },
             });
         }
-    }, [props.walletActions, props.globalState, RazorpayService]);
+    }, [props.walletActions, props.globalState, RazorpayService, minRechargeAmount]);
 
     const handleRazorpaySuccess = useCallback((response: any, amount: string) => {
         console.log('Razorpay Success:', response);

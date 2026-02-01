@@ -151,6 +151,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     };
 
     const handleDeniedPress = () => {
+        console.log('handleDeniedPress called', { hasFetch: !!onFetchDeniedReasons });
         if (onFetchDeniedReasons) {
             setIsLoadingDeniedReasons(true);
             deniedModalRef.current?.present();

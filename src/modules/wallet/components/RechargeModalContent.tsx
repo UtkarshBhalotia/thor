@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -19,6 +19,12 @@ const RechargeModalContent: React.FC<RechargeModalContentProps> = ({
 }) => {
     const [rechargeAmount, setRechargeAmount] = useState(minRechargeAmount || '');
     const [selectedGateway, setSelectedGateway] = useState<'payumoney' | 'razorpay'>('payumoney');
+
+    useEffect(() => {
+        if (minRechargeAmount && selectedGateway === 'payumoney') {
+            setRechargeAmount(minRechargeAmount);
+        }
+    }, [minRechargeAmount, selectedGateway]);
 
     const { amountAsFloat, baseAmount, gstPart } = useMemo(() => {
         const amount = parseFloat(rechargeAmount) || 0;
