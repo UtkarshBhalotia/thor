@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Alert, TouchableOpacity, StatusBar, Switch } from 'react-native';
+import { View, Text, ScrollView, Alert, TouchableOpacity, StatusBar, Switch, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { moreStyles } from '../../assets/css/moreStyles';
 import ProfileMenuItem from '../profile/components/ProfileMenuItem';
@@ -9,15 +9,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import { removeItem, STORAGE_KEYS } from '../../utils/storage';
 import { RootState } from '../../../store';
 import LogoutModal from '../../components/LogoutModal';
+import BSModal from '../../components/BSModal';
+import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { RootStackParamList } from '../../navigations/navigation';
+import DeviceInfo from 'react-native-device-info';
 
 const More = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const dispatch = useDispatch();
     const globalState = useSelector((state: RootState) => state.globalState);
     const [showLogoutModal, setShowLogoutModal] = React.useState(false);
+    const helpSupportModalRef = React.useRef<BottomSheetModal>(null);
 
-    const handleAction = (title: string) => {
+    const handleAction = async (title: string) => {
         if (title === 'Change password') {
             navigation.navigate('ChangePassword');
             return;
@@ -28,6 +32,30 @@ const More = () => {
         }
         if (title === 'Document verification') {
             navigation.navigate('IdVerification');
+            return;
+        }
+        if (title === 'Share') {
+            try {
+                const result = await Share.share({
+                    message:
+                        'Check out this app: https://play.google.com/store/apps/details?id=com.roservice.partner',
+                });
+                if (result.action === Share.sharedAction) {
+                    if (result.activityType) {
+                        // shared with activity type of result.activityType
+                    } else {
+                        // shared
+                    }
+                } else if (result.action === Share.dismissedAction) {
+                    // dismissed
+                }
+            } catch (error: any) {
+                Alert.alert(error.message);
+            }
+            return;
+        }
+        if (title === 'Help and support') {
+            helpSupportModalRef.current?.present();
             return;
         }
         Alert.alert(title, `Functionality for ${title} coming soon.`);
@@ -96,6 +124,9 @@ const More = () => {
     return (
         <SafeAreaView style={moreStyles.container} edges={['top']}>
             <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
+            
+            {/* ... Existing JSX ... */}
+            
             <View style={moreStyles.header}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
@@ -110,6 +141,8 @@ const More = () => {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={moreStyles.scrollContent}
             >
+                {/* ... ProfileCard, Availability, Menu Sections ... */}
+                
                 {/* Profile Header */}
                 <TouchableOpacity
                     style={moreStyles.profileCard}
@@ -160,7 +193,7 @@ const More = () => {
 
                 {/* Footer */}
                 <View style={moreStyles.footer}>
-                    <Text style={moreStyles.versionText}>Version 1.0.0 (Build 01)</Text>
+                    <Text style={moreStyles.versionText}>Version {DeviceInfo.getVersion()}</Text>
                 </View>
             </ScrollView>
 
@@ -169,6 +202,31 @@ const More = () => {
                 onClose={() => setShowLogoutModal(false)}
                 onLogout={confirmLogout}
             />
+
+            <BSModal
+                bsModalRef={helpSupportModalRef}
+                headerTitle="Help & Support"
+                snapPoints={['70%']}>
+                <View style={moreStyles.helpModalContent}>
+                    <View style={moreStyles.helpModalIcon}>
+                        <Ionicons name="headset" size={40} color="#5F60B9" />
+                    </View>
+                    <Text style={moreStyles.helpModalTitle}>Contact Support</Text>
+                    <Text style={moreStyles.helpModalDescription}>
+                        Need assistance? Our support team is here to help you with any issues or queries.
+                    </Text>
+
+                    <View style={moreStyles.contactRow}>
+                        <View style={moreStyles.contactIcon}>
+                            <Ionicons name="mail-outline" size={24} color="#5F60B9" />
+                        </View>
+                        <View>
+                            <Text style={moreStyles.contactLabel}>Email Us</Text>
+                            <Text style={moreStyles.contactValue}>info@serviceondoors.com</Text>
+                        </View>
+                    </View>
+                </View>
+            </BSModal>
         </SafeAreaView>
     );
 };

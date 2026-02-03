@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StatusBar, Animated, Easing, Image } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { splashStyles } from '../assets/css/splashStyles';
+import DeviceInfo from 'react-native-device-info';
 
 const LauncherLogo = require('../assets/img/new_launcher.png');
 
@@ -176,10 +177,11 @@ const WelcomeToSOD = ({ setShowWelcomeScreen }: WelcomeToSODProps) => {
                         style={[splashStyles.loaderBar, { width: loaderWidth }]}
                     />
                 </View>
-                <Text style={splashStyles.versionText}>v1.0.0</Text>
+                <Text style={splashStyles.versionText}>v{DeviceInfo.getVersion()}</Text>
             </View>
         </LinearGradient>
     );
 };
+
 
 export default WelcomeToSOD;

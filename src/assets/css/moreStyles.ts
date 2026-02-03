@@ -154,4 +154,56 @@ export const moreStyles = StyleSheet.create({
         color: '#ADB5BD',
         fontWeight: '500',
     },
+    // Help Modal
+    helpModalContent: {
+        paddingHorizontal: 24,
+        paddingVertical: 16,
+        alignItems: 'center',
+    },
+    helpModalIcon: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#F0F0FF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    helpModalTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#1C1F34',
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    helpModalDescription: {
+        fontSize: 15,
+        color: '#6C757D',
+        textAlign: 'center',
+        marginBottom: 24,
+        lineHeight: 22,
+    },
+    contactRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F8F9FA',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        borderRadius: 12,
+        width: '100%',
+        marginBottom: 12,
+    },
+    contactIcon: {
+        marginRight: 16,
+    },
+    contactLabel: {
+        fontSize: 12,
+        color: '#8F8F8F',
+        marginBottom: 4,
+    },
+    contactValue: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#1C1F34',
+    },
 });
