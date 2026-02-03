@@ -1,4 +1,4 @@
-export const ENV: 'dev' | 'prod' = 'prod';
+export const ENV: 'dev' | 'prod' = 'dev';
 
 export const BASE_ENV = {
     dev: {
@@ -9,7 +9,7 @@ export const BASE_ENV = {
     },
 };
 
-export const NEW_URL = 'https://crm.dooda.in/api';
+export const NEW_URL = ENV === 'dev' ? 'https://testcrm.dooda.in/api' : 'https://crm.dooda.in/api';
 
 export const BaseUrl = BASE_ENV[ENV].API_HOST;
 export const Comp_State_ID = 8;

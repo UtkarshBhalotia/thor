@@ -291,7 +291,8 @@ const Booking = (props: any) => {
             leadDescription={item.Desc || item.Description || item.PartsDesc}
             leadBrand={`${item.BrandName} (${item.ModelName})`}
             deniedReason={item.Reason}
-            deniedDateStatus={`${item.DeniedDate} \ ${item.DeniedStatus}`}
+            deniedDate={item.DeniedDate}
+            deniedStatus={item.DeniedStatus}
             completedDate={item.CompletedDate}
             completedAmout={item.CustomerAmount || item.CustomerAmt}
             reComplaintId={item.ComplaintID}

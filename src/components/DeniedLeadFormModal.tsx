@@ -1,6 +1,7 @@
 import React, { useState, forwardRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { BottomSheetModal, BottomSheetScrollView, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import LinearGradient from 'react-native-linear-gradient';
 import BSModal from './BSModal';
 
 interface DeniedReason {
@@ -20,6 +21,7 @@ const DeniedLeadFormModal = forwardRef<
 >(({ onSubmit, deniedReasons = [], isLoadingReasons = false }, ref) => {
     const [selectedReason, setSelectedReason] = useState<string>('');
     const [customReason, setCustomReason] = useState<string>('');
+    const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
 
     const isOthersSelected = selectedReason.toLowerCase() === 'others';
     const isReadyToSubmit = isOthersSelected ? customReason.trim().length > 0 : selectedReason !== '';
@@ -63,31 +65,48 @@ const DeniedLeadFormModal = forwardRef<
                             <Text style={styles.loadingText}>Loading reasons...</Text>
                         </View>
                     ) : deniedReasons.length > 0 ? (
-                        <BottomSheetScrollView style={styles.reasonsScrollView}>
-                            {deniedReasons.map((item, index) => (
-                                <TouchableOpacity
-                                    key={item.id || index}
-                                    style={[
-                                        styles.radioOption,
-                                        selectedReason === item.reason && styles.radioOptionSelected,
-                                    ]}
-                                    onPress={() => handleReasonSelect(item.reason)}
-                                    activeOpacity={0.7}>
-                                    <View style={styles.radioCircle}>
-                                        {selectedReason === item.reason && (
-                                            <View style={styles.radioCircleInner} />
-                                        )}
-                                    </View>
-                                    <Text
+                        <View style={styles.reasonsContainer}>
+                            <BottomSheetScrollView 
+                                style={styles.reasonsScrollView}
+                                showsVerticalScrollIndicator={true}
+                                onScroll={(event) => {
+                                    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+                                    const isBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+                                    setIsScrolledToBottom(isBottom);
+                                }}>
+                                {deniedReasons.map((item, index) => (
+                                    <TouchableOpacity
+                                        key={item.id || index}
                                         style={[
-                                            styles.radioText,
-                                            selectedReason === item.reason && styles.radioTextSelected,
-                                        ]}>
-                                        {item.reason}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </BottomSheetScrollView>
+                                            styles.radioOption,
+                                            selectedReason === item.reason && styles.radioOptionSelected,
+                                        ]}
+                                        onPress={() => handleReasonSelect(item.reason)}
+                                        activeOpacity={0.7}>
+                                        <View style={styles.radioCircle}>
+                                            {selectedReason === item.reason && (
+                                                <View style={styles.radioCircleInner} />
+                                            )}
+                                        </View>
+                                        <Text
+                                            style={[
+                                                styles.radioText,
+                                                selectedReason === item.reason && styles.radioTextSelected,
+                                            ]}>
+                                            {item.reason}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </BottomSheetScrollView>
+                            {!isScrolledToBottom && deniedReasons.length > 3 && (
+                                <LinearGradient
+                                    colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.95)', '#FFFFFF']}
+                                    style={styles.scrollIndicator}
+                                    pointerEvents="none">
+                                    <Text style={styles.scrollIndicatorText}>⌄ Scroll for more</Text>
+                                </LinearGradient>
+                            )}
+                        </View>
                     ) : (
                         <View style={styles.noReasonsContainer}>
                             <Text style={styles.noReasonsText}>No reasons available</Text>
@@ -142,8 +161,26 @@ const styles = StyleSheet.create({
         color: '#1C1F34',
         marginBottom: 12,
     },
+    reasonsContainer: {
+        position: 'relative',
+    },
     reasonsScrollView: {
         maxHeight: 400,
+    },
+    scrollIndicator: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 60,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        paddingBottom: 8,
+    },
+    scrollIndicatorText: {
+        fontSize: 12,
+        color: '#B71C1C',
+        fontWeight: '600',
     },
     radioOption: {
         flexDirection: 'row',

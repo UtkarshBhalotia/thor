@@ -9,6 +9,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { BottomSheetModal, BottomSheetTextInput, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import LinearGradient from 'react-native-linear-gradient';
 import BSModal from './BSModal';
 
 interface FollowUpReason {
@@ -35,6 +36,7 @@ const FollowUpLeadFormModal = forwardRef<
     const [selectedReason, setSelectedReason] = useState<string>('');
     const [customReason, setCustomReason] = useState<string>('');
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [isScrolledToBottom, setIsScrolledToBottom] = useState(false);
 
     const isOthersSelected = selectedReason.toLowerCase() === 'others';
     // Valid if reason is selected (and custom reason if "others") OR (fallback to just text if no reasons)
@@ -166,32 +168,49 @@ const FollowUpLeadFormModal = forwardRef<
                                 <ActivityIndicator size="large" color="#7B1FA2" />
                                 <Text style={styles.loadingText}>Loading reasons...</Text>
                             </View>
-                        ) : followUpReasons.length > 0 ? (
-                            <BottomSheetScrollView style={styles.reasonsScrollView}>
-                                {followUpReasons.map((item, index) => (
-                                    <TouchableOpacity
-                                        key={item.id || index}
-                                        style={[
-                                            styles.radioOption,
-                                            selectedReason === item.reason && styles.radioOptionSelected,
-                                        ]}
-                                        onPress={() => handleReasonSelect(item.reason)}
-                                        activeOpacity={0.7}>
-                                        <View style={styles.radioCircle}>
-                                            {selectedReason === item.reason && (
-                                                <View style={styles.radioCircleInner} />
-                                            )}
-                                        </View>
-                                        <Text
+                         ) : followUpReasons.length > 0 ? (
+                            <View style={styles.reasonsContainer}>
+                                <BottomSheetScrollView 
+                                    style={styles.reasonsScrollView}
+                                    showsVerticalScrollIndicator={true}
+                                    onScroll={(event) => {
+                                        const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+                                        const isBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
+                                        setIsScrolledToBottom(isBottom);
+                                    }}>
+                                    {followUpReasons.map((item, index) => (
+                                        <TouchableOpacity
+                                            key={item.id || index}
                                             style={[
-                                                styles.radioText,
-                                                selectedReason === item.reason && styles.radioTextSelected,
-                                            ]}>
-                                            {item.reason}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </BottomSheetScrollView>
+                                                styles.radioOption,
+                                                selectedReason === item.reason && styles.radioOptionSelected,
+                                            ]}
+                                            onPress={() => handleReasonSelect(item.reason)}
+                                            activeOpacity={0.7}>
+                                            <View style={styles.radioCircle}>
+                                                {selectedReason === item.reason && (
+                                                    <View style={styles.radioCircleInner} />
+                                                )}
+                                            </View>
+                                            <Text
+                                                style={[
+                                                    styles.radioText,
+                                                    selectedReason === item.reason && styles.radioTextSelected,
+                                                ]}>
+                                                {item.reason}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </BottomSheetScrollView>
+                                {!isScrolledToBottom && followUpReasons.length > 3 && (
+                                    <LinearGradient
+                                        colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.95)', '#FFFFFF']}
+                                        style={styles.scrollIndicator}
+                                        pointerEvents="none">
+                                        <Text style={styles.scrollIndicatorText}>⌄ Scroll for more</Text>
+                                    </LinearGradient>
+                                )}
+                            </View>
                         ) : (
                             <View style={styles.noReasonsContainer}>
                                 <Text style={styles.noReasonsText}>No reasons available</Text>
@@ -323,8 +342,26 @@ const styles = StyleSheet.create({
     calendarIcon: {
         fontSize: 18,
     },
+    reasonsContainer: {
+        position: 'relative',
+    },
     reasonsScrollView: {
         maxHeight: 250, // Limit height
+    },
+    scrollIndicator: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: 60,
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        paddingBottom: 8,
+    },
+    scrollIndicatorText: {
+        fontSize: 12,
+        color: '#7B1FA2',
+        fontWeight: '600',
     },
     radioOption: {
         flexDirection: 'row',

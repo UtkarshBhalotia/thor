@@ -35,7 +35,8 @@ interface ServiceCardProps {
     leadDescription: string;
     leadBrand: string;
     deniedReason?: string;
-    deniedDateStatus?: string;
+    deniedDate?: string;
+    deniedStatus?: string;
     completedDate?: string;
     completedAmout?: string;
     reComplaintId?: string;
@@ -81,7 +82,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     leadDescription,
     leadBrand,
     deniedReason,
-    deniedDateStatus,
+    deniedDate,
+    deniedStatus,
     completedDate,
     completedAmout,
     reComplaintId,
@@ -269,13 +271,16 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                     accent: '#388E3C',
                     icon: '✅',
                 };
-            case 'Denied':
+            case 'Denied': {
+                const isRefunded = deniedStatus?.trim().toLowerCase() === 'amount refunded';
                 return {
-                    badge: { backgroundColor: '#F5F5F5' },
-                    text: { color: '#616161' },
-                    accent: '#616161',
-                    icon: '❌',
+                    badge: { backgroundColor: isRefunded ? '#E3F2FD' : '#FFEBEE' },
+                    text: { color: isRefunded ? '#1976D2' : '#D32F2F' },
+                    accent: isRefunded ? '#1976D2' : '#D32F2F',
+                    icon: 'close',
+                    isVector: true,
                 };
+            }
             case 'FollowUp':
             case 'Follow Up':
             case 'Follow-Up':
@@ -283,7 +288,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                     badge: { backgroundColor: '#F3E5F5' },
                     text: { color: '#7B1FA2' },
                     accent: '#7B1FA2',
-                    icon: '📞',
+                    icon: 'call',
+                    isVector: true,
                 };
             default:
                 return {
@@ -348,21 +354,38 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                     {/* Header Section */}
                     <View style={styles.headerSection}>
                         <View style={styles.headerLeft}>
-                            <View
-                                style={[
-                                    styles.statusBadge,
-                                    statusConfig.badge,
-                                ]}>
-                                <Text style={styles.statusIcon}>
-                                    {statusConfig.icon}
-                                </Text>
-                                <Text
+                            <View>
+                                <View
                                     style={[
-                                        styles.statusText,
-                                        statusConfig.text,
+                                        styles.statusBadge,
+                                        statusConfig.badge,
                                     ]}>
-                                    {leadStatus}
-                                </Text>
+                                    {statusConfig.isVector ? (
+                                        <View style={[styles.styledIconBox, { backgroundColor: statusConfig.accent }]}>
+                                            <Ionicons
+                                                name={statusConfig.icon as any}
+                                                size={10}
+                                                color="#FFFFFF"
+                                            />
+                                        </View>
+                                    ) : (
+                                        <Text style={styles.statusIcon}>
+                                            {statusConfig.icon}
+                                        </Text>
+                                    )}
+                                    <Text
+                                        style={[
+                                            styles.statusText,
+                                            statusConfig.text,
+                                        ]}>
+                                        {leadStatus}
+                                    </Text>
+                                </View>
+                                {leadStatus === 'Denied' && deniedStatus && (
+                                    <Text style={[styles.deniedSubStatus, { color: statusConfig.accent }]}>
+                                        {deniedStatus}
+                                    </Text>
+                                )}
                             </View>
                         </View>
                         <View style={styles.headerRight}>
@@ -403,16 +426,18 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
 
                         {/* Denied Info */}
                         {leadStatus === 'Denied' && (
-                            <View style={styles.detailsRow}>
-                                <DetailRow
-                                    label="Denied Reason"
-                                    value={deniedReason || '-'}
-                                />
-                                <DetailRow
-                                    label="Denied Date"
-                                    value={deniedDateStatus || '-'}
-                                />
-                            </View>
+                            <>
+                                <View style={styles.detailsRow}>
+                                    <DetailRow
+                                        label="Denied Reason"
+                                        value={deniedReason || '-'}
+                                    />
+                                    <DetailRow
+                                        label="Denied Date"
+                                        value={deniedDate || '-'}
+                                    />
+                                </View>
+                            </>
                         )}
 
                         {/* Completed Info */}
@@ -595,18 +620,32 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                                         activeOpacity={0.8}
                                                         onPress={handleFollowUpPress}
                                                         style={styles.followUpBtn}>
-                                                        <Text
-                                                            style={styles.followUpBtnText}>
-                                                            📞 Follow Up
-                                                        </Text>
+                                                        <View style={styles.btnContentWithIcon}>
+                                                            <View style={[styles.styledIconBox, { backgroundColor: '#7B1FA2' }]}>
+                                                                <Ionicons name="call" size={10} color="#FFFFFF" />
+                                                            </View>
+                                                            <Text
+                                                                style={styles.followUpBtnText}>
+                                                                {leadStatus?.trim().toLowerCase() === 'follow up' || 
+                                                                    leadStatus?.trim().toLowerCase() === 'followup' || 
+                                                                    leadStatus?.trim().toLowerCase() === 'follow-up' 
+                                                                    ? 'Next Follow Up' 
+                                                                    : 'Follow Up'}
+                                                            </Text>
+                                                        </View>
                                                     </TouchableOpacity>
                                                     <TouchableOpacity
                                                         activeOpacity={0.8}
                                                         onPress={handleDeniedPress}
                                                         style={styles.deniedBtn}>
-                                                        <Text style={styles.deniedBtnText}>
-                                                            ✕ Denied
-                                                        </Text>
+                                                        <View style={styles.btnContentWithIcon}>
+                                                            <View style={[styles.styledIconBox, { backgroundColor: '#D32F2F' }]}>
+                                                                <Ionicons name="close" size={10} color="#FFFFFF" />
+                                                            </View>
+                                                            <Text style={styles.deniedBtnText}>
+                                                                Denied
+                                                            </Text>
+                                                        </View>
                                                     </TouchableOpacity>
                                                 </>
                                             )}
@@ -680,8 +719,14 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     headerLeft: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+    },
+    deniedSubStatus: {
+        fontSize: 11,
+        fontWeight: '600',
+        marginTop: 4,
+        marginLeft: 4,
     },
     headerRight: {
         alignItems: 'flex-end',
@@ -800,6 +845,19 @@ const styles = StyleSheet.create({
         color: '#388E3C',
         fontSize: 12,
         fontWeight: '600',
+    },
+    btnContentWithIcon: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    styledIconBox: {
+        width: 16,
+        height: 16,
+        borderRadius: 4,
+        backgroundColor: '#616161',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     customerDetailsToggle: {
         flexDirection: 'row',
