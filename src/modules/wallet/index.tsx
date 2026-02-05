@@ -76,13 +76,10 @@ const Wallet = (props: any) => {
     const renderedHistory = useMemo(() => {
         return rechargeHistory.map((item) => (
             <PaymentHistoryCard
-                entryType={item.EntryType}
-                key={item.TxnID}
-                balance={item.Balance}
-                tranDate={item.Date}
-                drCr={item.DrCr}
+                key={item.TxnID + Math.random()}
+                tranDate={item.SDate}
                 amount={item.Amount}
-                remarks={item.Remarks || 'Transaction'}
+                remarks={item.Remarks || 'Wallet Recharge'}
                 paymentId={item.TxnID}
             />
         ));
@@ -140,13 +137,13 @@ const Wallet = (props: any) => {
                     toDate: formatDate(toDate),
                     callBack: (data: IRechargeHistoryItem[]) => {
                         console.log('Recharge history:', data);
-                        if (data && data.length > 0) {
-                            const amount = parseFloat(data[0].Amount || '0').toLocaleString('en-IN', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                            });
-                            setOpeningBalance(amount + ' (' + data[0].Date + ')');
-                        }
+                        // if (data && data.length > 0) {
+                        //     const amount = parseFloat(data[0].Amount || '0').toLocaleString('en-IN', {
+                        //         minimumFractionDigits: 2,
+                        //         maximumFractionDigits: 2,
+                        //     });
+                        //     setOpeningBalance(amount + ' (' + data[0].Date + ')');
+                        // }
                         setRechargeHistory(data);
                         setIsLoading(false);
                     },
@@ -362,7 +359,7 @@ const Wallet = (props: any) => {
             </Text>
             <Text style={dashboardStyles.emptyStateDescription}>
                 You don't have any wallet transactions for the selected date
-                range. Your recharge and penalty history will appear here.
+                range. Your recharge history will appear here.
             </Text>
         </View>
     ), []);

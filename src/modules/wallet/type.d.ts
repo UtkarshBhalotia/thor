@@ -68,11 +68,8 @@ export type TWalletConditionParamActionParam<T extends TWalletConditionParamActi
 export interface IRechargeHistoryItem {
     TxnID: string;
     Amount: string;
-    Date: string;
     Remarks: string;
-    EntryType: string;
-    Balance: string;
-    DrCr: string;
+    SDate: string;
 }
 
 export interface IResponseParam {

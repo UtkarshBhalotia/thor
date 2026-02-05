@@ -145,7 +145,7 @@ function* Get_Recharge_History_Api(actionParam: TGetRechargeHistoryParam) {
             }],
         };
         const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getVendorLedgerWithOpeningBalanceUrl,
+            url: projectEnv.getVendorRechargeDetailsUrl,
             data: dataObj,
         });
 

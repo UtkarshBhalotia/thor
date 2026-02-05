@@ -7,17 +7,14 @@ interface PaymentHistoryCardProps {
     amount: string;
     remarks: string;
     paymentId: string;
-    entryType: string;
-    balance: string;
-    drCr: string;
+
 }
 
 const PaymentHistoryCard: React.FC<PaymentHistoryCardProps> = ({
     tranDate,
     amount,
-    entryType,
-    balance,
-    drCr,
+    remarks,
+    paymentId,
 }) => {
 
     // Format amount with CR/DR suffix
@@ -34,34 +31,35 @@ const PaymentHistoryCard: React.FC<PaymentHistoryCardProps> = ({
     };
 
     return (
-        drCr !== 'Opening' && (
+       
             <View style={walletStyles.paymentCard}>
                 <View style={walletStyles.paymentHeader}>
                     <Text style={walletStyles.transactionType}>
-                        {entryType || 'Transaction'}
+                        {tranDate}
                     </Text>
                     <Text
                         style={[
                             walletStyles.transactionAmount,
-                            drCr === 'Credit'
-                                ? walletStyles.transactionAmountCredit
-                                : walletStyles.transactionAmountDebit,
+                            walletStyles.transactionAmountCredit
                         ]}>
-                        {formatAmount(amount, drCr === 'Credit')}
+                         ₹{amount}
                     </Text>
                 </View>
 
                 <View style={walletStyles.dateTimeBalanceRow}>
                     <Text style={walletStyles.transactionDateTime}>
-                        {tranDate}
+                        {'Wallet Recharge'}
                     </Text>
+                </View>
+
+                 <View style={walletStyles.dateTimeBalanceRow}>
                     <Text style={walletStyles.currentBalance}>
-                        Balance: ₹{balance}
+                        {paymentId}
                     </Text>
                 </View>
             </View>
-        )
-    );
+        
+    )
 };
 
 export default React.memo(PaymentHistoryCard);

@@ -40,6 +40,11 @@ export const dashboardStyles = StyleSheet.create({
         fontWeight: '700',
         color: '#FFFFFF',
     },
+    avatarImage: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+    },
     headerTextContainer: {
         flex: 1,
     },

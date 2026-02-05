@@ -623,11 +623,10 @@ const Dashboard = (props: any) => {
             <View style={dashboardStyles.headerSection}>
                 <View style={dashboardStyles.headerContent}>
                     <View style={dashboardStyles.avatarContainer}>
-                        <Text style={dashboardStyles.avatarText}>
-                            {props.globalState.name
-                                ? props.globalState.name.charAt(0).toUpperCase()
-                                : 'U'}
-                        </Text>
+                        <Image
+                            source={require('../../assets/img/avatar_profile.png')}
+                            style={dashboardStyles.avatarImage}
+                        />
                     </View>
                     <View style={dashboardStyles.headerTextContainer}>
                         <Text style={dashboardStyles.greetingText}>
