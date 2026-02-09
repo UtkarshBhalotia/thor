@@ -11,10 +11,16 @@ import {
     TouchableOpacity,
     Text,
     Modal,
+    Linking,
+    Platform,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { PAYUMONEY_CONFIG, PayUMoneyParams, PaymentResponse } from '../../../config/payumoneyConfig';
+import {
+    PAYUMONEY_CONFIG,
+    PayUMoneyParams,
+    PaymentResponse,
+} from '../../../config/payumoneyConfig';
 
 interface PaymentWebViewProps {
     visible: boolean;
@@ -106,30 +112,44 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
     };
 
     const getQueryParam = (url: string, param: string): string => {
-        const query = url.split('?')[1];
-        if (!query) return '';
-        const pairs = query.split('&');
-        for (const pair of pairs) {
-            const [key, value] = pair.split('=');
-            if (decodeURIComponent(key) === param) {
-                return decodeURIComponent(value || '');
+        try {
+            const query = url.split('?')[1];
+            if (!query) return '';
+            const pairs = query.split('&');
+            for (const pair of pairs) {
+                const [key, value] = pair.split('=');
+                if (decodeURIComponent(key) === param) {
+                    return decodeURIComponent(value || '').split('#')[0]; // Remove any hash fragment
+                }
             }
+        } catch (e) {
+            console.error('Error parsing query param:', e);
         }
         return '';
     };
 
     const handleResponseUrl = (url: string) => {
+        if (!url) return true;
+
         // Prevent duplicate processing
         if (paymentProcessedRef.current) {
             console.log('Payment already processed, ignoring duplicate call');
             return false;
         }
 
-        // Check for success URL
-        if (url.includes('payumoney://payu/success') || url.includes('/success')) {
+        console.log('Checking URL:', url);
+
+        // Check for success URL patterns
+        // We check for several patterns to be robust against different redirect styles and intent wrappers
+        const isSuccess =
+            url.includes('payu/success') ||
+            url.includes('/success') ||
+            url.toLowerCase().includes('status=success');
+
+        if (isSuccess) {
             console.log('Detected Success URL:', url);
             paymentProcessedRef.current = true;
-            
+
             // Parse the URL parameters
             const response: PaymentResponse = {
                 status: 'success',
@@ -141,15 +161,22 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
                 phone: paymentParams.phone,
                 mihpayid: getQueryParam(url, 'mihpayid') || `MOJO${Date.now()}`,
             };
-            onSuccess(response);
+
+            // Set timeout to ensure state update happens after navigation attempt is cancelled
+            setTimeout(() => onSuccess(response), 100);
             return false; // Stop loading
         }
 
-        // Check for failure URL
-        if (url.includes('payumoney://payu/failure') || url.includes('/failure')) {
+        // Check for failure URL patterns
+        const isFailure =
+            url.includes('payu/failure') ||
+            url.includes('/failure') ||
+            url.toLowerCase().includes('status=failure');
+
+        if (isFailure) {
             console.log('Detected Failure URL:', url);
             paymentProcessedRef.current = true;
-            
+
             const response: PaymentResponse = {
                 status: 'failure',
                 txnid: getQueryParam(url, 'txnid') || paymentParams.txnid,
@@ -158,32 +185,64 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
                 firstname: paymentParams.firstname,
                 email: paymentParams.email,
                 phone: paymentParams.phone,
-                error_Message: getQueryParam(url, 'error_Message') || 'Payment failed',
+                error_Message:
+                    getQueryParam(url, 'error_Message') || 'Payment failed',
             };
-            onFailure(response);
+            setTimeout(() => onFailure(response), 100);
             return false; // Stop loading
         }
 
-        // Check for cancel URL
-        if (url.includes('payumoney://payu/cancel') || url.includes('/cancel')) {
+        // Check for cancel URL patterns
+        const isCancel =
+            url.includes('payu/cancel') ||
+            url.includes('/cancel') ||
+            url.toLowerCase().includes('status=cancel');
+
+        if (isCancel) {
             console.log('Detected Cancel URL:', url);
             paymentProcessedRef.current = true;
-            onCancel();
+            setTimeout(() => onCancel(), 100);
             return false; // Stop loading
         }
 
-        return true; // Continue loading
+        // Handle custom schemes (like upi://, whatsapp://, intent://)
+        if (
+            !url.startsWith('http://') &&
+            !url.startsWith('https://') &&
+            !url.startsWith('about:blank') &&
+            !url.startsWith('data:')
+        ) {
+            console.log('Detected custom scheme URL:', url);
+
+            // Try to open external app for custom schemes
+            Linking.canOpenURL(url)
+                .then((supported) => {
+                    if (supported) {
+                        Linking.openURL(url);
+                    } else {
+                        console.warn('No app supported for URL scheme:', url);
+                    }
+                })
+                .catch((err) =>
+                    console.error('Error handling custom scheme:', err),
+                );
+
+            return false; // Prevent WebView from trying to load the custom scheme
+        }
+
+        return true; // Continue loading for standard http/https URLs
     };
 
     return (
         <Modal
             visible={visible}
             animationType="slide"
-            onRequestClose={onCancel}
-        >
+            onRequestClose={onCancel}>
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
+                    <TouchableOpacity
+                        onPress={onCancel}
+                        style={styles.closeButton}>
                         <Ionicons name="close" size={24} color="#000" />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Payment</Text>
@@ -202,7 +261,10 @@ const PaymentWebView: React.FC<PaymentWebViewProps> = ({
                     onLoad={() => setLoading(false)}
                     onNavigationStateChange={handleNavigationChange}
                     onShouldStartLoadWithRequest={(request) => {
-                        console.log('Should start load with request:', request.url);
+                        console.log(
+                            'Should start load with request:',
+                            request.url,
+                        );
                         return handleResponseUrl(request.url);
                     }}
                     style={styles.webview}
