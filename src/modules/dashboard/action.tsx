@@ -416,7 +416,7 @@ function* Check_Vendor_Compatibility_Version_Api(
 
 function* Check_Vendor_Compatibility_Version_Api_Response(
     response: IResponseParam,
-    callBack: (data: { m_ServiceVersion: string; d: string }) => void,
+    callBack: (d: string) => void,
 ) {
     try {
         if (response && response.body) {
@@ -426,7 +426,6 @@ function* Check_Vendor_Compatibility_Version_Api_Response(
                // const parsedData = JSON.parse(responseData.d);
                 // Assuming parsedData is an array and we take the first element
                 // based on how other APIs are handled in this project
-                console.log(responseData.d , "fuwfifgihfwihfhi");
                 
                 const versionInfo = responseData.d;
                 callBack(versionInfo);
