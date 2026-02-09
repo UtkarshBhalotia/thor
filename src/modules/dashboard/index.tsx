@@ -42,6 +42,8 @@ import PaymentWebView from '../wallet/components/PaymentWebView';
 import { ActivityIndicator, Modal, StyleSheet } from 'react-native';
 import { useCallback } from 'react';
 import { RootStackParamList } from '../../navigations/navigation';
+import { APP_VERSION } from '../../services/env';
+import ForceUpdateScreen from './components/ForceUpdateScreen';
 
 const Dashboard = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -58,6 +60,7 @@ const Dashboard = (props: any) => {
         null,
     );
     const [minRechargeAmount, setMinRechargeAmount] = useState<string>('');
+    const [needsUpdate, setNeedsUpdate] = useState(false);
     const amountAsFloat = parseFloat(rechargeAmount) || 0;
     const baseAmount = amountAsFloat / 1.18;
     const totalGst = amountAsFloat - baseAmount;
@@ -186,29 +189,44 @@ const Dashboard = (props: any) => {
 
     const load = () => {
         setIsLoading(true);
-        props.dashboardActions('Get_All_Type_Vendor_Balance_Api', {
-            callBack: (data: {
-                walletBalance: string;
-                securityDeposit: string;
-                systemCharges: string;
-                totalNewLead: number;
-                totalOngoingLead: number;
-            }) => {
-                setWalletBalance(data.walletBalance);
-                setTotalSecurityDeposit({
-                    DepositeAmt: data.securityDeposit,
-                    MaintenanceAmt: data.systemCharges,
-                });
-                setReportStats((prev) => ({
-                    ...prev,
-                    new: data.totalNewLead,
-                    ongoing: data.totalOngoingLead,
-                }));
-                fetchReportData();
-                props.dashboardActions('Get_OnGoing_Services_List_Api', {
-                    callBack: (data: any) => {
-                        setAssignedServices(data);
-                        setIsLoading(false);
+        // ------checkVendorCompatibilityVersionHere ----------
+        props.dashboardActions('Check_Vendor_Compatibility_Version_Api', {
+            callBack: (versionInfo: string) => {
+                const serverVersion = versionInfo;
+                console.log('Version Check:', { serverVersion, localVersion: APP_VERSION });
+
+                if (serverVersion && serverVersion !== APP_VERSION) {
+                    setNeedsUpdate(true);
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Proceed with regular dashboard loading if version matches
+                props.dashboardActions('Get_All_Type_Vendor_Balance_Api', {
+                    callBack: (data: {
+                        walletBalance: string;
+                        securityDeposit: string;
+                        systemCharges: string;
+                        totalNewLead: number;
+                        totalOngoingLead: number;
+                    }) => {
+                        setWalletBalance(data.walletBalance);
+                        setTotalSecurityDeposit({
+                            DepositeAmt: data.securityDeposit,
+                            MaintenanceAmt: data.systemCharges,
+                        });
+                        setReportStats((prev) => ({
+                            ...prev,
+                            new: data.totalNewLead,
+                            ongoing: data.totalOngoingLead,
+                        }));
+                        fetchReportData();
+                        props.dashboardActions('Get_OnGoing_Services_List_Api', {
+                            callBack: (data: any) => {
+                                setAssignedServices(data);
+                                setIsLoading(false);
+                            },
+                        });
                     },
                 });
             },
@@ -607,6 +625,7 @@ const Dashboard = (props: any) => {
 
     return (
         <SafeAreaView style={dashboardStyles.container} edges={['top']}>
+            {needsUpdate && <ForceUpdateScreen />}
             <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent={true} />
 
             {/* Full Screen Loader */}

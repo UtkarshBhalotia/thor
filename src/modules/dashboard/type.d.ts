@@ -6,7 +6,8 @@ type TUserDashboardConditionParamActionName =
     | 'Get_New_Leads_List_Api'
     | 'Get_Completed_Services_List_Api'
     | 'Get_Lead_Detail_By_LeadId_Api'
-    | 'Get_Work_Report_For_Vendor_Api';
+    | 'Get_Work_Report_For_Vendor_Api'
+    | 'Check_Vendor_Compatibility_Version_Api';
 
 interface IUserDashboardActionConditionParam<
     T extends TUserDashboardConditionParamActionName,
@@ -56,6 +57,10 @@ type TUserGetWorkReportForVendorParam = {
     }) => void;
 };
 
+type TUserCheckVendorCompatibilityVersionParam = {
+    callBack: (versionInfo: string) => void;
+};
+
 type TUserDashboardConditionParamActionParam<
     T extends TUserDashboardConditionParamActionName,
 > = T extends 'Wallet_Balance_Api'
@@ -74,6 +79,8 @@ type TUserDashboardConditionParamActionParam<
     ? TUserGetLeadDetailByLeadIdParam
     : T extends 'Get_Work_Report_For_Vendor_Api'
     ? TUserGetWorkReportForVendorParam
+    : T extends 'Check_Vendor_Compatibility_Version_Api'
+    ? TUserCheckVendorCompatibilityVersionParam
     : never;
 
 interface IResponseParam {

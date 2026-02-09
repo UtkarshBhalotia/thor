@@ -47,6 +47,12 @@ export function* conditionActions<
                 actionParam as TUserGetWorkReportForVendorParam,
             );
             break;
+        case 'Check_Vendor_Compatibility_Version_Api':
+            yield call(
+                Check_Vendor_Compatibility_Version_Api,
+                actionParam as TUserCheckVendorCompatibilityVersionParam,
+            );
+            break;
     }
 }
 
@@ -391,4 +397,46 @@ function* GetWorkReportForVendorApi_Response(
             revenue: 0,
         });
     }
+}
+function* Check_Vendor_Compatibility_Version_Api(
+    actionParam: TUserCheckVendorCompatibilityVersionParam,
+) {
+    try {
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.getVendorAppCompatibilityVersionUrl,
+            data: {},
+        });
+
+        yield Check_Vendor_Compatibility_Version_Api_Response(
+            response,
+            actionParam.callBack,
+        );
+    } catch (error) { }
+}
+
+function* Check_Vendor_Compatibility_Version_Api_Response(
+    response: IResponseParam,
+    callBack: (data: { m_ServiceVersion: string; d: string }) => void,
+) {
+    try {
+        if (response && response.body) {
+            const responseData = response.body;
+
+            if (responseData.d !== '') {
+               // const parsedData = JSON.parse(responseData.d);
+                // Assuming parsedData is an array and we take the first element
+                // based on how other APIs are handled in this project
+                console.log(responseData.d , "fuwfifgihfwihfhi");
+                
+                const versionInfo = responseData.d;
+                callBack(versionInfo);
+            } else {
+                showToast({
+                    type: 'error',
+                    text1: 'Failed to verify app version',
+                    visibilityTime: 2000,
+                });
+            }
+        }
+    } catch (error) { }
 }

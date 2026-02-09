@@ -13,6 +13,7 @@ export const NEW_URL = ENV === 'dev' ? 'https://testcrm.dooda.in/api' : 'https:/
 
 export const BaseUrl = BASE_ENV[ENV].API_HOST;
 export const Comp_State_ID = 8;
+export const APP_VERSION = '2.1';
 
 const apiListing = {
     loginUrl: `${BaseUrl}ValidateMobileUserPartner`,
@@ -45,6 +46,7 @@ const apiListing = {
     insertReComplaintCompletedByVendorUrl: `${BaseUrl}ReComplaintCompletedByVendor`,
     updateVendorProfileUrl: `${BaseUrl}UpdateVendorProfile`,
     mapCityListByVendorUrl: `${BaseUrl}MapCityListByVendor`,
+    getVendorAppCompatibilityVersionUrl: `${BaseUrl}VendorAppCompatibilityVersion`,
 
     getAllTypeVendorBalanceUrl: `${NEW_URL}/get_all_type_vendor_balance`,
     getVendorLedgerWithOpeningBalanceUrl: `${NEW_URL}/vendor_ledger_with_opening_bal`,

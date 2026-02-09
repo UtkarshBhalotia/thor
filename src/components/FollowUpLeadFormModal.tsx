@@ -135,7 +135,7 @@ const FollowUpLeadFormModal = forwardRef<
     const dateOptions = generateDateOptions();
 
     // Snap points: if others selected (keyboard shown), expand to 90% or 100%. Else ~60-70%
-    const snapPoints = isOthersSelected ? ['90%'] : ['70%'];
+    const snapPoints = isOthersSelected ? ['90%'] : ['80%'];
 
     return (
         <>
