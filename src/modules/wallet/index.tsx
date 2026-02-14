@@ -42,6 +42,10 @@ import WalletCard from '../dashboard/components/WalletCard';
 import { dashboardStyles } from '../../assets/css/dashboardStyles';
 import { Comp_State_ID } from '../../services/env';
 import RechargeModalContent from './components/RechargeModalContent';
+import UpiPaymentMethodSelector, { UpiApp } from './components/UpiPaymentMethodSelector';
+import { UpiPaymentService } from '../../services/upiPaymentService';
+import { PaymentVerificationService } from '../../services/paymentVerificationService';
+import { Linking } from 'react-native';
 
 const Wallet = (props: any) => {
     console.log(props, 'Props');
@@ -50,9 +54,11 @@ const Wallet = (props: any) => {
     const isFocused = useIsFocused();
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
     const [showPaymentWebView, setShowPaymentWebView] = useState(false);
+    const [showUpiSelector, setShowUpiSelector] = useState(false);
     const [paymentParams, setPaymentParams] = useState<PayUMoneyParams | null>(
         null,
     );
+    const [pendingPaymentAmount, setPendingPaymentAmount] = useState<string>('');
     // State management
     const [walletBalance, setWalletBalance] = useState('');
     const [openingBalance, setOpeningBalance] = useState('');
@@ -95,6 +101,29 @@ const Wallet = (props: any) => {
             };
         }
     }, [isFocused]);
+
+    // Setup deep link listener for UPI payment returns
+    useEffect(() => {
+        // Handle initial URL (if app was opened via deep link)
+        Linking.getInitialURL().then((url) => {
+            if (url) {
+                console.log('Initial URL:', url);
+                PaymentVerificationService.handleDeepLinkReturn(url);
+            }
+        });
+
+        // Listen for deep link events while app is running
+        const subscription = Linking.addEventListener('url', (event) => {
+            console.log('Deep link event:', event.url);
+            PaymentVerificationService.handleDeepLinkReturn(event.url);
+        });
+
+        // Cleanup
+        return () => {
+            subscription.remove();
+            PaymentVerificationService.stopPaymentMonitoring();
+        };
+    }, []);
 
 
     const onDateChange = (date: any) => {
@@ -238,9 +267,10 @@ const Wallet = (props: any) => {
 
                         console.log('PayUMoney Payment Params with Backend Hash:', paymentParams);
 
-                        // Step 3: Show WebView
+                        // Step 3: Store payment params and show UPI selector
                         setPaymentParams(paymentParams);
-                        setShowPaymentWebView(true);
+                        setPendingPaymentAmount(amount.toString());
+                        setShowUpiSelector(true);
                     } else {
                         Toast.show({
                             type: 'error',
@@ -339,6 +369,129 @@ const Wallet = (props: any) => {
 
     const handlePaymentCancel = () => {
         setShowPaymentWebView(false);
+
+        Toast.show({
+            type: 'info',
+            text1: 'Payment Cancelled',
+            text2: 'You cancelled the payment',
+            visibilityTime: 2000,
+        });
+    };
+
+    const verifyUpiPayment = useCallback((txnid: string) => {
+        console.log('Verifying UPI payment for txnid:', txnid);
+
+        // Call your backend API to verify payment status
+        // You'll need to add this action to your wallet actions
+        props.walletActions('Verify_Payment_Status_Api', {
+            txnid: txnid,
+            callBack: (success: boolean, response: any) => {
+                if (success && response.status === 'success') {
+                    // Payment successful
+                    PaymentVerificationService.stopPaymentMonitoring();
+                    
+                    Toast.show({
+                        type: 'success',
+                        text1: 'Payment Successful',
+                        text2: `Payment of ₹${pendingPaymentAmount} completed successfully`,
+                        visibilityTime: 3000,
+                    });
+
+                    // Reload wallet balance
+                    load();
+                    
+                    // Clear payment params
+                    setPaymentParams(null);
+                    setPendingPaymentAmount('');
+                } else if (response?.status === 'failed') {
+                    // Payment failed
+                    PaymentVerificationService.stopPaymentMonitoring();
+                    
+                    Toast.show({
+                        type: 'error',
+                        text1: 'Payment Failed',
+                        text2: response.message || 'Payment was not successful',
+                        visibilityTime: 3000,
+                    });
+                    
+                    // Clear payment params
+                    setPaymentParams(null);
+                    setPendingPaymentAmount('');
+                } else {
+                    // Payment still pending - continue polling
+                    console.log('Payment still pending, will retry...');
+                }
+            },
+        });
+    }, [props.walletActions, pendingPaymentAmount, load]);
+
+
+    const handleUpiAppSelect = async (app: UpiApp) => {
+        console.log('Selected UPI app:', app.name);
+        setShowUpiSelector(false);
+
+        if (!paymentParams) {
+            Toast.show({
+                type: 'error',
+                text1: 'Payment Error',
+                text2: 'Payment parameters not found',
+                visibilityTime: 2000,
+            });
+            return;
+        }
+
+        // Launch UPI app with payment intent
+        const result = await UpiPaymentService.launchUpiApp(app, {
+            vpa: 'payu@payu', // Replace with your actual PayU VPA
+            name: 'PayU',
+            amount: pendingPaymentAmount,
+            transactionId: paymentParams.txnid,
+            transactionNote: paymentParams.productinfo,
+        });
+
+        if (!result.success) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: result.error || 'Failed to open UPI app',
+                visibilityTime: 3000,
+            });
+            // Show UPI selector again
+            setShowUpiSelector(true);
+        } else {
+            // UPI app opened successfully
+            Toast.show({
+                type: 'info',
+                text1: 'Complete Payment',
+                text2: 'Please complete the payment in the UPI app',
+                visibilityTime: 3000,
+            });
+
+            // Start monitoring for payment completion
+            PaymentVerificationService.startPaymentMonitoring(
+                paymentParams.txnid,
+                (txnid) => {
+                    // This callback will be called when app comes to foreground
+                    // or periodically to verify payment status
+                    verifyUpiPayment(txnid);
+                },
+                20, // Poll for ~2 minutes (20 attempts * 6 seconds)
+            );
+        }
+    };
+
+
+    const handleUpiOthersSelect = () => {
+        console.log('Selected Others - Opening WebView');
+        setShowUpiSelector(false);
+        setShowPaymentWebView(true);
+    };
+
+    const handleUpiCancel = () => {
+        console.log('UPI selector cancelled');
+        setShowUpiSelector(false);
+        setPaymentParams(null);
+        setPendingPaymentAmount('');
 
         Toast.show({
             type: 'info',
@@ -579,6 +732,22 @@ const Wallet = (props: any) => {
                     userStateId={props.globalState?.stateId}
                 />
             </BSModal>
+
+            {/* UPI Payment Method Selector */}
+            {
+                paymentParams && (
+                    <UpiPaymentMethodSelector
+                        visible={showUpiSelector}
+                        amount={pendingPaymentAmount}
+                        vpa="payu@payu"
+                        transactionId={paymentParams.txnid}
+                        merchantName="PayU"
+                        onSelectUpiApp={handleUpiAppSelect}
+                        onSelectOthers={handleUpiOthersSelect}
+                        onCancel={handleUpiCancel}
+                    />
+                )
+            }
 
             {/* Payment WebView Modal */}
             {
