@@ -40,13 +40,16 @@ function* UserAuth_login_Api(param: TUserLoginParam) {
             data: dataObj,
         });
         console.log('response', response);
-        yield UserAuth_login_Api_Response(response, param.callBack);
+        yield UserAuth_login_Api_Response(response, param.callBack, param.errorCallback);
     } catch (error) {
         console.log('UserAuth_login_Api error', error);
+        if (param.errorCallback) {
+            param.errorCallback();
+        }
     }
 }
 
-function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
+function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any, errorCallback?: () => void) {
     try {
 
         const GlobalState: IGlobalInitialState = yield select(
@@ -65,6 +68,9 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                     text1: responseData.d,
                     visibilityTime: 5000,
                 });
+                if (errorCallback) {
+                    errorCallback();
+                }
                 return;
             }
 
@@ -94,6 +100,9 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                         text1: 'Admin Login Not Allowed',
                         visibilityTime: 5000,
                     });
+                    if (errorCallback) {
+                        errorCallback();
+                    }
                     return;
                 }
 
@@ -118,6 +127,9 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                     text1: 'No user data found',
                     visibilityTime: 2000,
                 });
+                if (errorCallback) {
+                    errorCallback();
+                }
             }
         } else {
             showToast({
@@ -125,9 +137,15 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                 text1: 'No response from server',
                 visibilityTime: 2000,
             });
+            if (errorCallback) {
+                errorCallback();
+            }
         }
     } catch (error) {
         console.log('UserAuth_login_Api_Response error', error);
+        if (errorCallback) {
+            errorCallback();
+        }
     }
 }
 

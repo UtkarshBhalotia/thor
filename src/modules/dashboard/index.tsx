@@ -52,6 +52,8 @@ const Dashboard = (props: any) => {
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
     const [rechargeAmount, setRechargeAmount] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const isInitialLoadRef = React.useRef(true);
+    const lastRefreshTimeRef = React.useRef<number>(0);
     const [selectedGateway, setSelectedGateway] = useState<
         'payumoney' | 'razorpay'
     >('payumoney');
@@ -134,8 +136,8 @@ const Dashboard = (props: any) => {
         const handleBackPress = () => {
             if (isFocused) {
                 Alert.alert(
-                    'Exit Application',
-                    'Are you sure you want to logout?',
+                    'Exit App',
+                    'Exiting the application?',
                     [
                         {
                             text: 'Cancel',
@@ -144,7 +146,7 @@ const Dashboard = (props: any) => {
                         },
                         {
                             text: 'OK',
-                            onPress: () => handleLogout(),
+                            onPress: () => BackHandler.exitApp(),
                         },
                     ],
                     { cancelable: false }
@@ -179,7 +181,25 @@ const Dashboard = (props: any) => {
     useEffect(() => {
         if (isFocused) {
             const task = InteractionManager.runAfterInteractions(() => {
-                load();
+                const now = Date.now();
+                const timeSinceLastRefresh = now - lastRefreshTimeRef.current;
+                const REFRESH_THROTTLE = 30000; // 30 seconds
+
+                // Always load on initial mount
+                if (isInitialLoadRef.current) {
+                    load(true);
+                    isInitialLoadRef.current = false;
+                    lastRefreshTimeRef.current = now;
+                } 
+                // Only refresh if more than 30 seconds have passed
+                else if (timeSinceLastRefresh > REFRESH_THROTTLE) {
+                    load(false);
+                    lastRefreshTimeRef.current = now;
+                }
+                // Otherwise, just silently refresh ongoing services without loader
+                else {
+                    refreshOngoingServices();
+                }
             });
             return () => {
                 task.cancel();
@@ -187,8 +207,10 @@ const Dashboard = (props: any) => {
         }
     }, [isFocused]);
 
-    const load = () => {
-        setIsLoading(true);
+    const load = (showLoader: boolean = true) => {
+        if (showLoader) {
+            setIsLoading(true);
+        }
         // ------checkVendorCompatibilityVersionHere ----------
         props.dashboardActions('Check_Vendor_Compatibility_Version_Api', {
             callBack: (versionInfo: string) => {
@@ -197,7 +219,9 @@ const Dashboard = (props: any) => {
 
                 if (serverVersion && serverVersion !== APP_VERSION) {
                     setNeedsUpdate(true);
-                    setIsLoading(false);
+                    if (showLoader) {
+                        setIsLoading(false);
+                    }
                     return;
                 }
 
@@ -224,7 +248,9 @@ const Dashboard = (props: any) => {
                         props.dashboardActions('Get_OnGoing_Services_List_Api', {
                             callBack: (data: any) => {
                                 setAssignedServices(data);
-                                setIsLoading(false);
+                                if (showLoader) {
+                                    setIsLoading(false);
+                                }
                             },
                         });
                     },

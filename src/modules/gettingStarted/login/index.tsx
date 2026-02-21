@@ -5,6 +5,7 @@ import {
     TouchableOpacity,
     StatusBar,
     Keyboard,
+    ActivityIndicator,
 } from 'react-native';
 
 import { Platform } from 'react-native';
@@ -36,6 +37,7 @@ import { getFcmToken } from '../../../utils/FirebaseNotifications';
 const Login = (props: any) => {
     const insets = useSafeAreaInsets();
     const [isPasswordSecure, setIsPasswordSecure] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const forgotPasswordModalRef = React.useRef<BottomSheetModal>(null);
     const [forgotPasswordMobile, setForgotPasswordMobile] = useState('');
@@ -77,12 +79,17 @@ const Login = (props: any) => {
     }, [email_watch, password_watch, errors.email, errors.password]);
 
     const onLoginPress = async (data: { email: string; password: string }) => {
+        setIsLoading(true);
         const fcmToken = await getFcmToken();
         props.loginActions('UserAuth_Login_Api', {
             ...data,
             fcmTokenID: fcmToken || '',
             callBack: () => {
+                setIsLoading(false);
                 navigation.navigate('HomeTabs', { screen: 'Home' });
+            },
+            errorCallback: () => {
+                setIsLoading(false);
             },
         });
     };
@@ -245,15 +252,19 @@ const Login = (props: any) => {
                             {/* Login Button */}
                             <TouchableOpacity
                                 style={
-                                    disableFn()
+                                    disableFn() || isLoading
                                         ? loginStyles.loginButtonDisabled
                                         : loginStyles.loginButton
                                 }
-                                disabled={disableFn()}
+                                disabled={disableFn() || isLoading}
                                 onPress={handleSubmit(onLoginPress)}>
-                                <Text style={loginStyles.loginButtonText}>
-                                    LOGIN
-                                </Text>
+                                {isLoading ? (
+                                    <ActivityIndicator size="small" color="#FFFFFF" />
+                                ) : (
+                                    <Text style={loginStyles.loginButtonText}>
+                                        LOGIN
+                                    </Text>
+                                )}
                             </TouchableOpacity>
                         </FormProvider>
                     </View>

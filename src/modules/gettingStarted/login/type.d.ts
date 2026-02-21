@@ -29,6 +29,7 @@ type TUserLoginParam = {
     fcmTokenID: string;
 
     callBack: () => void;
+    errorCallback?: () => void;
 };
 
 type TUserForgotPasswordParam = {
