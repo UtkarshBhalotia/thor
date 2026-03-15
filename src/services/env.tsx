@@ -66,6 +66,8 @@ const apiListing = {
     getAllLeadListUrl: `${BaseUrl}GetAllLeadList`,
     getLeadHistoryDetUrl: `${BaseUrl}GetLeadHistory`,
     getWorkReportForAdminUrl: `${BaseUrl}GetWorkReportForAdmin`,
+    getUserListByCityAndStateUrl: `${BaseUrl}GetUserListByCityAndState`,
+
 };
 
 const projectEnv = {

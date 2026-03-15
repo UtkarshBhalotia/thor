@@ -7,6 +7,7 @@ import * as register from '../../src/modules/gettingStarted/register/action';
 import * as report from '../../src/modules/report/action';
 import * as idVerification from '../../src/modules/idVerification/action';
 import * as leadHistory from '../../src/modules/admin/leadHistory/action';
+import * as partnerList from '../../src/modules/admin/partnerList/action';
 
 export function* rootActions() {
     try {
@@ -18,6 +19,7 @@ export function* rootActions() {
         yield takeEvery('Report_Actions', report.conditionActions);
         yield takeEvery('IdVerification_Actions', idVerification.conditionActions);
         yield takeEvery('LeadHistory_Actions', leadHistory.conditionActions);
+        yield takeEvery('PartnerList_Actions', partnerList.conditionActions);
     } catch (error) { }
 }
 

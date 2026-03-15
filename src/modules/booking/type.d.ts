@@ -1,4 +1,4 @@
-type TUserBookingConditionParamActionName =
+export type TUserBookingConditionParamActionName =
     | 'Get_Leads_List_Api'
     | 'Get_Lead_Detail_By_LeadId_Api'
     | 'Accept_Lead_By_Vendor_Api'
@@ -66,7 +66,7 @@ type TGetFollowUpReasonListParam = {
     callBack: (data: any[]) => void;
 };
 
-type TUserBookingConditionParamActionParam<
+export type TUserBookingConditionParamActionParam<
     T extends TUserBookingConditionParamActionName,
 > = T extends 'Get_Leads_List_Api'
     ? TUserGetLeadsListParam
