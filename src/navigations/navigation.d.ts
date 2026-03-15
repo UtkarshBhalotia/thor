@@ -29,7 +29,7 @@ export type AdminTabParamList = {
     AdminLeadList: undefined;
     AdminPartnerList: undefined;
     AdminLeadHistory: undefined;
-    AdminMore: undefined;
+    AdminReport: undefined;
 };
 
 export type TabParamList = {

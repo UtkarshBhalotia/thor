@@ -24,7 +24,7 @@ import AdminDashboard from '../modules/admin/dashboard';
 import AdminLeadList from '../modules/admin/leadList';
 import AdminPartnerList from '../modules/admin/partnerList';
 import AdminLeadHistory from '../modules/admin/leadHistory';
-import AdminMore from '../modules/admin/more';
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -115,8 +115,8 @@ const AdminTabs = () => {
                         iconName = focused ? 'people' : 'people-outline';
                     } else if (route.name === 'AdminLeadHistory') {
                         iconName = focused ? 'time' : 'time-outline';
-                    } else if (route.name === 'AdminMore') {
-                        iconName = focused ? 'menu' : 'menu-outline';
+                    } else if (route.name === 'AdminReport') {
+                        iconName = focused ? 'stats-chart' : 'stats-chart-outline';
                     }
                     return (
                         <Ionicons name={iconName} size={size} color={color} />
@@ -158,9 +158,9 @@ const AdminTabs = () => {
                 options={{ tabBarLabel: 'Lead History' }}
             />
             <AdminTab.Screen
-                name="AdminMore"
-                component={AdminMore}
-                options={{ tabBarLabel: 'More' }}
+                name="AdminReport"
+                component={Report}
+                options={{ tabBarLabel: 'Report' }}
             />
         </AdminTab.Navigator>
     );

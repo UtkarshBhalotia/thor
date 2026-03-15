@@ -36,13 +36,17 @@ function* GetWorkReportForVendorApi(
             (state: RootState) => state.globalState,
         );
 
+        const userType = (actionParam.userType || GlobalState.userType || '').trim().toUpperCase();
+        const isAdmin = userType === 'A' || userType === 'ADMIN';
+        const url = isAdmin ? projectEnv.getWorkReportForAdminUrl : projectEnv.getReportForVendorUrl;
+
         const dataObj = {
             FromDate: actionParam.fromDate,
             ToDate: actionParam.toDate,
             UserID: GlobalState.userId,
         };
         const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getReportForVendorUrl,
+            url: url,
             data: dataObj,
         });
 

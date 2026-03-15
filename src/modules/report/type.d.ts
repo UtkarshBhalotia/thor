@@ -23,6 +23,7 @@ export type TReportData = {
 export type TUserGetWorkReportForVendorParam = {
     fromDate: string;
     toDate: string;
+    userType?: string;
     callBack: (data: TReportData) => void;
 };
 

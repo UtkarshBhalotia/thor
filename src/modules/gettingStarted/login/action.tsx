@@ -95,6 +95,11 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any, e
                 };
 
                 if (userInfo.userType === 'A') {
+                    // Update global state for Admin
+                    yield put({
+                        type: 'GLOBAL_STATE_MUTATE',
+                        value: userInfo,
+                    });
                     // Save admin user info to AsyncStorage
                     yield setItem(STORAGE_KEYS.USER_INFO, userInfo);
                     callBack(userInfo);
