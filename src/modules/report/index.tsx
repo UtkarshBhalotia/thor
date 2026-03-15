@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { reportStyles } from '../../assets/css/reportStyles';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigations/navigation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CalendarPicker from 'react-native-calendar-picker';
@@ -80,12 +80,14 @@ const Report = (props: any) => {
         });
     };
 
-    useEffect(() => {
-        const task = InteractionManager.runAfterInteractions(() => {
-            handleGenerateReport();
-        });
-        return () => task.cancel();
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            const task = InteractionManager.runAfterInteractions(() => {
+                handleGenerateReport();
+            });
+            return () => task.cancel();
+        }, [])
+    );
 
     const onDateChange = (date: any) => {
         const selectedDate = new Date(date);

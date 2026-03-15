@@ -102,15 +102,7 @@ const AdminPartnerList = () => {
         }
     }, [watchedValues.state, states]);
 
-    useFocusEffect(
-        useCallback(() => {
-            return () => {
-                dispatch({ type: 'PARTNER_LIST_RESET' });
-            };
-        }, [dispatch])
-    );
-
-    const handleSearch = () => {
+    const handleSearch = useCallback(() => {
         const stateName = watchedValues.state;
         const cityName = watchedValues.city;
         const serviceName = watchedValues.service;
@@ -131,7 +123,18 @@ const AdminPartnerList = () => {
                 ServiceType: serviceObj ? serviceObj.id : '0',
             }
         });
-    };
+    }, [watchedValues, states, cities, serviceTypes, partnerListActions]);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (watchedValues.state && watchedValues.state !== 'Select State') {
+                handleSearch();
+            }
+            return () => {
+                dispatch({ type: 'PARTNER_LIST_RESET' });
+            };
+        }, [dispatch, handleSearch, watchedValues.state])
+    );
 
     return (
         <FormProvider {...methods}>
