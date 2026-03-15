@@ -6,6 +6,7 @@ import * as booking from '../../src/modules/booking/action';
 import * as register from '../../src/modules/gettingStarted/register/action';
 import * as report from '../../src/modules/report/action';
 import * as idVerification from '../../src/modules/idVerification/action';
+import * as leadHistory from '../../src/modules/admin/leadHistory/action';
 
 export function* rootActions() {
     try {
@@ -16,6 +17,7 @@ export function* rootActions() {
         yield takeEvery('Register_Actions', register.conditionActions);
         yield takeEvery('Report_Actions', report.conditionActions);
         yield takeEvery('IdVerification_Actions', idVerification.conditionActions);
+        yield takeEvery('LeadHistory_Actions', leadHistory.conditionActions);
     } catch (error) { }
 }
 

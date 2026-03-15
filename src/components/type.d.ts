@@ -23,6 +23,7 @@ type TInputFieldProps = {
     minHeight?: number;
     disallowUnicode?: boolean;
     autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+    gradientColors?: string[];
 };
 
 type BSModalProps = {

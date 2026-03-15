@@ -16,7 +16,8 @@ export const Comp_State_ID = 8;
 export const APP_VERSION = '2.1';
 
 const apiListing = {
-    loginUrl: `${BaseUrl}ValidateMobileUserPartner`,
+    loginUrl: `${BaseUrl}ValidateMobileUser`,
+    loginUrlPartner: `${BaseUrl}ValidateMobileUserPartner`,
     registerUrl: `${BaseUrl}InsertUserMaster`,
     getStateListUrl: `${BaseUrl}GetAllActiveStateList`,
     getCityListUrl: `${BaseUrl}GetAllActiveCityList`,
@@ -61,6 +62,9 @@ const apiListing = {
     // PayUMoney endpoints (mock for now, replace with actual backend endpoints when available)
     initiatePaymentUrl: `${BaseUrl}InitiatePayment`, // Will generate payment hash on backend
     verifyPaymentUrl: `${BaseUrl}VerifyPayment`, // Will verify payment with PayUMoney
+
+    getAllLeadListUrl: `${BaseUrl}GetAllLeadList`,
+    getLeadHistoryDetUrl: `${BaseUrl}GetLeadHistory`,
 };
 
 const projectEnv = {

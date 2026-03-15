@@ -19,10 +19,16 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getItem, STORAGE_KEYS } from '../utils/storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import type { RootStackParamList, TabParamList } from './navigation';
+import type { RootStackParamList, TabParamList, AdminTabParamList } from './navigation';
+import AdminDashboard from '../modules/admin/dashboard';
+import AdminLeadList from '../modules/admin/leadList';
+import AdminPartnerList from '../modules/admin/partnerList';
+import AdminLeadHistory from '../modules/admin/leadHistory';
+import AdminMore from '../modules/admin/more';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
+const AdminTab = createBottomTabNavigator<AdminTabParamList>();
 
 // Bottom Tab Navigator Component
 const HomeTabs = () => {
@@ -93,6 +99,73 @@ const HomeTabs = () => {
     );
 };
 
+// Admin Bottom Tab Navigator Component
+const AdminTabs = () => {
+    return (
+        <AdminTab.Navigator
+            screenOptions={({ route }) => ({
+                headerShown: false,
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName: string = 'home';
+                    if (route.name === 'AdminDashboard') {
+                        iconName = focused ? 'home' : 'home-outline';
+                    } else if (route.name === 'AdminLeadList') {
+                        iconName = focused ? 'document-text' : 'document-text-outline';
+                    } else if (route.name === 'AdminPartnerList') {
+                        iconName = focused ? 'people' : 'people-outline';
+                    } else if (route.name === 'AdminLeadHistory') {
+                        iconName = focused ? 'time' : 'time-outline';
+                    } else if (route.name === 'AdminMore') {
+                        iconName = focused ? 'menu' : 'menu-outline';
+                    }
+                    return (
+                        <Ionicons name={iconName} size={size} color={color} />
+                    );
+                },
+                tabBarActiveTintColor: '#0A8485',
+                tabBarInactiveTintColor: '#8E8E93',
+                tabBarStyle: {
+                    backgroundColor: '#FFFFFF',
+                    borderTopWidth: 1,
+                    borderTopColor: '#E5E5EA',
+                    height: 60,
+                    paddingBottom: 8,
+                    paddingTop: 8,
+                },
+                tabBarLabelStyle: {
+                    fontSize: 12,
+                    fontWeight: '600',
+                },
+            })}>
+            <AdminTab.Screen
+                name="AdminDashboard"
+                component={AdminDashboard}
+                options={{ tabBarLabel: 'Home' }}
+            />
+            <AdminTab.Screen
+                name="AdminLeadList"
+                component={AdminLeadList}
+                options={{ tabBarLabel: 'Lead List' }}
+            />
+            <AdminTab.Screen
+                name="AdminPartnerList"
+                component={AdminPartnerList}
+                options={{ tabBarLabel: 'Partner List' }}
+            />
+            <AdminTab.Screen
+                name="AdminLeadHistory"
+                component={AdminLeadHistory}
+                options={{ tabBarLabel: 'Lead History' }}
+            />
+            <AdminTab.Screen
+                name="AdminMore"
+                component={AdminMore}
+                options={{ tabBarLabel: 'More' }}
+            />
+        </AdminTab.Navigator>
+    );
+};
+
 const MainNavigator = () => {
     const [showWelcomeScreen, setShowWelcomeScreen] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
@@ -121,7 +194,7 @@ const MainNavigator = () => {
 
     return (
         <Stack.Navigator
-            initialRouteName={userExists ? 'HomeTabs' : 'Onboarding'}>
+            initialRouteName={userExists ? (globalState.userType === 'A' ? 'AdminTabs' : 'HomeTabs') : 'Onboarding'}>
             <Stack.Group>
                 <Stack.Screen
                     name="Onboarding"
@@ -141,6 +214,11 @@ const MainNavigator = () => {
                 <Stack.Screen
                     name="HomeTabs"
                     component={HomeTabs}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="AdminTabs"
+                    component={AdminTabs}
                     options={{ headerShown: false }}
                 />
                 {/* Keep individual screens for direct navigation if needed */}

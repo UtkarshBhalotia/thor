@@ -84,9 +84,13 @@ const Login = (props: any) => {
         props.loginActions('UserAuth_Login_Api', {
             ...data,
             fcmTokenID: fcmToken || '',
-            callBack: () => {
+            callBack: (userInfo: any) => {
                 setIsLoading(false);
-                navigation.navigate('HomeTabs', { screen: 'Home' });
+                if (userInfo?.userType === 'A') {
+                    navigation.navigate('AdminTabs', { screen: 'AdminDashboard' });
+                } else {
+                    navigation.navigate('HomeTabs', { screen: 'Home' });
+                }
             },
             errorCallback: () => {
                 setIsLoading(false);

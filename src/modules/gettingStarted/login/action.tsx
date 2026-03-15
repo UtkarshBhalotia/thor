@@ -95,14 +95,9 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any, e
                 };
 
                 if (userInfo.userType === 'A') {
-                    showToast({
-                        type: 'error',
-                        text1: 'Admin Login Not Allowed',
-                        visibilityTime: 5000,
-                    });
-                    if (errorCallback) {
-                        errorCallback();
-                    }
+                    // Save admin user info to AsyncStorage
+                    yield setItem(STORAGE_KEYS.USER_INFO, userInfo);
+                    callBack(userInfo);
                     return;
                 }
 
@@ -120,7 +115,7 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any, e
                 // Save user info to AsyncStorage for persistence
                 yield setItem(STORAGE_KEYS.USER_INFO, userInfo);
 
-                callBack();
+                callBack(userInfo);
             } else {
                 showToast({
                     type: 'error',

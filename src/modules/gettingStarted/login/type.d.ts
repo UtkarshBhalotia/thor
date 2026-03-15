@@ -28,7 +28,7 @@ type TUserLoginParam = {
     password: string;
     fcmTokenID: string;
 
-    callBack: () => void;
+    callBack: (userInfo: any) => void;
     errorCallback?: () => void;
 };
 

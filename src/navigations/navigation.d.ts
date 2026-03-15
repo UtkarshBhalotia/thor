@@ -21,6 +21,15 @@ export type RootStackParamList = {
         citiesWithCheckbox?: { name: string; isChecked: boolean }[];
         onSave: (data: { state: string; city: string; citiesWithCheckbox: { name: string; isChecked: boolean }[] }) => void;
     };
+    AdminTabs: NavigatorScreenParams<AdminTabParamList>;
+};
+
+export type AdminTabParamList = {
+    AdminDashboard: undefined;
+    AdminLeadList: undefined;
+    AdminPartnerList: undefined;
+    AdminLeadHistory: undefined;
+    AdminMore: undefined;
 };
 
 export type TabParamList = {
