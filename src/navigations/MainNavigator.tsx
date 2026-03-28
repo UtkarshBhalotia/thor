@@ -14,6 +14,7 @@ import ChangePassword from '../modules/changePassword';
 import Onboarding from '../modules/gettingStarted/onboarding';
 import Report from '../modules/report';
 import IdVerification from '../modules/idVerification';
+import Invoice from '../modules/invoice';
 import WebViewScreen from '../components/WebViewScreen';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getItem, STORAGE_KEYS } from '../utils/storage';
@@ -260,6 +261,11 @@ const MainNavigator = () => {
                 <Stack.Screen
                     name="Report"
                     component={Report}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                    name="Invoice"
+                    component={Invoice}
                     options={{ headerShown: false }}
                 />
                 <Stack.Screen

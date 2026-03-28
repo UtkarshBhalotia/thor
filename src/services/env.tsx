@@ -67,6 +67,7 @@ const apiListing = {
     getLeadHistoryDetUrl: `${BaseUrl}GetLeadHistory`,
     getWorkReportForAdminUrl: `${BaseUrl}GetWorkReportForAdmin`,
     getUserListByCityAndStateUrl: `${BaseUrl}GetUserListByCityAndState`,
+    getInvoiceDetailsUrl: `${BaseUrl}GetInvoiceDetailsForApp`,
 
 };
 

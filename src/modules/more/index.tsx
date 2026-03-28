@@ -30,6 +30,10 @@ const More = () => {
             navigation.navigate('Report');
             return;
         }
+        if (title === 'Tax invoice') {
+            navigation.navigate('Invoice');
+            return;
+        }
         if (title === 'Document verification') {
             navigation.navigate('IdVerification');
             return;
@@ -87,7 +91,7 @@ const More = () => {
     };
 
     const businessMenu = [
-        // { title: 'Tax invoice', ionicon: 'receipt-outline' },
+        { title: 'Tax invoice', ionicon: 'receipt-outline' },
         { title: 'Report', ionicon: 'bar-chart-outline' },
     ];
 

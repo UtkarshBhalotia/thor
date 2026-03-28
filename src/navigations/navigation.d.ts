@@ -13,8 +13,9 @@ export type RootStackParamList = {
     More: undefined;
     ChangePassword: undefined;
     Report: undefined;
+    Invoice: undefined;
     IdVerification: undefined;
-    WebViewScreen: { url: string; title: string };
+    WebViewScreen: { url?: string; html?: string; title: string };
     ServiceLocation: {
         state?: string;
         city?: string;

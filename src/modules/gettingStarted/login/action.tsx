@@ -5,6 +5,7 @@ import { clientPostHandler } from '../../../services/request';
 import { showToast } from '../../../utils/common';
 import { globalReducer_dispatch } from '../../../../store/reducer/mainTypedReducer';
 import { setItem, STORAGE_KEYS } from '../../../utils/storage';
+import { TUserLoginConditionParamActionName, IUserLoginActionConditionParam, TUserLoginParam, TUserForgotPasswordParam, TUpdateUserPasswordParam, IResponseParam } from './type';
 
 export function* conditionActions<T extends TUserLoginConditionParamActionName>(
     param: IUserLoginActionConditionParam<T>,
@@ -36,7 +37,7 @@ function* UserAuth_login_Api(param: TUserLoginParam) {
             FCMTokenID: param.fcmTokenID,
         };
         const response: IResponseParam = yield call(clientPostHandler, {
-            url: `${projectEnv.loginUrl}`,
+            url: `${projectEnv.loginUrlPartner}`,
             data: dataObj,
         });
         console.log('response', response);
@@ -169,13 +170,8 @@ function* ForgotPassword_Api_Response(response: IResponseParam, callBack?: () =>
         if (response && response.body) {
             const responseData = response.body;
 
-            if (responseData.d) {
-                const parsedData = typeof responseData.d === 'string'
-                    ? JSON.parse(responseData.d)
-                    : responseData.d;
-
-                if (parsedData.status === true || parsedData.Status === true || parsedData.d === 'Success') {
-                    showToast({
+             if (responseData.d === '1') {
+                 showToast({
                         type: 'success',
                         text1: 'Password has been sent to your registered phone number.',
                         visibilityTime: 2000,
@@ -184,14 +180,7 @@ function* ForgotPassword_Api_Response(response: IResponseParam, callBack?: () =>
                     if (callBack) {
                         callBack();
                     }
-                } else {
-                    const errorMessage = parsedData.message || parsedData.Message || 'Something went wrong. Please try again.';
-                    showToast({
-                        type: 'error',
-                        text1: errorMessage,
-                        visibilityTime: 2000,
-                    });
-                }
+                return;
             } else {
                 showToast({
                     type: 'error',
