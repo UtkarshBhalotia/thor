@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StatusBar, StyleSheet, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -29,8 +29,8 @@ const AdminPartnerList = () => {
     const watchedValues = useWatch({ control });
 
     // Connected Actions
-    const partnerListActions = partnerListActions_dispatch(dispatch);
-    const registerActions = registerActions_dispatch(dispatch);
+    const partnerListActions = useMemo(() => partnerListActions_dispatch(dispatch), [dispatch]);
+    const registerActions = useMemo(() => registerActions_dispatch(dispatch), [dispatch]);
 
     // Get state from Redux
     const { partnerList, loading, hasSearched } = useSelector((state: RootState) => state.partnerListState);
@@ -39,6 +39,32 @@ const AdminPartnerList = () => {
     const [serviceTypes, setServiceTypes] = useState<any[]>([]);
     const [states, setStates] = useState<any[]>([]);
     const [cities, setCities] = useState<any[]>([]);
+
+    const loadStates = useCallback((cId: string | number) => {
+        registerActions('Get_State_List_Api', {
+            countryId: cId,
+            callBack: (data: any[]) => {
+                const formatted = data.map(item => ({
+                    id: item.StateID,
+                    name: item.StateName || item.Name || item
+                }));
+                setStates(formatted);
+            }
+        });
+    }, [registerActions]);
+
+    const loadCities = useCallback((sId: string | number) => {
+        registerActions('Get_City_List_Api', {
+            stateId: sId,
+            callBack: (data: any[]) => {
+                const formatted = data.map(item => ({
+                    id: item.CityID,
+                    name: item.CityName || item.Name || item
+                }));
+                setCities(formatted);
+            }
+        });
+    }, [registerActions]);
 
     // Load initial data
     useEffect(() => {
@@ -62,33 +88,7 @@ const AdminPartnerList = () => {
                 }
             }
         });
-    }, []);
-
-    const loadStates = (cId: string | number) => {
-        registerActions('Get_State_List_Api', {
-            countryId: cId,
-            callBack: (data: any[]) => {
-                const formatted = data.map(item => ({
-                    id: item.StateID,
-                    name: item.StateName || item.Name || item
-                }));
-                setStates(formatted);
-            }
-        });
-    };
-
-    const loadCities = (sId: string | number) => {
-        registerActions('Get_City_List_Api', {
-            stateId: sId,
-            callBack: (data: any[]) => {
-                const formatted = data.map(item => ({
-                    id: item.CityID,
-                    name: item.CityName || item.Name || item
-                }));
-                setCities(formatted);
-            }
-        });
-    };
+    }, [registerActions, loadStates]);
 
     // Watch for state change to load cities
     useEffect(() => {
@@ -100,7 +100,7 @@ const AdminPartnerList = () => {
                 loadCities(stateObj.id);
             }
         }
-    }, [watchedValues.state, states]);
+    }, [watchedValues.state, states, loadCities, setValue]);
 
     const handleSearch = useCallback(() => {
         const stateName = watchedValues.state;
@@ -112,7 +112,6 @@ const AdminPartnerList = () => {
         const serviceObj = serviceTypes.find(st => st.name === serviceName);
 
         if (!stateObj) {
-            // State is mandatory
             return;
         }
 
@@ -123,17 +122,14 @@ const AdminPartnerList = () => {
                 ServiceType: serviceObj ? serviceObj.id : '0',
             }
         });
-    }, [watchedValues, states, cities, serviceTypes, partnerListActions]);
+    }, [watchedValues.state, watchedValues.city, watchedValues.service, states, cities, serviceTypes, partnerListActions]);
 
     useFocusEffect(
         useCallback(() => {
-            if (watchedValues.state && watchedValues.state !== 'Select State') {
-                handleSearch();
-            }
             return () => {
                 dispatch({ type: 'PARTNER_LIST_RESET' });
             };
-        }, [dispatch, handleSearch, watchedValues.state])
+        }, [dispatch])
     );
 
     return (
