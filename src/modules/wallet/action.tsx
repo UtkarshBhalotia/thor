@@ -13,7 +13,10 @@ import {
     TInsertSecurityDepositParam,
     TGetVendorMinRechargeAmtParam,
     TGenerateHashkeyParam,
-    IRechargeHistoryItem
+    TCreateRazorpayOrderIdParam,
+    TVerifyRazorpaySignatureParam,
+    IRechargeHistoryItem,
+    IResponseParam
 } from "./type";
 
 export function* conditionActions<T extends TWalletConditionParamActionName>
@@ -40,6 +43,12 @@ export function* conditionActions<T extends TWalletConditionParamActionName>
             break;
         case 'Generate_Hashkey_Api':
             yield call(Generate_Hashkey_Api, actionParam as TGenerateHashkeyParam);
+            break;
+        case 'Create_Razorpay_Order_Id_Api':
+            yield call(Create_Razorpay_Order_Id_Api, actionParam as TCreateRazorpayOrderIdParam);
+            break;
+        case 'Verify_Razorpay_Signature':
+            yield call(Verify_Razorpay_Signature, actionParam as TVerifyRazorpaySignatureParam);
             break;
     }
 }
@@ -360,4 +369,59 @@ function* Generate_Hashkey_Api(actionParam: TGenerateHashkeyParam) {
     }
 }
 
+function* Create_Razorpay_Order_Id_Api(actionParam: TCreateRazorpayOrderIdParam) {
+    try {
+        const dataObj = {
+            data: [{
+                "userid": actionParam.userId,
+                "amount": actionParam.amount,
+            }],
+        }
 
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.createOrderIDUrl,
+            data: dataObj,
+        });
+
+        if (response && response.body) {
+            const json = response.body.data.response;
+            const orderId = json?.order_id;
+
+            if (orderId) {
+                actionParam.callBack(true, orderId);
+            } else {
+                actionParam.callBack(false, undefined, 'Order ID missing in response');
+            }
+        } else {
+            actionParam.callBack(false, undefined, 'Order creation failed');
+        }
+    } catch (error: any) {
+        actionParam.callBack(false, undefined, error?.message || 'Order creation failed');
+    }
+}
+
+function* Verify_Razorpay_Signature(actionParam: TVerifyRazorpaySignatureParam) {
+    
+    try {
+        const dataObj = {
+            data: [{
+                order_id: actionParam.orderId,
+                payment_id: actionParam.paymentId,
+                signature: actionParam.signature,
+            }],
+        };
+
+        const response: IResponseParam = yield call(clientPostHandler, {
+            url: projectEnv.verifySignatureUrl,
+            data: dataObj,
+        });
+
+        if (response && response.body && response.body.status === 'success') {
+            actionParam.callBack(true);
+        } else {
+            actionParam.callBack(false, response.body?.message || 'Signature verification failed');
+        }
+    } catch (error: any) {
+        actionParam.callBack(false, error?.message || 'Signature verification failed');
+    }
+}

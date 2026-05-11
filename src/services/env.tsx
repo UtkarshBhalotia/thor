@@ -1,4 +1,4 @@
-export const ENV: 'dev' | 'prod' = 'prod';
+export const ENV: 'dev' | 'prod' = 'dev';
 
 export const BASE_ENV = {
     dev: {
@@ -9,9 +9,17 @@ export const BASE_ENV = {
     },
 };
 
-export const NEW_URL = ENV === 'prod' ? 'https://crm.dooda.in/api' : 'https://testcrm.dooda.in/api';
+export const NEW_URL = {
+    dev: {
+        API_HOST: 'https://testcrm.dooda.in/api',
+    },
+    prod: {
+        API_HOST: 'https://crm.dooda.in/api',
+    },
+};
 
 export const BaseUrl = BASE_ENV[ENV].API_HOST;
+export const NewBaseUrl = NEW_URL[ENV].API_HOST;
 export const Comp_State_ID = 8;
 export const APP_VERSION = '2.1';
 
@@ -49,15 +57,15 @@ const apiListing = {
     mapCityListByVendorUrl: `${BaseUrl}MapCityListByVendor`,
     getVendorAppCompatibilityVersionUrl: `${BaseUrl}VendorAppCompatibilityVersion`,
 
-    getAllTypeVendorBalanceUrl: `${NEW_URL}/get_all_type_vendor_balance`,
-    getVendorLedgerWithOpeningBalanceUrl: `${NEW_URL}/vendor_ledger_with_opening_bal`,
-    vendorRegistrationUrl: `${NEW_URL}/vendor_registration`,
-    getDeniedReasonListUrl: `${NEW_URL}/denied_resion_list`,
-    generate_hashkey_for_rechargeUrl: `${NEW_URL}/generate_hashkey_for_recharge`,
-    vendor_douments_statusUrl: `${NEW_URL}/vendor_douments_status`,
-    getFollowupReasonListUrl: `${NEW_URL}/followup_resion_list`,
-    vendor_document_updateUrl: `${NEW_URL}/vendor_document_update`,
-    getVendorRechargeDetailsUrl: `${NEW_URL}/get_vendor_recharge_details`,
+    getAllTypeVendorBalanceUrl: `${NewBaseUrl}/get_all_type_vendor_balance`,
+    getVendorLedgerWithOpeningBalanceUrl: `${NewBaseUrl}/vendor_ledger_with_opening_bal`,
+    vendorRegistrationUrl: `${NewBaseUrl}/vendor_registration`,
+    getDeniedReasonListUrl: `${NewBaseUrl}/denied_resion_list`,
+    generate_hashkey_for_rechargeUrl: `${NewBaseUrl}/generate_hashkey_for_recharge`,
+    vendor_douments_statusUrl: `${NewBaseUrl}/vendor_douments_status`,
+    getFollowupReasonListUrl: `${NewBaseUrl}/followup_resion_list`,
+    vendor_document_updateUrl: `${NewBaseUrl}/vendor_document_update`,
+    getVendorRechargeDetailsUrl: `${NewBaseUrl}/get_vendor_recharge_details`,
 
     // PayUMoney endpoints (mock for now, replace with actual backend endpoints when available)
     initiatePaymentUrl: `${BaseUrl}InitiatePayment`, // Will generate payment hash on backend
@@ -68,6 +76,10 @@ const apiListing = {
     getWorkReportForAdminUrl: `${BaseUrl}GetWorkReportForAdmin`,
     getUserListByCityAndStateUrl: `${BaseUrl}GetUserListByCityAndState`,
     getInvoiceDetailsUrl: `${BaseUrl}GetInvoiceDetailsForApp`,
+
+    // RazorPay new API's
+    createOrderIDUrl: `${NewBaseUrl}/create_orderid_for_razorpay`,
+    verifySignatureUrl: `${NewBaseUrl}/verify_signature_from_razorpay`,
 
 };
 

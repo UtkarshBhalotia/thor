@@ -8,7 +8,7 @@ import { Comp_State_ID } from '../../../services/env';
 
 interface RechargeModalContentProps {
     minRechargeAmount: string;
-    onRecharge: (amount: string, gateway: 'payumoney' | 'razorpay') => void;
+    onRecharge: (amount: string, type: 'wallet' | 'security') => void;
     userStateId?: string;
 }
 
@@ -18,13 +18,13 @@ const RechargeModalContent: React.FC<RechargeModalContentProps> = ({
     userStateId,
 }) => {
     const [rechargeAmount, setRechargeAmount] = useState(minRechargeAmount || '');
-    const [selectedGateway, setSelectedGateway] = useState<'payumoney' | 'razorpay'>('payumoney');
+    const [selectedType, setSelectedType] = useState<'wallet' | 'security'>('wallet');
 
     useEffect(() => {
-        if (minRechargeAmount && selectedGateway === 'payumoney') {
+        if (minRechargeAmount && selectedType === 'wallet') {
             setRechargeAmount(minRechargeAmount);
         }
-    }, [minRechargeAmount, selectedGateway]);
+    }, [minRechargeAmount, selectedType]);
 
     const { amountAsFloat, baseAmount, gstPart } = useMemo(() => {
         const amount = parseFloat(rechargeAmount) || 0;
@@ -37,8 +37,8 @@ const RechargeModalContent: React.FC<RechargeModalContentProps> = ({
     const isSameState = useMemo(() => String(userStateId) === String(Comp_State_ID), [userStateId]);
 
     const handleRechargePress = useCallback(() => {
-        onRecharge(rechargeAmount, selectedGateway);
-    }, [onRecharge, rechargeAmount, selectedGateway]);
+        onRecharge(rechargeAmount, selectedType);
+    }, [onRecharge, rechargeAmount, selectedType]);
 
     return (
         <View style={walletStyles.bottomSheetContent}>
@@ -47,18 +47,18 @@ const RechargeModalContent: React.FC<RechargeModalContentProps> = ({
                 <TouchableOpacity
                     style={[
                         walletStyles.gatewayOption,
-                        selectedGateway === 'payumoney' && walletStyles.gatewayOptionSelected,
+                        selectedType === 'wallet' && walletStyles.gatewayOptionSelected,
                     ]}
-                    onPress={() => setSelectedGateway('payumoney')}>
+                    onPress={() => setSelectedType('wallet')}>
                     <Ionicons
                         name="wallet-outline"
                         size={24}
-                        color={selectedGateway === 'payumoney' ? '#5F60B9' : '#1C1F34'}
+                        color={selectedType === 'wallet' ? '#5F60B9' : '#1C1F34'}
                     />
                     <Text
                         style={[
                             walletStyles.gatewayText,
-                            selectedGateway === 'payumoney' && walletStyles.gatewayTextSelected,
+                            selectedType === 'wallet' && walletStyles.gatewayTextSelected,
                         ]}>
                         Wallet Balance
                     </Text>
@@ -67,21 +67,21 @@ const RechargeModalContent: React.FC<RechargeModalContentProps> = ({
                 <TouchableOpacity
                     style={[
                         walletStyles.gatewayOption,
-                        selectedGateway === 'razorpay' && walletStyles.gatewayOptionSelected,
+                        selectedType === 'security' && walletStyles.gatewayOptionSelected,
                     ]}
                     onPress={() => {
-                        setSelectedGateway('razorpay');
+                        setSelectedType('security');
                         setRechargeAmount('5000');
                     }}>
                     <Ionicons
                         name="shield-checkmark-outline"
                         size={24}
-                        color={selectedGateway === 'razorpay' ? '#5F60B9' : '#1C1F34'}
+                        color={selectedType === 'security' ? '#5F60B9' : '#1C1F34'}
                     />
                     <Text
                         style={[
                             walletStyles.gatewayText,
-                            selectedGateway === 'razorpay' && walletStyles.gatewayTextSelected,
+                            selectedType === 'security' && walletStyles.gatewayTextSelected,
                         ]}>
                         Security Deposit
                     </Text>
@@ -91,14 +91,14 @@ const RechargeModalContent: React.FC<RechargeModalContentProps> = ({
             <View style={walletStyles.amountInputContainer}>
                 <Text style={walletStyles.inputLabel}>
                     Enter Amount
-                    {selectedGateway === 'payumoney' &&
+                    {selectedType === 'wallet' &&
                         parseFloat(minRechargeAmount) > 0 && (
                             <Text style={{ fontSize: 14, color: '#5F60B9', fontWeight: '500' }}>
                                 {' '}
                                 (Minimum: ₹ {minRechargeAmount})
                             </Text>
                         )}
-                    {selectedGateway === 'razorpay' && (
+                    {selectedType === 'security' && (
                         <Text style={{ fontSize: 14, color: '#5F60B9', fontWeight: '500' }}>
                             {' '}
                             (Minimum: ₹ 5000)
@@ -114,7 +114,7 @@ const RechargeModalContent: React.FC<RechargeModalContentProps> = ({
                 />
             </View>
 
-            {selectedGateway === 'payumoney' && amountAsFloat > 0 && (
+            {selectedType === 'wallet' && amountAsFloat > 0 && (
                 <View style={dashboardStyles.gstContainer}>
                     {isSameState ? (
                         <>

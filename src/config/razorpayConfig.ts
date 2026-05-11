@@ -5,12 +5,11 @@
 export const RAZORPAY_CONFIG = {
     // Razorpay API Key ID (Get this from Razorpay Dashboard)
     // Replace with your actual Key ID
-  //  KEY_ID: 'rzp_test_iv0ZP6rWVRisPk', // Test Key
-    KEY_ID: 'rzp_live_dVzNBAJLOhp088', // Live Key
+    TEST_KEY_ID: 'rzp_test_SnIUrpxQjWHIE2', // Test Key for Wallet Recharge
+    KEY_ID: 'rzp_live_dVzNBAJLOhp088', // Live Key for Security Deposit
 
 
     // Environment
-    // IS_PRODUCTION: false, // false for Test, true for Production
     IS_PRODUCTION: true, // false for Test, true for Production
 
 

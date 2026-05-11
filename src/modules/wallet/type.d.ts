@@ -5,7 +5,9 @@ export type TWalletConditionParamActionName =
     | 'Process_Payment_Response'
     | 'Insert_Security_Deposit_Api'
     | 'Get_Vendor_Min_Recharge_Amt_Api'
-    | 'Generate_Hashkey_Api';
+    | 'Generate_Hashkey_Api'
+    | 'Create_Razorpay_Order_Id_Api'
+    | 'Verify_Razorpay_Signature';
 
 export interface IWalletActionConditionParam<
     T extends TWalletConditionParamActionName,
@@ -55,6 +57,19 @@ export type TGenerateHashkeyParam = {
     callBack: (success: boolean, hash: string, txnid: string, PayUKey: string, ProductDetails: string) => void;
 };
 
+export type TCreateRazorpayOrderIdParam = {
+    userId: string;
+    amount: string;
+    callBack: (success: boolean, orderId?: string, error?: string) => void;
+};
+
+export type TVerifyRazorpaySignatureParam = {
+    orderId: string;
+    paymentId: string;
+    signature: string;
+    callBack: (success: boolean, error?: string) => void;
+};
+
 export type TWalletConditionParamActionParam<T extends TWalletConditionParamActionName> =
     T extends 'Wallet_Balance_Api' ? TWalletBalanceParam :
     T extends 'Get_Recharge_History_Api' ? TGetRechargeHistoryParam :
@@ -63,6 +78,8 @@ export type TWalletConditionParamActionParam<T extends TWalletConditionParamActi
     T extends 'Insert_Security_Deposit_Api' ? TInsertSecurityDepositParam :
     T extends 'Get_Vendor_Min_Recharge_Amt_Api' ? TGetVendorMinRechargeAmtParam :
     T extends 'Generate_Hashkey_Api' ? TGenerateHashkeyParam :
+    T extends 'Create_Razorpay_Order_Id_Api' ? TCreateRazorpayOrderIdParam :
+    T extends 'Verify_Razorpay_Signature' ? TVerifyRazorpaySignatureParam :
     never;
 
 export interface IRechargeHistoryItem {
