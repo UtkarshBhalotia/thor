@@ -83,8 +83,8 @@ android {
         applicationId "com.roservice.partner"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 53
-        versionName "7.0"
+        versionCode 54
+        versionName "7.1"
     }
     signingConfigs {
         debug {
