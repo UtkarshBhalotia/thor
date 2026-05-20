@@ -1,4 +1,4 @@
-type TUserRegisterConditionParamActionName =
+export type TUserRegisterConditionParamActionName =
     | 'Get_Service_Types_Api'
     | 'Get_Country_List_Api'
     | 'Get_State_List_Api'
@@ -61,7 +61,7 @@ type TUserMapCityListByVendorParam = {
     callBack: (response: any) => void;
 };
 
-type TUserRegisterConditionParamActionParam<
+export type TUserRegisterConditionParamActionParam<
     T extends TUserRegisterConditionParamActionName,
 > = T extends 'Get_Service_Types_Api'
     ? TUserGetServiceTypesParam

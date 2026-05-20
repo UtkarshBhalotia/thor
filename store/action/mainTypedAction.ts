@@ -1,16 +1,28 @@
 import { AppDispatch } from '..';
+import { TReportConditionParamActionName, TReportConditionParamActionParam } from '../../src/modules/report/type';
+import { TPartnerListActionName, TPartnerListConditionParamActionParam } from '../../src/modules/admin/partnerList/type';
+import { TUserRegisterConditionParamActionName, TUserRegisterConditionParamActionParam } from '../../src/modules/gettingStarted/register/type';
+import { TUserLoginConditionParamActionName, TUserLoginConditionParamActionParam } from '../../src/modules/gettingStarted/login/type';
+import { TUserDashboardConditionParamActionName, TUserDashboardConditionParamActionParam } from '../../src/modules/dashboard/type';
+import { TUserBookingConditionParamActionName, TUserBookingConditionParamActionParam } from '../../src/modules/booking/type';
+
+
+import { TIdVerificationConditionParamActionName, TIdVerificationConditionParamActionParam } from '../../src/modules/idVerification/type';
+import { TWalletConditionParamActionName, TWalletConditionParamActionParam } from '../../src/modules/wallet/type';
+
+
 
 export const loginActions_dispatch =
     (dispatch: AppDispatch) =>
-        <T extends TLoginConditionParamActionName>(
+        <T extends TUserLoginConditionParamActionName>(
             actionName: T,
-            arg: TLoginConditionParamActionParam<T>,
+            arg: TUserLoginConditionParamActionParam<T>,
         ) => {
             dispatch({
                 type: 'Login_Actions',
                 payload: { actionName, actionParam: arg } as {
                     actionName: T;
-                    actionParam: TLoginConditionParamActionParam<T>;
+                    actionParam: TUserLoginConditionParamActionParam<T>;
                 },
             });
         };
@@ -86,6 +98,36 @@ export const idVerificationActions_dispatch =
                 payload: { actionName, actionParam: arg } as {
                     actionName: T;
                     actionParam: TIdVerificationConditionParamActionParam<T>;
+                },
+            });
+        };
+
+export const reportActions_dispatch =
+    (dispatch: AppDispatch) =>
+        <T extends TReportConditionParamActionName>(
+            actionName: T,
+            arg: TReportConditionParamActionParam<T>,
+        ) => {
+            dispatch({
+                type: 'Report_Actions',
+                payload: { actionName, actionParam: arg } as {
+                    actionName: T;
+                    actionParam: TReportConditionParamActionParam<T>;
+                },
+            });
+        };
+
+export const partnerListActions_dispatch =
+    (dispatch: AppDispatch) =>
+        <T extends TPartnerListActionName>(
+            actionName: T,
+            arg: TPartnerListConditionParamActionParam<T>,
+        ) => {
+            dispatch({
+                type: 'PartnerList_Actions',
+                payload: { actionName, actionParam: arg } as {
+                    actionName: T;
+                    actionParam: TPartnerListConditionParamActionParam<T>;
                 },
             });
         };

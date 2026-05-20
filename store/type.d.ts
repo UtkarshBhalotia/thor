@@ -15,18 +15,6 @@ type IGlobalInitialState = {
     isOnline: boolean;
 };
 
-type TLoginConditionParamActionName = 'LOGIN_API';
-type TLoginConditionParamActionParam<T> =
-    T extends TLoginConditionParamActionName
-    ? TLoginConditionParamActionParam<T>
-    : never;
-
-type TUserDashboardConditionParamActionName = 'USER_DASHBOARD_API';
-type TUserDashboardConditionParamActionParam<T> =
-    T extends TUserDashboardConditionParamActionName
-    ? TUserDashboardConditionParamActionParam<T>
-    : never;
-
 type TGlobalReducerAction = {
     type: TGlobalReducerType;
     value?: any;
@@ -41,8 +29,3 @@ type TGlobalReducerValue<T extends TGlobalReducerType> =
     ? void
     : never;
 
-type TIdVerificationConditionParamActionName = 'ID_VERIFICATION_API';
-type TIdVerificationConditionParamActionParam<T> =
-    T extends TIdVerificationConditionParamActionName
-    ? TIdVerificationConditionParamActionParam<T>
-    : never;

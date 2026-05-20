@@ -45,6 +45,10 @@ interface ServiceCardProps {
     customerMobile?: string;
     customerAddress?: string;
     acceptLeadDate?: string;
+    partnerName?: string;
+    partnerMobile?: string;
+    isAdminView?: boolean;
+    isHistoryView?: boolean;
     // Action handlers
     onAccept?: () => void;
     //  onRefuse?: () => void;
@@ -91,6 +95,10 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     customerMobile,
     customerAddress,
     acceptLeadDate,
+    partnerName,
+    partnerMobile,
+    isAdminView,
+    isHistoryView,
     onAccept,
     onCardPress,
     onFollowUp,
@@ -346,7 +354,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                 <View
                     style={[
                         styles.accentStrip,
-                        { backgroundColor: statusConfig.accent },
+                        isAdminView ? { backgroundColor: '#0A8485' } : { backgroundColor: statusConfig.accent },
                     ]}
                 />
 
@@ -483,7 +491,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                     </View>
 
                     {/* Action Button - Only shown for New status */}
-                    {leadStatus === 'New' && (
+                    {leadStatus === 'New' && !isAdminView && (
                         <>
                             <View style={styles.divider} />
                             <View style={styles.actionSection}>
@@ -506,7 +514,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                     )}
 
                     {/* Ongoing or Follow Up Status - Customer Details & Action Buttons */}
-                    {(leadStatus?.trim().toLowerCase() === 'ongoing' ||
+                    {(isAdminView ||
+                        leadStatus?.trim().toLowerCase() === 'ongoing' ||
                         leadStatus?.trim().toLowerCase() === 'follow up' ||
                         leadStatus?.trim().toLowerCase() === 'followup' ||
                         leadStatus?.trim().toLowerCase() === 'follow-up' ||
@@ -514,17 +523,45 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                             <>
                                 <View style={styles.divider} />
 
+                                {isHistoryView && (
+                                    <View style={[styles.customerDetailsContainer, { paddingBottom: 8 }]}>
+                                        <View style={styles.customerDetailRow}>
+                                            <Text style={styles.customerDetailLabel}>Partner Name</Text>
+                                            <Text style={styles.customerDetailValue}>{partnerName || '-'}</Text>
+                                        </View>
+                                        <View style={styles.customerDetailRow}>
+                                            <Text style={styles.customerDetailLabel}>Partner Mobile</Text>
+                                            <View style={styles.customerMobileValueContainer}>
+                                                {partnerMobile && (
+                                                    <TouchableOpacity
+                                                        onPress={() => handleCallPress(partnerMobile)}
+                                                        style={[
+                                                            styles.callIconButton,
+                                                            { backgroundColor: '#0A8485' }
+                                                        ]}>
+                                                        <Ionicons name="call" size={14} color="#FFFFFF" />
+                                                    </TouchableOpacity>
+                                                )}
+                                                <Text style={styles.customerMobileValue}>{partnerMobile || '-'}</Text>
+                                            </View>
+                                        </View>
+                                        <View style={[styles.divider, { marginBottom: 0, marginTop: 8 }]} />
+                                    </View>
+                                )}
+
                                 {/* Expandable Customer Details */}
                                 <TouchableOpacity
                                     activeOpacity={0.7}
                                     onPress={toggleCustomerDetails}
                                     style={styles.customerDetailsToggle}>
-                                    <Text style={styles.customerDetailsToggleText}>
-                                        View Customer Details
+                                    <Text style={[styles.customerDetailsToggleText, isAdminView && { color: '#0A8485' }]}>
+                                        {isCustomerDetailsExpanded ? 'Hide Customer Details' : 'View Customer Details'}
                                     </Text>
-                                    <Text style={styles.customerDetailsArrow}>
-                                        {isCustomerDetailsExpanded ? '▲' : '▼'}
-                                    </Text>
+                                    <Ionicons
+                                        name={isCustomerDetailsExpanded ? 'chevron-up' : 'chevron-down'}
+                                        size={14}
+                                        style={[styles.customerDetailsArrow, isAdminView && { color: '#0A8485' }]}
+                                    />
                                 </TouchableOpacity>
 
                                 {isCustomerDetailsExpanded && (
@@ -561,9 +598,10 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                                                     customerDetails.customerMobile,
                                                                 )
                                                             }
-                                                            style={
-                                                                styles.callIconButton
-                                                            }>
+                                                            style={[
+                                                                styles.callIconButton,
+                                                                isAdminView && { backgroundColor: '#0A8485' }
+                                                            ]}>
                                                             <Ionicons
                                                                 name="call"
                                                                 size={14}
@@ -595,6 +633,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                                         '-'}
                                                 </Text>
                                             </View>
+
+
                                             <View style={styles.customerDetailRow}>
                                                 <Text
                                                     style={
@@ -613,6 +653,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                         </View>
 
                                         {/* Three Action Buttons - Shown after customer details expanded */}
+                                        {!isAdminView && (
                                         <View style={styles.ongoingButtonsRow}>
                                             {!isReComplaint && (
                                                 <>
@@ -659,6 +700,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                                 </Text>
                                             </TouchableOpacity>
                                         </View>
+                                        )}
                                     </>
                                 )}
                             </>

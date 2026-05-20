@@ -53,7 +53,7 @@ const DeniedLeadFormModal = forwardRef<
         <BSModal
             bsModalRef={ref as React.RefObject<BottomSheetModal>}
             headerTitle="Denied Lead"
-            snapPoints={isOthersSelected ? ['100%'] : ['75%']}
+            snapPoints={isOthersSelected ? ['100%'] : ['85%']}
             customOnDismiss={handleDismiss}>
             <View style={styles.container}>
                 <View style={[styles.inputContainer, { flex: undefined }]}>

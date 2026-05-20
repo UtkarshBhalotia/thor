@@ -1,9 +1,9 @@
-type TUserLoginConditionParamActionName =
+export type TUserLoginConditionParamActionName =
     | 'UserAuth_Login_Api'
     | 'ForgotPassword_Api'
     | 'Update_User_Password_Api';
 
-type TUserLoginConditionParamActionParam<
+export type TUserLoginConditionParamActionParam<
     T extends TUserLoginConditionParamActionName,
 > = T extends 'UserAuth_Login_Api'
     ? TUserLoginParam
@@ -28,7 +28,8 @@ type TUserLoginParam = {
     password: string;
     fcmTokenID: string;
 
-    callBack: () => void;
+    callBack: (userInfo: any) => void;
+    errorCallback?: () => void;
 };
 
 type TUserForgotPasswordParam = {

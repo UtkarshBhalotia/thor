@@ -26,6 +26,7 @@ const SODTextInput = forwardRef(
             minHeight = 50,
             disallowUnicode,
             autoCapitalize,
+            gradientColors = ['#5F60B9', '#8A8BDD', '#B5B6E8'],
         }: TInputFieldProps,
         ref: any,
     ) => {
@@ -62,7 +63,7 @@ const SODTextInput = forwardRef(
         return (
             <View style={Common.py12}>
                 <LinearGradient
-                    colors={['#5F60B9', '#8A8BDD', '#B5B6E8']}
+                    colors={gradientColors}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={{

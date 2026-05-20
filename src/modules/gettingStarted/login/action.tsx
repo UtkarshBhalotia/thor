@@ -5,6 +5,7 @@ import { clientPostHandler } from '../../../services/request';
 import { showToast } from '../../../utils/common';
 import { globalReducer_dispatch } from '../../../../store/reducer/mainTypedReducer';
 import { setItem, STORAGE_KEYS } from '../../../utils/storage';
+import { TUserLoginConditionParamActionName, IUserLoginActionConditionParam, TUserLoginParam, TUserForgotPasswordParam, TUpdateUserPasswordParam, IResponseParam } from './type';
 
 export function* conditionActions<T extends TUserLoginConditionParamActionName>(
     param: IUserLoginActionConditionParam<T>,
@@ -36,17 +37,20 @@ function* UserAuth_login_Api(param: TUserLoginParam) {
             FCMTokenID: param.fcmTokenID,
         };
         const response: IResponseParam = yield call(clientPostHandler, {
-            url: `${projectEnv.loginUrl}`,
+            url: `${projectEnv.loginUrlPartner}`,
             data: dataObj,
         });
         console.log('response', response);
-        yield UserAuth_login_Api_Response(response, param.callBack);
+        yield UserAuth_login_Api_Response(response, param.callBack, param.errorCallback);
     } catch (error) {
         console.log('UserAuth_login_Api error', error);
+        if (param.errorCallback) {
+            param.errorCallback();
+        }
     }
 }
 
-function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
+function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any, errorCallback?: () => void) {
     try {
 
         const GlobalState: IGlobalInitialState = yield select(
@@ -65,6 +69,9 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                     text1: responseData.d,
                     visibilityTime: 5000,
                 });
+                if (errorCallback) {
+                    errorCallback();
+                }
                 return;
             }
 
@@ -89,11 +96,14 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                 };
 
                 if (userInfo.userType === 'A') {
-                    showToast({
-                        type: 'error',
-                        text1: 'Admin Login Not Allowed',
-                        visibilityTime: 5000,
+                    // Update global state for Admin
+                    yield put({
+                        type: 'GLOBAL_STATE_MUTATE',
+                        value: userInfo,
                     });
+                    // Save admin user info to AsyncStorage
+                    yield setItem(STORAGE_KEYS.USER_INFO, userInfo);
+                    callBack(userInfo);
                     return;
                 }
 
@@ -111,13 +121,16 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                 // Save user info to AsyncStorage for persistence
                 yield setItem(STORAGE_KEYS.USER_INFO, userInfo);
 
-                callBack();
+                callBack(userInfo);
             } else {
                 showToast({
                     type: 'error',
                     text1: 'No user data found',
                     visibilityTime: 2000,
                 });
+                if (errorCallback) {
+                    errorCallback();
+                }
             }
         } else {
             showToast({
@@ -125,9 +138,15 @@ function* UserAuth_login_Api_Response(response: IResponseParam, callBack: any) {
                 text1: 'No response from server',
                 visibilityTime: 2000,
             });
+            if (errorCallback) {
+                errorCallback();
+            }
         }
     } catch (error) {
         console.log('UserAuth_login_Api_Response error', error);
+        if (errorCallback) {
+            errorCallback();
+        }
     }
 }
 
@@ -151,13 +170,8 @@ function* ForgotPassword_Api_Response(response: IResponseParam, callBack?: () =>
         if (response && response.body) {
             const responseData = response.body;
 
-            if (responseData.d) {
-                const parsedData = typeof responseData.d === 'string'
-                    ? JSON.parse(responseData.d)
-                    : responseData.d;
-
-                if (parsedData.status === true || parsedData.Status === true || parsedData.d === 'Success') {
-                    showToast({
+             if (responseData.d === '1') {
+                 showToast({
                         type: 'success',
                         text1: 'Password has been sent to your registered phone number.',
                         visibilityTime: 2000,
@@ -166,14 +180,7 @@ function* ForgotPassword_Api_Response(response: IResponseParam, callBack?: () =>
                     if (callBack) {
                         callBack();
                     }
-                } else {
-                    const errorMessage = parsedData.message || parsedData.Message || 'Something went wrong. Please try again.';
-                    showToast({
-                        type: 'error',
-                        text1: errorMessage,
-                        visibilityTime: 2000,
-                    });
-                }
+                return;
             } else {
                 showToast({
                     type: 'error',

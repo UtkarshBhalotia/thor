@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { reportStyles } from '../../assets/css/reportStyles';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useFocusEffect } from '@react-navigation/native';
+import { RootStackParamList } from '../../navigations/navigation';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import CalendarPicker from 'react-native-calendar-picker';
 import { connect } from 'react-redux';
@@ -50,6 +51,13 @@ const Report = (props: any) => {
         totalRevenue: 0,
     });
 
+    const isAdmin = props.globalState?.userType === 'A';
+    const primaryColor = isAdmin ? '#0A8485' : '#5F60B9';
+    const statusBarColor = isAdmin ? '#086364' : '#F8F9FA';
+    const headerBgColor = isAdmin ? '#0A8485' : '#F8F9FA';
+    const headerTitleColor = isAdmin ? '#FFFFFF' : '#1C1F34';
+    const backBtnColor = isAdmin ? '#FFFFFF' : '#1C1F34';
+
     const formatDate = (date: Date) => {
         if (!date) return '';
         const d = new Date(date);
@@ -64,6 +72,7 @@ const Report = (props: any) => {
         props.reportActions('Get_Work_Report_For_Vendor_Api', {
             fromDate: formatDate(fromDate),
             toDate: formatDate(toDate),
+            userType: props.globalState?.userType,
             callBack: (data: TReportData) => {
                 setReportData(data);
                 setLoading(false);
@@ -71,12 +80,14 @@ const Report = (props: any) => {
         });
     };
 
-    useEffect(() => {
-        const task = InteractionManager.runAfterInteractions(() => {
-            handleGenerateReport();
-        });
-        return () => task.cancel();
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            const task = InteractionManager.runAfterInteractions(() => {
+                handleGenerateReport();
+            });
+            return () => task.cancel();
+        }, [])
+    );
 
     const onDateChange = (date: any) => {
         const selectedDate = new Date(date);
@@ -100,17 +111,17 @@ const Report = (props: any) => {
     );
 
     return (
-        <SafeAreaView style={reportStyles.container} edges={['top']}>
-            <StatusBar backgroundColor="#F8F9FA" barStyle="dark-content" />
+        <SafeAreaView style={[reportStyles.container, isAdmin && { backgroundColor: '#F5F6FA' }]} edges={['top']}>
+            <StatusBar backgroundColor={statusBarColor} barStyle={isAdmin ? 'light-content' : 'dark-content'} />
             {/* Header */}
-            <View style={reportStyles.header}>
+            <View style={[reportStyles.header, { backgroundColor: headerBgColor }]}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={reportStyles.backButton}
                 >
-                    <Ionicons name="chevron-back" size={24} color="#1C1F34" />
+                    <Ionicons name="chevron-back" size={24} color={backBtnColor} />
                 </TouchableOpacity>
-                <Text style={reportStyles.headerTitle}>Report</Text>
+                <Text style={[reportStyles.headerTitle, { color: headerTitleColor }]}>Report</Text>
             </View>
 
             <ScrollView
@@ -124,7 +135,7 @@ const Report = (props: any) => {
                 >
                     <Text style={reportStyles.dateLabel}>Start Date:</Text>
                     <View style={reportStyles.dateValueContainer}>
-                        <Text style={reportStyles.dateValue}>{formatDate(fromDate)}</Text>
+                        <Text style={[reportStyles.dateValue, { color: primaryColor }]}>{formatDate(fromDate)}</Text>
                         <Ionicons name="chevron-forward" size={18} color="#ADB5BD" />
                     </View>
                 </TouchableOpacity>
@@ -135,7 +146,7 @@ const Report = (props: any) => {
                 >
                     <Text style={reportStyles.dateLabel}>End Date:</Text>
                     <View style={reportStyles.dateValueContainer}>
-                        <Text style={reportStyles.dateValue}>{formatDate(toDate)}</Text>
+                        <Text style={[reportStyles.dateValue, { color: primaryColor }]}>{formatDate(toDate)}</Text>
                         <Ionicons name="chevron-forward" size={18} color="#ADB5BD" />
                     </View>
                 </TouchableOpacity>
@@ -211,7 +222,7 @@ const Report = (props: any) => {
 
                             <CalendarPicker
                                 onDateChange={onDateChange}
-                                selectedDayColor="#5F60B9"
+                                selectedDayColor={primaryColor}
                                 selectedDayTextColor="#FFFFFF"
                                 todayBackgroundColor="#E4E9F2"
                                 todayTextStyle={{ color: '#222B45', fontWeight: 'bold' }}
@@ -240,8 +251,8 @@ const Report = (props: any) => {
                                     paddingTop: 10,
                                     paddingBottom: 10,
                                 }}
-                                nextComponent={<Ionicons name="chevron-forward" size={24} color="#5F60B9" />}
-                                previousComponent={<Ionicons name="chevron-back" size={24} color="#5F60B9" />}
+                                nextComponent={<Ionicons name="chevron-forward" size={24} color={primaryColor} />}
+                                previousComponent={<Ionicons name="chevron-back" size={24} color={primaryColor} />}
                             />
                         </View>
                     </View>
@@ -249,7 +260,7 @@ const Report = (props: any) => {
 
                 {/* Generate Button */}
                 <TouchableOpacity
-                    style={reportStyles.generateButton}
+                    style={[reportStyles.generateButton, { backgroundColor: primaryColor }]}
                     onPress={handleGenerateReport}
                     disabled={loading}
                 >
@@ -266,9 +277,9 @@ const Report = (props: any) => {
                         <Text style={reportStyles.detailsTitle}>Report Details</Text>
                     </View>
 
-                    <View style={reportStyles.tableHeader}>
-                        <Text style={reportStyles.tableHeaderText}>Type Of Lead</Text>
-                        <Text style={[reportStyles.tableHeaderText, reportStyles.tableHeaderTextRight]}>Total</Text>
+                    <View style={[reportStyles.tableHeader, { backgroundColor: isAdmin ? '#E0F2F1' : '#F0F0FF' }]}>
+                        <Text style={[reportStyles.tableHeaderText, { color: primaryColor }]}>Type Of Lead</Text>
+                        <Text style={[reportStyles.tableHeaderText, reportStyles.tableHeaderTextRight, { color: primaryColor }]}>Total</Text>
                     </View>
 
                     {renderReportRow('Ongoing Leads', reportData.ongoing, 'arrow-redo-circle-outline', '#F57C00', '#FFF3E0')}
@@ -278,7 +289,7 @@ const Report = (props: any) => {
                     {renderReportRow('Re-Completed', reportData.reCompleted, 'sync-outline', '#1976D2', '#E3F2FD')}
                     {renderReportRow('Re-Complaint', reportData.reComplaint, 'document-text-outline', '#5F60B9', '#F0F0FF')}
 
-                    <View style={reportStyles.revenueRow}>
+                    <View style={[reportStyles.revenueRow, { backgroundColor: primaryColor }]}>
                         <Ionicons name="card-outline" size={20} color="#FFFFFF" style={{ marginRight: 12 }} />
                         <Text style={reportStyles.revenueLabel}>Total Revenue</Text>
                         <Text style={reportStyles.revenueValue}>₹ {reportData.totalRevenue}</Text>

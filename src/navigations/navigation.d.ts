@@ -13,14 +13,24 @@ export type RootStackParamList = {
     More: undefined;
     ChangePassword: undefined;
     Report: undefined;
+    Invoice: undefined;
     IdVerification: undefined;
-    WebViewScreen: { url: string; title: string };
+    WebViewScreen: { url?: string; html?: string; title: string };
     ServiceLocation: {
         state?: string;
         city?: string;
         citiesWithCheckbox?: { name: string; isChecked: boolean }[];
         onSave: (data: { state: string; city: string; citiesWithCheckbox: { name: string; isChecked: boolean }[] }) => void;
     };
+    AdminTabs: NavigatorScreenParams<AdminTabParamList>;
+};
+
+export type AdminTabParamList = {
+    AdminDashboard: undefined;
+    AdminLeadList: undefined;
+    AdminPartnerList: undefined;
+    AdminLeadHistory: undefined;
+    AdminReport: undefined;
 };
 
 export type TabParamList = {

@@ -1,4 +1,4 @@
-type TUserDashboardConditionParamActionName =
+export type TUserDashboardConditionParamActionName =
     | 'Wallet_Balance_Api'
     | 'Total_Security_Deposit_Api'
     | 'Get_All_Type_Vendor_Balance_Api'
@@ -61,7 +61,7 @@ type TUserCheckVendorCompatibilityVersionParam = {
     callBack: (versionInfo: string) => void;
 };
 
-type TUserDashboardConditionParamActionParam<
+export type TUserDashboardConditionParamActionParam<
     T extends TUserDashboardConditionParamActionName,
 > = T extends 'Wallet_Balance_Api'
     ? TUserWalletBalanceParam
