@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>482575058241-tem872jeipktm816p95rl3eqhdq0q78d.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.482575058241-tem872jeipktm816p95rl3eqhdq0q78d</string>
+	<key>API_KEY</key>
+	<string>AIzaSyANxi8jVdm9L0hraHC9d6PKeWWxttk5WOY</string>
+	<key>GCM_SENDER_ID</key>
+	<string>482575058241</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.roservice.partner</string>
+	<key>PROJECT_ID</key>
+	<string>serviceondoors-26ca1</string>
+	<key>STORAGE_BUCKET</key>
+	<string>serviceondoors-26ca1.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:482575058241:ios:7afdd280b9fe6e153a4dc0</string>
+	<key>DATABASE_URL</key>
+	<string>https://serviceondoors-26ca1.firebaseio.com</string>
+</dict>
+</plist>

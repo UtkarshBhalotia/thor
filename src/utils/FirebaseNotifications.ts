@@ -27,6 +27,13 @@ export async function requestUserPermission() {
 
 export const getFcmToken = async () => {
     try {
+        // iOS requires registering for remote messages first
+        if (Platform.OS === 'ios') {
+            const registered = messaging().isDeviceRegisteredForRemoteMessages;
+            if (!registered) {
+                await messaging().registerDeviceForRemoteMessages();
+            }
+        }
         const fcmToken = await messaging().getToken();
         if (fcmToken) {
             console.log('Your Firebase Token is:', fcmToken);
@@ -43,7 +50,7 @@ export const getFcmToken = async () => {
 
 export const notificationListener = () => {
     // When the app is in foreground
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
+    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
         console.log('A new FCM message arrived!', remoteMessage);
 
         // Display the notification using Notifee
@@ -51,7 +58,7 @@ export const notificationListener = () => {
     });
 
     // When the app is in background but not quit and user taps on notification
-    messaging().onNotificationOpenedApp(remoteMessage => {
+    messaging().onNotificationOpenedApp((remoteMessage) => {
         console.log(
             'Notification caused app to open from background state:',
             remoteMessage.notification,
@@ -61,7 +68,7 @@ export const notificationListener = () => {
     // When the app is opened from a quit state via a notification
     messaging()
         .getInitialNotification()
-        .then(remoteMessage => {
+        .then((remoteMessage) => {
             if (remoteMessage) {
                 console.log(
                     'Notification caused app to open from quit state:',
