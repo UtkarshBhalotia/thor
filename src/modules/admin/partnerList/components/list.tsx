@@ -59,6 +59,11 @@ const PartnerList = ({ data, loading, hasSearched }: PartnerListProps) => {
                     <Text style={styles.infoText}>{item.MobileNo || 'N/A'}</Text>
                 </View>
 
+                <View style={styles.infoRow}>
+                    <Ionicons name="mail-outline" size={16} color="#666" />
+                    <Text style={styles.infoText}>{item.EmailID || item.Email || 'N/A'}</Text>
+                </View>
+
                 <View style={styles.divider} />
 
                 <View style={styles.footerRow}>

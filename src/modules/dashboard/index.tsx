@@ -21,11 +21,9 @@ import {
     NavigationProp,
     useNavigation,
     useIsFocused,
-    CommonActions,
 } from '@react-navigation/native';
 import { AppDispatch, RootState } from '../../../store';
-import { connect, useDispatch } from 'react-redux';
-import { removeItem, STORAGE_KEYS } from '../../utils/storage';
+import { connect } from 'react-redux';
 import {
     dashboardActions_dispatch,
     walletActions_dispatch,
@@ -49,7 +47,6 @@ import ForceUpdateScreen from './components/ForceUpdateScreen';
 const Dashboard = (props: any) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const isFocused = useIsFocused();
-    const dispatch = useDispatch();
     const rechargeModalRef = React.useRef<BottomSheetModal>(null);
     const [rechargeAmount, setRechargeAmount] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -134,8 +131,8 @@ const Dashboard = (props: any) => {
         const handleBackPress = () => {
             if (isFocused) {
                 Alert.alert(
-                    'Exit App',
-                    'Exiting the application?',
+                    'Exit Application',
+                    'Are you sure you want to exit?',
                     [
                         {
                             text: 'Cancel',
@@ -161,20 +158,6 @@ const Dashboard = (props: any) => {
 
         return () => backHandler.remove();
     }, [isFocused]);
-
-    const handleLogout = async () => {
-        setIsLoading(true);
-        await removeItem(STORAGE_KEYS.USER_INFO);
-        await removeItem(STORAGE_KEYS.AUTH_TOKEN);
-        dispatch({ type: 'GLOBAL_RESET' });
-        setIsLoading(false);
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-            }),
-        );
-    };
 
     useEffect(() => {
         if (isFocused) {
