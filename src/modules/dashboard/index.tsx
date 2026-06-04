@@ -17,7 +17,12 @@ import StatCard from './components/StatCard';
 import ServiceCard from './components/ServiceCard';
 import ReviewCard from './components/ReviewCard';
 import ReportCard from './components/ReportCard';
-import { NavigationProp, useNavigation, useIsFocused, CommonActions } from '@react-navigation/native';
+import {
+    NavigationProp,
+    useNavigation,
+    useIsFocused,
+    CommonActions,
+} from '@react-navigation/native';
 import { AppDispatch, RootState } from '../../../store';
 import { connect, useDispatch } from 'react-redux';
 import { removeItem, STORAGE_KEYS } from '../../utils/storage';
@@ -30,13 +35,15 @@ import BSModal from '../../components/BSModal';
 import { BottomSheetModal, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RazorpayService } from '../../services/RazorpayService';
-import { RAZORPAY_CONFIG } from '../../config/razorpayConfig';
-import { Comp_State_ID } from '../../services/env';
+import {
+    RAZORPAY_CONFIG_SECURITY,
+    RAZORPAY_CONFIG_WALLET,
+} from '../../config/razorpayConfig';
+import { Comp_State_ID, APP_VERSION, ENV } from '../../services/env';
 import Toast from 'react-native-toast-message';
 import { ActivityIndicator, Modal, StyleSheet } from 'react-native';
 import { useCallback } from 'react';
 import { RootStackParamList } from '../../navigations/navigation';
-import { APP_VERSION } from '../../services/env';
 import ForceUpdateScreen from './components/ForceUpdateScreen';
 
 const Dashboard = (props: any) => {
@@ -48,16 +55,17 @@ const Dashboard = (props: any) => {
     const [isLoading, setIsLoading] = useState(false);
     const isInitialLoadRef = React.useRef(true);
     const lastRefreshTimeRef = React.useRef<number>(0);
-    const [selectedType, setSelectedType] = useState<
-        'wallet' | 'security'
-    >('wallet');
+    const [selectedType, setSelectedType] = useState<'wallet' | 'security'>(
+        'wallet',
+    );
     const [minRechargeAmount, setMinRechargeAmount] = useState<string>('');
     const [needsUpdate, setNeedsUpdate] = useState(false);
     const amountAsFloat = parseFloat(rechargeAmount) || 0;
     const baseAmount = amountAsFloat / 1.18;
     const totalGst = amountAsFloat - baseAmount;
     const gstPart = totalGst / 2;
-    const isSameState = String(props.globalState?.stateId) === String(Comp_State_ID);
+    const isSameState =
+        String(props.globalState?.stateId) === String(Comp_State_ID);
 
     // Sample data - replace with actual data from API/Redux
 
@@ -139,7 +147,7 @@ const Dashboard = (props: any) => {
                             onPress: () => BackHandler.exitApp(),
                         },
                     ],
-                    { cancelable: false }
+                    { cancelable: false },
                 );
                 return true;
             }
@@ -148,7 +156,7 @@ const Dashboard = (props: any) => {
 
         const backHandler = BackHandler.addEventListener(
             'hardwareBackPress',
-            handleBackPress
+            handleBackPress,
         );
 
         return () => backHandler.remove();
@@ -164,7 +172,7 @@ const Dashboard = (props: any) => {
             CommonActions.reset({
                 index: 0,
                 routes: [{ name: 'Login' }],
-            })
+            }),
         );
     };
 
@@ -180,7 +188,7 @@ const Dashboard = (props: any) => {
                     load(true);
                     isInitialLoadRef.current = false;
                     lastRefreshTimeRef.current = now;
-                } 
+                }
                 // Only refresh if more than 30 seconds have passed
                 else if (timeSinceLastRefresh > REFRESH_THROTTLE) {
                     load(false);
@@ -205,7 +213,10 @@ const Dashboard = (props: any) => {
         props.dashboardActions('Check_Vendor_Compatibility_Version_Api', {
             callBack: (versionInfo: string) => {
                 const serverVersion = versionInfo;
-                console.log('Version Check:', { serverVersion, localVersion: APP_VERSION });
+                console.log('Version Check:', {
+                    serverVersion,
+                    localVersion: APP_VERSION,
+                });
 
                 if (serverVersion && serverVersion !== APP_VERSION) {
                     setNeedsUpdate(true);
@@ -235,14 +246,17 @@ const Dashboard = (props: any) => {
                             ongoing: data.totalOngoingLead,
                         }));
                         fetchReportData();
-                        props.dashboardActions('Get_OnGoing_Services_List_Api', {
-                            callBack: (data: any) => {
-                                setAssignedServices(data);
-                                if (showLoader) {
-                                    setIsLoading(false);
-                                }
+                        props.dashboardActions(
+                            'Get_OnGoing_Services_List_Api',
+                            {
+                                callBack: (data: any) => {
+                                    setAssignedServices(data);
+                                    if (showLoader) {
+                                        setIsLoading(false);
+                                    }
+                                },
                             },
-                        });
+                        );
                     },
                 });
             },
@@ -421,18 +435,14 @@ const Dashboard = (props: any) => {
         });
     };
 
-    const handleFetchDeniedReasons = (
-        callBack: (data: any[]) => void,
-    ) => {
+    const handleFetchDeniedReasons = (callBack: (data: any[]) => void) => {
         console.log('handleFetchDeniedReasons called in Dashboard');
         props.bookingActions('Get_Denied_Reason_List_Api', {
             callBack: callBack,
         });
     };
 
-    const handleFetchFollowUpReasons = (
-        callBack: (data: any[]) => void,
-    ) => {
+    const handleFetchFollowUpReasons = (callBack: (data: any[]) => void) => {
         props.bookingActions('Get_FollowUp_Reason_List_Api', {
             callBack: callBack,
         });
@@ -440,7 +450,10 @@ const Dashboard = (props: any) => {
 
     const handleRecharge = () => {
         // Validate amount
-        const validation = RazorpayService.validateAmount(rechargeAmount);
+        const validation = RazorpayService.validateAmount(
+            rechargeAmount,
+            selectedType,
+        );
 
         if (!validation.valid) {
             Toast.show({
@@ -472,16 +485,28 @@ const Dashboard = (props: any) => {
         const userEmail = props.globalState?.email || 'test@example.com';
         const userName = props.globalState?.name || 'Test User';
         const userPhone = props.globalState?.mobile || '9999999999';
-        const description = selectedType === 'wallet' ? 'Wallet Recharge' : RAZORPAY_CONFIG.PRODUCT_INFO;
-        const razorpayKey = selectedType === 'wallet' ? RAZORPAY_CONFIG.TEST_KEY_ID : RAZORPAY_CONFIG.KEY_ID;
+        const config =
+            selectedType === 'wallet'
+                ? RAZORPAY_CONFIG_WALLET
+                : RAZORPAY_CONFIG_SECURITY;
+        const description =
+            selectedType === 'wallet'
+                ? config.PRODUCT_INFO
+                : config.PRODUCT_INFO;
+        const razorpayKey =
+            ENV === 'dev' ? config.TEST_KEY_ID : config.TEST_KEY_ID;
 
         rechargeModalRef.current?.dismiss();
 
-        const userId = String(props.globalState?.vendorId || props.globalState?.userId || '');
+        const userId = String(
+            props.globalState?.vendorId || props.globalState?.userId || '',
+        );
+        const paymentType = selectedType === 'security' ? 'D' : 'R';
 
         props.walletActions('Create_Razorpay_Order_Id_Api', {
             userId,
             amount: rechargeAmount,
+            payment_type: paymentType,
             callBack: (success: boolean, orderId: string, error: any) => {
                 if (success && orderId) {
                     RazorpayService.openCheckout({
@@ -492,6 +517,7 @@ const Dashboard = (props: any) => {
                         name: userName,
                         description: description,
                         order_id: orderId,
+                        paymentType: selectedType,
                     }).then((response) => {
                         if (response.status === 'success') {
                             handleRazorpaySuccess(response, description);
@@ -514,10 +540,13 @@ const Dashboard = (props: any) => {
     const handleRazorpaySuccess = (response: any, description: string) => {
         console.log('Razorpay Success:', response);
 
+        const paymentType = selectedType === 'security' ? 'D' : 'R';
+
         props.walletActions('Verify_Razorpay_Signature', {
             orderId: response.razorpay_order_id,
             paymentId: response.razorpay_payment_id,
             signature: response.razorpay_signature,
+            payment_type: paymentType,
             callBack: (verified: boolean, verifyError?: string) => {
                 if (!verified) {
                     Toast.show({
@@ -599,14 +628,18 @@ const Dashboard = (props: any) => {
     return (
         <SafeAreaView style={dashboardStyles.container} edges={['top']}>
             {needsUpdate && <ForceUpdateScreen />}
-            <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent={true} />
+            <StatusBar
+                backgroundColor="transparent"
+                barStyle="dark-content"
+                translucent={true}
+            />
 
             {/* Full Screen Loader */}
             <Modal
                 transparent={true}
                 animationType="none"
                 visible={isLoading}
-                onRequestClose={() => { }}>
+                onRequestClose={() => {}}>
                 <View style={dashboardStyles.loaderOverlay}>
                     <ActivityIndicator size="large" color="#5F60B9" />
                 </View>
@@ -656,10 +689,10 @@ const Dashboard = (props: any) => {
                             onPress={
                                 stat.label === 'Security Deposit'
                                     ? () => {
-                                        setSelectedType('security');
-                                        setRechargeAmount('5000');
-                                        rechargeModalRef.current?.present();
-                                    }
+                                          setSelectedType('security');
+                                          setRechargeAmount('5000');
+                                          rechargeModalRef.current?.present();
+                                      }
                                     : undefined
                             }
                         />
@@ -697,7 +730,12 @@ const Dashboard = (props: any) => {
                         Ongoing Services
                     </Text>
                     <TouchableOpacity
-                        onPress={() => navigation.navigate('HomeTabs', { screen: 'Bookings', params: { initialTab: 'Ongoing' } })}>
+                        onPress={() =>
+                            navigation.navigate('HomeTabs', {
+                                screen: 'Bookings',
+                                params: { initialTab: 'Ongoing' },
+                            })
+                        }>
                         <Text style={dashboardStyles.viewAllLink}>
                             View all
                         </Text>
@@ -706,7 +744,7 @@ const Dashboard = (props: any) => {
 
                 {/* Check if there are no services or all services are empty */}
                 {assignedServices.length === 0 ||
-                    !assignedServices[0]?.LeadID ? (
+                !assignedServices[0]?.LeadID ? (
                     <View style={dashboardStyles.emptyStateContainer}>
                         <Image
                             source={require('../../assets/img/OnGoingService.png')}
@@ -721,7 +759,12 @@ const Dashboard = (props: any) => {
                         </Text>
                         <TouchableOpacity
                             style={dashboardStyles.emptyStateButton}
-                            onPress={() => navigation.navigate('HomeTabs', { screen: 'Bookings', params: { initialTab: 'New' } })}>
+                            onPress={() =>
+                                navigation.navigate('HomeTabs', {
+                                    screen: 'Bookings',
+                                    params: { initialTab: 'New' },
+                                })
+                            }>
                             <Text style={dashboardStyles.emptyStateButtonText}>
                                 View New Leads
                             </Text>
@@ -794,8 +837,7 @@ const Dashboard = (props: any) => {
                     setRechargeAmount('');
                     setMinRechargeAmount('');
                 }}
-                customHandleChangePosition={(index: number) => {
-                }}>
+                customHandleChangePosition={(index: number) => {}}>
                 <View style={dashboardStyles.bottomSheetContent}>
                     <Text style={dashboardStyles.inputLabel}>
                         Select Recharge Type
@@ -805,7 +847,7 @@ const Dashboard = (props: any) => {
                             style={[
                                 dashboardStyles.gatewayOption,
                                 selectedType === 'wallet' &&
-                                dashboardStyles.gatewayOptionSelected,
+                                    dashboardStyles.gatewayOptionSelected,
                             ]}
                             onPress={() => {
                                 setSelectedType('wallet');
@@ -824,7 +866,7 @@ const Dashboard = (props: any) => {
                                 style={[
                                     dashboardStyles.gatewayText,
                                     selectedType === 'wallet' &&
-                                    dashboardStyles.gatewayTextSelected,
+                                        dashboardStyles.gatewayTextSelected,
                                 ]}>
                                 Wallet Balance
                             </Text>
@@ -834,7 +876,7 @@ const Dashboard = (props: any) => {
                             style={[
                                 dashboardStyles.gatewayOption,
                                 selectedType === 'security' &&
-                                dashboardStyles.gatewayOptionSelected,
+                                    dashboardStyles.gatewayOptionSelected,
                             ]}
                             onPress={() => {
                                 setSelectedType('security');
@@ -853,7 +895,7 @@ const Dashboard = (props: any) => {
                                 style={[
                                     dashboardStyles.gatewayText,
                                     selectedType === 'security' &&
-                                    dashboardStyles.gatewayTextSelected,
+                                        dashboardStyles.gatewayTextSelected,
                                 ]}>
                                 Security Deposit
                             </Text>
@@ -902,23 +944,39 @@ const Dashboard = (props: any) => {
                             {isSameState ? (
                                 <>
                                     <View style={dashboardStyles.gstRow}>
-                                        <Text style={dashboardStyles.gstLabel}>CGST :</Text>
-                                        <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
+                                        <Text style={dashboardStyles.gstLabel}>
+                                            CGST :
+                                        </Text>
+                                        <Text style={dashboardStyles.gstValue}>
+                                            ₹ {gstPart.toFixed(2)}
+                                        </Text>
                                     </View>
                                     <View style={dashboardStyles.gstRow}>
-                                        <Text style={dashboardStyles.gstLabel}>SGST :</Text>
-                                        <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
+                                        <Text style={dashboardStyles.gstLabel}>
+                                            SGST :
+                                        </Text>
+                                        <Text style={dashboardStyles.gstValue}>
+                                            ₹ {gstPart.toFixed(2)}
+                                        </Text>
                                     </View>
                                 </>
                             ) : (
                                 <View style={dashboardStyles.gstRow}>
-                                    <Text style={dashboardStyles.gstLabel}>IGST :</Text>
-                                    <Text style={dashboardStyles.gstValue}>₹ {gstPart.toFixed(2)}</Text>
+                                    <Text style={dashboardStyles.gstLabel}>
+                                        IGST :
+                                    </Text>
+                                    <Text style={dashboardStyles.gstValue}>
+                                        ₹ {gstPart.toFixed(2)}
+                                    </Text>
                                 </View>
                             )}
                             <View style={dashboardStyles.gstRow}>
-                                <Text style={dashboardStyles.gstLabel}>Amount after GST :</Text>
-                                <Text style={dashboardStyles.gstValue}>₹ {baseAmount.toFixed(2)}</Text>
+                                <Text style={dashboardStyles.gstLabel}>
+                                    Amount after GST :
+                                </Text>
+                                <Text style={dashboardStyles.gstValue}>
+                                    ₹ {baseAmount.toFixed(2)}
+                                </Text>
                             </View>
                         </View>
                     )}

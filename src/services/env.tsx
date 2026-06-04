@@ -80,7 +80,6 @@ const apiListing = {
     // RazorPay new API's
     createOrderIDUrl: `${NewBaseUrl}/create_orderid_for_razorpay`,
     verifySignatureUrl: `${NewBaseUrl}/verify_signature_from_razorpay`,
-
 };
 
 const projectEnv = {

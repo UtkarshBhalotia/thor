@@ -60,6 +60,7 @@ export type TGenerateHashkeyParam = {
 export type TCreateRazorpayOrderIdParam = {
     userId: string;
     amount: string;
+    payment_type: 'D' | 'R';
     callBack: (success: boolean, orderId?: string, error?: string) => void;
 };
 
@@ -67,6 +68,7 @@ export type TVerifyRazorpaySignatureParam = {
     orderId: string;
     paymentId: string;
     signature: string;
+    payment_type: 'D' | 'R';
     callBack: (success: boolean, error?: string) => void;
 };
 

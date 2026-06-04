@@ -1,8 +1,8 @@
-import { call, select } from "redux-saga/effects";
-import { clientPostHandler } from "../../services/request";
-import { RootState } from "../../../store";
-import projectEnv from "../../services/env";
-import { showToast } from "../../utils/common";
+import { call, select } from 'redux-saga/effects';
+import { clientPostHandler } from '../../services/request';
+import { RootState } from '../../../store';
+import projectEnv from '../../services/env';
+import { showToast } from '../../utils/common';
 import {
     TWalletConditionParamActionName,
     IWalletActionConditionParam,
@@ -16,44 +16,70 @@ import {
     TCreateRazorpayOrderIdParam,
     TVerifyRazorpaySignatureParam,
     IRechargeHistoryItem,
-    IResponseParam
-} from "./type";
+    IResponseParam,
+} from './type';
 
-export function* conditionActions<T extends TWalletConditionParamActionName>
-    (param: IWalletActionConditionParam<T>) {
-    const { payload: { actionName, actionParam } } = param;
+export function* conditionActions<T extends TWalletConditionParamActionName>(
+    param: IWalletActionConditionParam<T>,
+) {
+    const {
+        payload: { actionName, actionParam },
+    } = param;
     switch (actionName) {
         case 'Wallet_Balance_Api':
             yield call(Wallet_Balance_Api, actionParam as TWalletBalanceParam);
             break;
         case 'Get_Recharge_History_Api':
-            yield call(Get_Recharge_History_Api, actionParam as TGetRechargeHistoryParam);
+            yield call(
+                Get_Recharge_History_Api,
+                actionParam as TGetRechargeHistoryParam,
+            );
             break;
         case 'Initiate_Payment':
             yield call(Initiate_Payment, actionParam as TInitiatePaymentParam);
             break;
         case 'Process_Payment_Response':
-            yield call(Process_Payment_Response, actionParam as TProcessPaymentResponseParam);
+            yield call(
+                Process_Payment_Response,
+                actionParam as TProcessPaymentResponseParam,
+            );
             break;
         case 'Insert_Security_Deposit_Api':
-            yield call(Insert_Security_Deposit_Api, actionParam as TInsertSecurityDepositParam);
+            yield call(
+                Insert_Security_Deposit_Api,
+                actionParam as TInsertSecurityDepositParam,
+            );
             break;
         case 'Get_Vendor_Min_Recharge_Amt_Api':
-            yield call(Get_Vendor_Min_Recharge_Amt_Api, actionParam as TGetVendorMinRechargeAmtParam);
+            yield call(
+                Get_Vendor_Min_Recharge_Amt_Api,
+                actionParam as TGetVendorMinRechargeAmtParam,
+            );
             break;
         case 'Generate_Hashkey_Api':
-            yield call(Generate_Hashkey_Api, actionParam as TGenerateHashkeyParam);
+            yield call(
+                Generate_Hashkey_Api,
+                actionParam as TGenerateHashkeyParam,
+            );
             break;
         case 'Create_Razorpay_Order_Id_Api':
-            yield call(Create_Razorpay_Order_Id_Api, actionParam as TCreateRazorpayOrderIdParam);
+            yield call(
+                Create_Razorpay_Order_Id_Api,
+                actionParam as TCreateRazorpayOrderIdParam,
+            );
             break;
         case 'Verify_Razorpay_Signature':
-            yield call(Verify_Razorpay_Signature, actionParam as TVerifyRazorpaySignatureParam);
+            yield call(
+                Verify_Razorpay_Signature,
+                actionParam as TVerifyRazorpaySignatureParam,
+            );
             break;
     }
 }
 
-function* Insert_Security_Deposit_Api(actionParam: TInsertSecurityDepositParam) {
+function* Insert_Security_Deposit_Api(
+    actionParam: TInsertSecurityDepositParam,
+) {
     try {
         const GlobalState: IGlobalInitialState = yield select(
             (state: RootState) => state.globalState,
@@ -78,9 +104,11 @@ function* Insert_Security_Deposit_Api(actionParam: TInsertSecurityDepositParam) 
             // Typically response.body.d would contain "1" or success message for these ASMX services
             actionParam.callBack(true, 'Security deposit updated successfully');
         } else {
-            actionParam.callBack(false, response.message || 'Failed to update security deposit');
+            actionParam.callBack(
+                false,
+                response.message || 'Failed to update security deposit',
+            );
         }
-
     } catch (error) {
         showToast({
             type: 'error',
@@ -98,14 +126,13 @@ function* Wallet_Balance_Api(actionParam: TWalletBalanceParam) {
         );
         const dataObj = {
             UserID: GlobalState.userId,
-        }
+        };
         const response: IResponseParam = yield call(clientPostHandler, {
             url: projectEnv.walletBalanceUrl,
             data: dataObj,
         });
 
         yield Wallet_Balance_Api_Response(response, actionParam.callBack);
-
     } catch (error) {
         showToast({
             type: 'error',
@@ -115,7 +142,10 @@ function* Wallet_Balance_Api(actionParam: TWalletBalanceParam) {
     }
 }
 
-function* Wallet_Balance_Api_Response(response: IResponseParam, callBack: (balance: string) => void) {
+function* Wallet_Balance_Api_Response(
+    response: IResponseParam,
+    callBack: (balance: string) => void,
+) {
     try {
         if (response && response.body) {
             const responseData = response.body;
@@ -131,7 +161,6 @@ function* Wallet_Balance_Api_Response(response: IResponseParam, callBack: (balan
                 });
             }
         }
-
     } catch (error) {
         showToast({
             type: 'error',
@@ -147,20 +176,20 @@ function* Get_Recharge_History_Api(actionParam: TGetRechargeHistoryParam) {
             (state: RootState) => state.globalState,
         );
         const dataObj = {
-            data: [{
-                userid: GlobalState.userId,
-                fromdate: actionParam.fromDate,
-                todate: actionParam.toDate,
-            }],
+            data: [
+                {
+                    userid: GlobalState.userId,
+                    fromdate: actionParam.fromDate,
+                    todate: actionParam.toDate,
+                },
+            ],
         };
         const response: IResponseParam = yield call(clientPostHandler, {
             url: projectEnv.getVendorRechargeDetailsUrl,
             data: dataObj,
         });
 
-
         yield Get_Recharge_History_Api_Response(response, actionParam.callBack);
-
     } catch (error) {
         showToast({
             type: 'error',
@@ -170,12 +199,14 @@ function* Get_Recharge_History_Api(actionParam: TGetRechargeHistoryParam) {
     }
 }
 
-function* Get_Recharge_History_Api_Response(response: IResponseParam, callBack: (data: IRechargeHistoryItem[]) => void) {
+function* Get_Recharge_History_Api_Response(
+    response: IResponseParam,
+    callBack: (data: IRechargeHistoryItem[]) => void,
+) {
     try {
         if (response.body.status === 'success') {
             const responseData = response.body.data.response;
             callBack(responseData);
-
         } else if (response.body.status === 'error') {
             callBack([]);
             showToast({
@@ -184,7 +215,6 @@ function* Get_Recharge_History_Api_Response(response: IResponseParam, callBack: 
                 visibilityTime: 2000,
             });
         }
-
     } catch (error) {
         showToast({
             type: 'error',
@@ -219,7 +249,6 @@ function* Initiate_Payment(actionParam: TInitiatePaymentParam) {
         } else {
             actionParam.callBack(false, 'Failed to initialize payment');
         }
-
     } catch (error) {
         showToast({
             type: 'error',
@@ -260,14 +289,23 @@ function* Process_Payment_Response(actionParam: TProcessPaymentResponseParam) {
             });
 
             if (response && response.status === 200) {
-                actionParam.callBack(true, 'Payment completed and wallet updated successfully');
+                actionParam.callBack(
+                    true,
+                    'Payment completed and wallet updated successfully',
+                );
             } else {
-                actionParam.callBack(false, response.message || 'Payment success but failed to update wallet');
+                actionParam.callBack(
+                    false,
+                    response.message ||
+                        'Payment success but failed to update wallet',
+                );
             }
         } else {
-            actionParam.callBack(false, paymentResponse?.error_Message || 'Payment failed');
+            actionParam.callBack(
+                false,
+                paymentResponse?.error_Message || 'Payment failed',
+            );
         }
-
     } catch (error) {
         showToast({
             type: 'error',
@@ -278,7 +316,9 @@ function* Process_Payment_Response(actionParam: TProcessPaymentResponseParam) {
     }
 }
 
-function* Get_Vendor_Min_Recharge_Amt_Api(actionParam: TGetVendorMinRechargeAmtParam) {
+function* Get_Vendor_Min_Recharge_Amt_Api(
+    actionParam: TGetVendorMinRechargeAmtParam,
+) {
     try {
         const GlobalState: IGlobalInitialState = yield select(
             (state: RootState) => state.globalState,
@@ -291,7 +331,10 @@ function* Get_Vendor_Min_Recharge_Amt_Api(actionParam: TGetVendorMinRechargeAmtP
             data: dataObj,
         });
 
-        yield Get_Vendor_Min_Recharge_Amt_Api_Response(response, actionParam.callBack);
+        yield Get_Vendor_Min_Recharge_Amt_Api_Response(
+            response,
+            actionParam.callBack,
+        );
     } catch (error) {
         showToast({
             type: 'error',
@@ -302,14 +345,21 @@ function* Get_Vendor_Min_Recharge_Amt_Api(actionParam: TGetVendorMinRechargeAmtP
     }
 }
 
-function* Get_Vendor_Min_Recharge_Amt_Api_Response(response: IResponseParam, callBack: (minAmount: string) => void) {
+function* Get_Vendor_Min_Recharge_Amt_Api_Response(
+    response: IResponseParam,
+    callBack: (minAmount: string) => void,
+) {
     try {
         if (response && response.body) {
             const responseData = response.body;
 
             if (responseData.d !== '') {
                 const parsedData = JSON.parse(responseData.d);
-                const minAmount = parsedData.MinAmount || parsedData.minAmount || parsedData || '0';
+                const minAmount =
+                    parsedData.MinAmount ||
+                    parsedData.minAmount ||
+                    parsedData ||
+                    '0';
                 callBack(minAmount.toString());
             } else {
                 callBack('0');
@@ -328,16 +378,18 @@ function* Get_Vendor_Min_Recharge_Amt_Api_Response(response: IResponseParam, cal
 }
 
 function* Generate_Hashkey_Api(actionParam: TGenerateHashkeyParam) {
-    console.log("generateHashKeyAPi");
+    console.log('generateHashKeyAPi');
 
     try {
         const dataObj = {
-            data: [{
-                amount: parseFloat(actionParam.amount).toFixed(2),
-                name: actionParam.name,
-                emailid: actionParam.emailid,
-                userid: (actionParam.userid).toString(),
-            }]
+            data: [
+                {
+                    amount: parseFloat(actionParam.amount).toFixed(2),
+                    name: actionParam.name,
+                    emailid: actionParam.emailid,
+                    userid: actionParam.userid.toString(),
+                },
+            ],
         };
 
         const response: IResponseParam = yield call(clientPostHandler, {
@@ -369,14 +421,19 @@ function* Generate_Hashkey_Api(actionParam: TGenerateHashkeyParam) {
     }
 }
 
-function* Create_Razorpay_Order_Id_Api(actionParam: TCreateRazorpayOrderIdParam) {
+function* Create_Razorpay_Order_Id_Api(
+    actionParam: TCreateRazorpayOrderIdParam,
+) {
     try {
         const dataObj = {
-            data: [{
-                "userid": actionParam.userId,
-                "amount": actionParam.amount,
-            }],
-        }
+            data: [
+                {
+                    userid: actionParam.userId,
+                    amount: actionParam.amount,
+                    payment_type: actionParam.payment_type,
+                },
+            ],
+        };
 
         const response: IResponseParam = yield call(clientPostHandler, {
             url: projectEnv.createOrderIDUrl,
@@ -390,25 +447,37 @@ function* Create_Razorpay_Order_Id_Api(actionParam: TCreateRazorpayOrderIdParam)
             if (orderId) {
                 actionParam.callBack(true, orderId);
             } else {
-                actionParam.callBack(false, undefined, 'Order ID missing in response');
+                actionParam.callBack(
+                    false,
+                    undefined,
+                    'Order ID missing in response',
+                );
             }
         } else {
             actionParam.callBack(false, undefined, 'Order creation failed');
         }
     } catch (error: any) {
-        actionParam.callBack(false, undefined, error?.message || 'Order creation failed');
+        actionParam.callBack(
+            false,
+            undefined,
+            error?.message || 'Order creation failed',
+        );
     }
 }
 
-function* Verify_Razorpay_Signature(actionParam: TVerifyRazorpaySignatureParam) {
-    
+function* Verify_Razorpay_Signature(
+    actionParam: TVerifyRazorpaySignatureParam,
+) {
     try {
         const dataObj = {
-            data: [{
-                order_id: actionParam.orderId,
-                payment_id: actionParam.paymentId,
-                signature: actionParam.signature,
-            }],
+            data: [
+                {
+                    order_id: actionParam.orderId,
+                    payment_id: actionParam.paymentId,
+                    signature: actionParam.signature,
+                    payment_type: actionParam.payment_type,
+                },
+            ],
         };
 
         const response: IResponseParam = yield call(clientPostHandler, {
@@ -419,9 +488,15 @@ function* Verify_Razorpay_Signature(actionParam: TVerifyRazorpaySignatureParam) 
         if (response && response.body && response.body.status === 'success') {
             actionParam.callBack(true);
         } else {
-            actionParam.callBack(false, response.body?.message || 'Signature verification failed');
+            actionParam.callBack(
+                false,
+                response.body?.message || 'Signature verification failed',
+            );
         }
     } catch (error: any) {
-        actionParam.callBack(false, error?.message || 'Signature verification failed');
+        actionParam.callBack(
+            false,
+            error?.message || 'Signature verification failed',
+        );
     }
 }
