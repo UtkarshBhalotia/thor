@@ -4,7 +4,8 @@
 
 export const RAZORPAY_CONFIG_SECURITY = {
     TEST_KEY_ID: 'rzp_test_Sqp5q71RTVvQUT', // Test key for Security Deposit
-    KEY_ID: 'rzp_live_dVzNBAJLOhp088', // Live Key for Security Deposit
+    // KEY_ID: 'rzp_live_dVzNBAJLOhp088', // Live Key for Security Deposit
+    KEY_ID: 'rzp_live_T1VBpEc5nY1ofz', // Live Key for Security Deposit generated on 14th June, 2026
 
     // Environment
     IS_PRODUCTION: false, // false for Test, true for Production
@@ -24,7 +25,7 @@ export const RAZORPAY_CONFIG_SECURITY = {
 
 export const RAZORPAY_CONFIG_WALLET = {
     TEST_KEY_ID: 'rzp_test_SnIUrpxQjWHIE2', // Test Key for Wallet Recharge
-    KEY_ID: '', // Live Key for wallet Deposit
+    KEY_ID: 'rzp_live_SxSoEcOT9OjWoF', // Live Key for wallet Deposit
 
     // Environment
     IS_PRODUCTION: false, // false for Test, true for Production
