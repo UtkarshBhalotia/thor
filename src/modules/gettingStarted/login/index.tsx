@@ -38,7 +38,8 @@ const Login = (props: any) => {
     const insets = useSafeAreaInsets();
     const [isPasswordSecure, setIsPasswordSecure] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
-    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const navigation =
+        useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const forgotPasswordModalRef = React.useRef<BottomSheetModal>(null);
     const [forgotPasswordMobile, setForgotPasswordMobile] = useState('');
 
@@ -85,9 +86,12 @@ const Login = (props: any) => {
             ...data,
             fcmTokenID: fcmToken || '',
             callBack: (userInfo: any) => {
+                console.log('userInfo', userInfo);
                 setIsLoading(false);
                 if (userInfo?.userType === 'A') {
-                    navigation.navigate('AdminTabs', { screen: 'AdminDashboard' });
+                    navigation.navigate('AdminTabs', {
+                        screen: 'AdminDashboard',
+                    });
                 } else {
                     navigation.navigate('HomeTabs', { screen: 'Home' });
                 }
@@ -100,7 +104,11 @@ const Login = (props: any) => {
 
     return (
         <View style={loginStyles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
+            <StatusBar
+                barStyle="light-content"
+                backgroundColor="transparent"
+                translucent={true}
+            />
             <LinearGradient
                 colors={['#5F60B9', '#8A8BDD', '#B5B6E8', '#E6E5F7', '#FFFFFF']}
                 style={loginStyles.gradientBackground}
@@ -115,7 +123,11 @@ const Login = (props: any) => {
                     keyboardVerticalOffset={insets.top}
                     style={[Layout.viewHeight]}>
                     {/* Header */}
-                    <View style={[loginStyles.headerContainer, { paddingTop: insets.top + 20 }]}>
+                    <View
+                        style={[
+                            loginStyles.headerContainer,
+                            { paddingTop: insets.top + 20 },
+                        ]}>
                         <Text style={loginStyles.title}>SOD Partner APP</Text>
                         <Text style={loginStyles.subtitle}>
                             Service On Doors
@@ -263,7 +275,10 @@ const Login = (props: any) => {
                                 disabled={disableFn() || isLoading}
                                 onPress={handleSubmit(onLoginPress)}>
                                 {isLoading ? (
-                                    <ActivityIndicator size="small" color="#FFFFFF" />
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#FFFFFF"
+                                    />
                                 ) : (
                                     <Text style={loginStyles.loginButtonText}>
                                         LOGIN

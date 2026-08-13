@@ -37,10 +37,10 @@ type TUserForgotPasswordParam = {
     callBack?: () => void;
 };
 
+// User is derived from the JWT — no userId in the request.
 type TUpdateUserPasswordParam = {
     oldPassword: string;
     newPassword: string;
-    userId: string;
     callBack: (success: boolean, message: string) => void;
 };
 

@@ -45,8 +45,8 @@ const AdminPartnerList = () => {
             countryId: cId,
             callBack: (data: any[]) => {
                 const formatted = data.map(item => ({
-                    id: item.StateID,
-                    name: item.StateName || item.Name || item
+                    id: item.stateId,
+                    name: item.stateName || item.Name || item
                 }));
                 setStates(formatted);
             }
@@ -58,8 +58,8 @@ const AdminPartnerList = () => {
             stateId: sId,
             callBack: (data: any[]) => {
                 const formatted = data.map(item => ({
-                    id: item.CityID,
-                    name: item.CityName || item.Name || item
+                    id: item.cityId,
+                    name: item.cityName || item.Name || item
                 }));
                 setCities(formatted);
             }
@@ -72,8 +72,8 @@ const AdminPartnerList = () => {
         registerActions('Get_Service_Types_Api', {
             callBack: (data: any[]) => {
                 const formatted = data.map(item => ({
-                    id: item.ServiceTypeID,
-                    name: item.ServiceName
+                    id: item.serviceTypeId,
+                    name: item.serviceName
                 }));
                 setServiceTypes(formatted);
             }
@@ -82,9 +82,9 @@ const AdminPartnerList = () => {
         // Load Country List to find India (for States)
         registerActions('Get_Country_List_Api', {
             callBack: (data: any[]) => {
-                const india = data.find(c => c.CountryName.toLowerCase() === 'india');
+                const india = data.find(c => c.countryName?.toLowerCase() === 'india');
                 if (india) {
-                    loadStates(india.CountryID);
+                    loadStates(india.countryId);
                 }
             }
         });

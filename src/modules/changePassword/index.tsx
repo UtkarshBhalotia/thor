@@ -54,10 +54,10 @@ const ChangePassword = (props: any) => {
         console.log('Update Password Data:', data);
         setSubmitting(true);
 
+        // New REST API: POST /vendor/change-password — user comes from the JWT.
         props.loginActions('Update_User_Password_Api', {
             oldPassword: data.currentPassword,
             newPassword: data.newPassword,
-            userId: props.globalState.userId,
             callBack: async (success: boolean, message: string) => {
                 setSubmitting(false);
                 if (success) {
@@ -76,7 +76,7 @@ const ChangePassword = (props: any) => {
                     Toast.show({
                         type: 'success',
                         text1: 'Success',
-                        text2: message === '1' ? 'Password updated successfully' : message,
+                        text2: message || 'Password updated successfully',
                         visibilityTime: 2000,
                     });
                     setTimeout(() => {

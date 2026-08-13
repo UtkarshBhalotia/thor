@@ -106,44 +106,42 @@ const Profile = (props: any) => {
     );
 
     const loadVendorDetails = () => {
-        const userId = globalState.userId;
-        if (userId) {
-            props.registerActions('Get_Vendor_Details_By_ID_Api', {
-                UserID: userId,
-                callBack: (data: any) => {
-                    console.log('Vendor Details:', data);
-                    // Capture the response
-                    if (data) {
-                        setValue('name', data[0].Name);
-                        setValue('email', data[0].EmailID);
-                        setValue('mobileNumber', data[0].MobileNo);
-                        setValue('companyName', data[0].CompanyName);
-                        setValue('gstin', data[0].GstNo);
-                        setValue('address', data[0].Address);
-                        setValue('state', data[0].State);
-                        setValue('city', data[0].City);
-                        setValue('ProfileLocked', data[0].ProfileLocked);
-                        setValue('ValidateGST', data[0].ValidateGST);
-                    }
+        // New REST API: the vendor is derived from the JWT, so no UserID is sent
+        // and the callback receives a single profile object (camelCase fields).
+        props.registerActions('Get_Vendor_Details_By_ID_Api', {
+            callBack: (data: any) => {
+                console.log('Vendor Details:', data);
+                // Capture the response
+                if (data) {
+                    setValue('name', data.name);
+                    setValue('email', data.emailId);
+                    setValue('mobileNumber', data.mobileNo);
+                    setValue('companyName', data.companyName);
+                    setValue('gstin', data.gstNo);
+                    setValue('address', data.address);
+                    setValue('state', data.state);
+                    setValue('city', data.city);
+                    setValue('ProfileLocked', data.profileLocked);
+                    setValue('ValidateGST', data.validateGst);
+                }
 
-                    loadCountryList();
-                },
-            });
-        }
+                loadCountryList();
+            },
+        });
     };
 
     const loadCountryList = () => {
         props.registerActions('Get_Country_List_Api', {
             callBack: (data: any[]) => {
                 const countryData = data.map((item: any) => ({
-                    CountryID: item.CountryID,
-                    CountryName: item.CountryName,
+                    CountryID: item.countryId,
+                    CountryName: item.countryName,
                 }));
                 setCountries(countryData);
 
                 // Default to India
                 const india = countryData.find(
-                    (c) => c.CountryName.toLowerCase() === 'india',
+                    (c) => c.CountryName?.toLowerCase() === 'india',
                 );
                 if (india) {
                     loadStateList(india.CountryID);
@@ -157,8 +155,8 @@ const Profile = (props: any) => {
             countryId: countryId,
             callBack: (data: any[]) => {
                 const stateData = data.map((item: any) => ({
-                    StateID: item.StateID,
-                    StateName: item.StateName || item.Name || item,
+                    StateID: item.stateId,
+                    StateName: item.stateName || item.Name || item,
                 }));
                 setStates(stateData);
             },
@@ -170,7 +168,7 @@ const Profile = (props: any) => {
             stateId: stateId,
             callBack: (data: any[]) => {
                 const cityNames = data.map(
-                    (item: any) => item.CityName || item.Name || item,
+                    (item: any) => item.cityName || item.Name || item,
                 );
                 setCities(cityNames);
 
@@ -264,23 +262,18 @@ const Profile = (props: any) => {
 
     const handleUpdateProfile = (data: any) => {
         console.log('Update Profile Data:', data);
-        const userId = globalState.userId;
-        if (!userId) {
-            Alert.alert('Error', 'User ID not found');
-            return;
-        }
 
         setSubmitting(true);
+        // New REST API: PUT /vendor/profile — vendor comes from the JWT and the
+        // callback reports success via the HTTP status, not a `d` payload.
         props.registerActions('Update_Vendor_Profile_Api', {
-            UserID: userId,
-            CompanyName: data.companyName,
-            GSTNo: data.gstin,
-            MobileNo: data.mobileNumber,
-            Address: data.address,
-            callBack: async (response: any) => {
+            companyName: data.companyName,
+            gstNo: data.gstin,
+            mobileNo: data.mobileNumber,
+            address: data.address,
+            callBack: async (success: boolean, message?: string) => {
                 setSubmitting(false);
-                // The user's manual change to action.tsx implies response will be 1 on success
-                if (response === 1) {
+                if (success) {
                     // Update Global State and AsyncStorage
                     const updatedUserInfo = {
                         ...globalState,
@@ -288,7 +281,7 @@ const Profile = (props: any) => {
                         gstNo: data.gstin,
                         mobile: data.mobileNumber,
                         // Address is not in globalState yet but we can add it if needed
-                        // address: data.address, 
+                        // address: data.address,
                     };
 
                     // Persist to AsyncStorage
@@ -303,7 +296,7 @@ const Profile = (props: any) => {
 
                     showToast({
                         type: 'mazuSuccess',
-                        text1: 'Profile updated successfully',
+                        text1: message || 'Profile updated successfully',
                     });
 
                     setTimeout(() => {
@@ -312,12 +305,7 @@ const Profile = (props: any) => {
 
                     loadVendorDetails(); // Refresh local form data
                 } else {
-                    Alert.alert(
-                        'Error',
-                        response && response[0]?.Message
-                            ? response[0].Message
-                            : 'Failed to update profile',
-                    );
+                    Alert.alert('Error', message || 'Failed to update profile');
                 }
             },
         });

@@ -30,6 +30,8 @@ type TUserGetAllTypeVendorBalanceParam = {
         walletBalance: string;
         securityDeposit: string;
         systemCharges: string;
+        totalNewLead: number | string;
+        totalOngoingLead: number | string;
     }) => void;
 };
 type TUserGetOnGoingServicesListParam = {
@@ -50,11 +52,7 @@ type TUserGetLeadDetailByLeadIdParam = {
 type TUserGetWorkReportForVendorParam = {
     fromDate: string;
     toDate: string;
-    callBack: (data: {
-        ongoing: number;
-        new: number;
-        revenue: number;
-    }) => void;
+    callBack: (data: { ongoing: number; new: number; revenue: number }) => void;
 };
 
 type TUserCheckVendorCompatibilityVersionParam = {
@@ -88,4 +86,5 @@ interface IResponseParam {
     status: number;
     message: string;
     data: any;
+    text?: string;
 }

@@ -154,14 +154,14 @@ const Register = (props: any) => {
         props.registerActions('Get_Service_Types_Api', {
             callBack: (data: any[]) => {
                 // Extract service type names from API response
-                const types = data.map((item: any) => item.ServiceName);
+                const types = data.map((item: any) => item.serviceName);
                 setServiceTypes(types);
 
                 // Create checkbox array from API data
                 const checkboxData = data.map((item: any) => ({
-                    name: item.ServiceName,
+                    name: item.serviceName,
                     isChecked: false,
-                    id: item.ServiceTypeID,
+                    id: item.serviceTypeId,
                 }));
                 setServiceTypesWithCheckbox(checkboxData);
             },
@@ -173,8 +173,8 @@ const Register = (props: any) => {
             callBack: (data: any[]) => {
                 // Extract CountryID and Name from API response
                 const countryData = data.map((item: any) => ({
-                    CountryID: item.CountryID,
-                    CountryName: item.CountryName,
+                    CountryID: item.countryId,
+                    CountryName: item.countryName,
                 }));
                 setCountries(countryData);
 
@@ -197,8 +197,8 @@ const Register = (props: any) => {
             callBack: (data: any[]) => {
                 // Extract StateID and StateName from API response
                 const stateData = data.map((item: any) => ({
-                    StateID: item.StateID,
-                    StateName: item.StateName || item.Name || item,
+                    StateID: item.stateId,
+                    StateName: item.stateName || item.Name || item,
                 }));
                 setStates(stateData);
             },
@@ -211,8 +211,8 @@ const Register = (props: any) => {
             callBack: (data: any[]) => {
                 // Extract city names and IDs from API response
                 const cityData = data.map((item: any) => ({
-                    CityID: item.CityID,
-                    CityName: item.CityName || item.Name || item,
+                    CityID: item.cityId,
+                    CityName: item.cityName || item.Name || item,
                 }));
                 setCities(cityData);
             },
@@ -599,9 +599,11 @@ const Register = (props: any) => {
 
                 if (!areMandatoryFieldsFilled()) {
                     if ((watchedValues.count || 0) === 0) {
-                        missingMessage = 'Please select at least one service type.';
+                        missingMessage =
+                            'Please select at least one service type.';
                     } else {
-                        missingMessage = 'Please fill all mandatory personal and company details.';
+                        missingMessage =
+                            'Please fill all mandatory personal and company details.';
                     }
                 } else if (!acceptTerms) {
                     missingMessage = 'Please accept the Terms and Conditions.';
@@ -610,9 +612,12 @@ const Register = (props: any) => {
                 } else if (!isMobileVerified) {
                     missingMessage = 'Mobile number verification is required.';
                 } else if (!areDocumentsUploaded()) {
-                    const hasGst = watchedValues.gstin && watchedValues.gstin.trim() !== '';
+                    const hasGst =
+                        watchedValues.gstin &&
+                        watchedValues.gstin.trim() !== '';
                     if (!aadharFront || !aadharBack) {
-                        missingMessage = 'Please upload both front and back of Aadhar card.';
+                        missingMessage =
+                            'Please upload both front and back of Aadhar card.';
                     } else if (hasGst && !gstCertificate) {
                         missingMessage = 'Please upload GST Certificate.';
                     } else if (!hasGst && !panCard) {
@@ -639,47 +644,41 @@ const Register = (props: any) => {
 
             const selectedServices = (formData.previousService || [])
                 .filter((s: any) => s.isChecked)
-                .map((s: any) => String(s.id));
+                .map((s: any) => Number(s.id));
 
             const registerData = {
-                data: [
-                    {
-                        Name: formData.name,
-                        EmailID: formData.email,
-                        Password: formData.password,
-                        MobileNo: formData.mobileNumber,
-                        AltMobileNo: formData.alternateMobileNumber || '',
-                        CompanyName: formData.companyName,
-                        GstNo: formData.gstin || '',
-                        Address: formData.address,
-                        UserType: 'P',
+                name: formData.name,
+                emailId: formData.email,
+                password: formData.password,
+                mobileNo: formData.mobileNumber,
+                altMobileNo: formData.alternateMobileNumber || '',
+                companyName: formData.companyName,
+                gstNo: formData.gstin || '',
+                address: formData.address,
 
-                        CountryID: String(countryData?.CountryID || ''),
-                        StateID: String(stateData?.StateID || ''),
-                        CityID: String(cityData?.CityID || ''),
-                        RoleID: '1',
-                        IsActive: '0',
+                countryId: Number(countryData?.CountryID || 0),
+                stateId: Number(stateData?.StateID || 0),
+                cityId: Number(cityData?.CityID || 0),
+                isActive: true,
 
-                        FCMTokenID: (await getFcmToken()) || '',
+                fcmTokenId: (await getFcmToken()) || '',
 
-                        ServiceTypeList: selectedServices,
+                serviceTypeList: selectedServices,
 
-                        ProfileImageType: getImageType(profileImage?.type),
-                        ProfileImageBase64: profileImage?.base64 || '',
+                profileImageType: getImageType(profileImage?.type),
+                profileImageBase64: profileImage?.base64 || '',
 
-                        PanImageType: getImageType(panCard?.type),
-                        PanImageBase64: panCard?.base64 || '',
+                panImageType: getImageType(panCard?.type),
+                panImageBase64: panCard?.base64 || '',
 
-                        GstFileType: getImageType(gstCertificate?.type),
-                        GstFileBase64: gstCertificate?.base64 || '',
+                gstFileType: getImageType(gstCertificate?.type),
+                gstFileBase64: gstCertificate?.base64 || '',
 
-                        AadhaarFrontImageType: getImageType(aadharFront?.type),
-                        AadhaarFrontImageBase64: aadharFront?.base64 || '',
+                aadhaarFrontImageType: getImageType(aadharFront?.type),
+                aadhaarFrontImageBase64: aadharFront?.base64 || '',
 
-                        AadhaarBackImageType: getImageType(aadharBack?.type),
-                        AadhaarBackImageBase64: aadharBack?.base64 || '',
-                    },
-                ],
+                aadhaarBackImageType: getImageType(aadharBack?.type),
+                aadhaarBackImageBase64: aadharBack?.base64 || '',
             };
 
             props.registerActions('Vendor_Registration_Api', {
@@ -716,7 +715,11 @@ const Register = (props: any) => {
 
     return (
         <View style={loginStyles.container}>
-            <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
+            <StatusBar
+                barStyle="light-content"
+                backgroundColor="transparent"
+                translucent={true}
+            />
             <LinearGradient
                 colors={['#5F60B9', '#8A8BDD', '#B5B6E8', '#E6E5F7', '#FFFFFF']}
                 style={loginStyles.gradientBackground}
@@ -749,7 +752,11 @@ const Register = (props: any) => {
                             Platform.OS === 'ios' ? 'interactive' : 'on-drag'
                         }>
                         {/* Header */}
-                        <View style={[registerPageStyles.headerContainer, { paddingTop: insets.top + 20 }]}>
+                        <View
+                            style={[
+                                registerPageStyles.headerContainer,
+                                { paddingTop: insets.top + 20 },
+                            ]}>
                             <Text style={registerPageStyles.title}>
                                 Partner Registration
                             </Text>
@@ -1590,7 +1597,9 @@ const Register = (props: any) => {
                                                             style={
                                                                 styles.documentOverlayIcon
                                                             }>
-                                                            {aadharFront ? '✏️' : '+'}
+                                                            {aadharFront
+                                                                ? '✏️'
+                                                                : '+'}
                                                         </Text>
                                                     </View>
                                                 </TouchableOpacity>
@@ -1667,7 +1676,9 @@ const Register = (props: any) => {
                                                             style={
                                                                 styles.documentOverlayIcon
                                                             }>
-                                                            {aadharBack ? '✏️' : '+'}
+                                                            {aadharBack
+                                                                ? '✏️'
+                                                                : '+'}
                                                         </Text>
                                                     </View>
                                                 </TouchableOpacity>
@@ -1698,7 +1709,7 @@ const Register = (props: any) => {
                                     <View
                                         style={styles.documentUploadContainer}>
                                         {watchedValues.gstin &&
-                                            watchedValues.gstin.trim() !== '' ? (
+                                        watchedValues.gstin.trim() !== '' ? (
                                             <>
                                                 <Text
                                                     style={
@@ -1748,19 +1759,19 @@ const Register = (props: any) => {
                                                 }
                                                 onPress={() =>
                                                     watchedValues.gstin &&
-                                                        watchedValues.gstin.trim() !==
+                                                    watchedValues.gstin.trim() !==
                                                         ''
                                                         ? handleDocumentUpload(
-                                                            'gstCertificate',
-                                                        )
+                                                              'gstCertificate',
+                                                          )
                                                         : handleDocumentUpload(
-                                                            'panCard',
-                                                        )
+                                                              'panCard',
+                                                          )
                                                 }
                                                 activeOpacity={0.8}>
                                                 {(
                                                     watchedValues.gstin &&
-                                                        watchedValues.gstin.trim() !==
+                                                    watchedValues.gstin.trim() !==
                                                         ''
                                                         ? gstCertificate
                                                         : panCard
@@ -1769,7 +1780,7 @@ const Register = (props: any) => {
                                                         source={{
                                                             uri:
                                                                 watchedValues.gstin &&
-                                                                    watchedValues.gstin.trim() !==
+                                                                watchedValues.gstin.trim() !==
                                                                     ''
                                                                     ? gstCertificate?.uri
                                                                     : panCard?.uri,
@@ -1789,7 +1800,7 @@ const Register = (props: any) => {
                                                                 styles.documentIcon
                                                             }>
                                                             {watchedValues.gstin &&
-                                                                watchedValues.gstin.trim() !==
+                                                            watchedValues.gstin.trim() !==
                                                                 ''
                                                                 ? '🏢'
                                                                 : '💳'}
@@ -1799,7 +1810,7 @@ const Register = (props: any) => {
                                                                 styles.documentPlaceholderText
                                                             }>
                                                             {watchedValues.gstin &&
-                                                                watchedValues.gstin.trim() !==
+                                                            watchedValues.gstin.trim() !==
                                                                 ''
                                                                 ? 'GST Certificate'
                                                                 : 'PAN Card'}
@@ -1814,38 +1825,46 @@ const Register = (props: any) => {
                                                         style={
                                                             styles.documentOverlayIcon
                                                         }>
-                                                        {((watchedValues.gstin && watchedValues.gstin.trim() !== '' ? gstCertificate : panCard)) ? '✏️' : '+'}
+                                                        {(
+                                                            watchedValues.gstin &&
+                                                            watchedValues.gstin.trim() !==
+                                                                ''
+                                                                ? gstCertificate
+                                                                : panCard
+                                                        )
+                                                            ? '✏️'
+                                                            : '+'}
                                                     </Text>
                                                 </View>
                                             </TouchableOpacity>
                                             {(watchedValues.gstin &&
-                                                watchedValues.gstin.trim() !== ''
+                                            watchedValues.gstin.trim() !== ''
                                                 ? gstCertificate
                                                 : panCard) && (
-                                                    <TouchableOpacity
+                                                <TouchableOpacity
+                                                    style={
+                                                        styles.removeDocumentButton
+                                                    }
+                                                    onPress={() =>
+                                                        watchedValues.gstin &&
+                                                        watchedValues.gstin.trim() !==
+                                                            ''
+                                                            ? handleRemoveDocument(
+                                                                  'gstCertificate',
+                                                              )
+                                                            : handleRemoveDocument(
+                                                                  'panCard',
+                                                              )
+                                                    }
+                                                    activeOpacity={0.7}>
+                                                    <Text
                                                         style={
-                                                            styles.removeDocumentButton
-                                                        }
-                                                        onPress={() =>
-                                                            watchedValues.gstin &&
-                                                                watchedValues.gstin.trim() !==
-                                                                ''
-                                                                ? handleRemoveDocument(
-                                                                    'gstCertificate',
-                                                                )
-                                                                : handleRemoveDocument(
-                                                                    'panCard',
-                                                                )
-                                                        }
-                                                        activeOpacity={0.7}>
-                                                        <Text
-                                                            style={
-                                                                styles.removeDocumentText
-                                                            }>
-                                                            Remove
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                )}
+                                                            styles.removeDocumentText
+                                                        }>
+                                                        Remove
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            )}
                                         </View>
                                     </View>
                                 </View>
@@ -1862,7 +1881,7 @@ const Register = (props: any) => {
                                             style={[
                                                 styles.checkbox,
                                                 acceptTerms &&
-                                                styles.checkboxChecked,
+                                                    styles.checkboxChecked,
                                             ]}>
                                             {acceptTerms && (
                                                 <Text style={styles.checkmark}>
@@ -1876,10 +1895,13 @@ const Register = (props: any) => {
                                                 <Text
                                                     style={styles.termsLink}
                                                     onPress={() => {
-                                                        navigation.navigate('WebViewScreen', {
-                                                            url: 'https://serviceondoors.com/Terms-And-Conditions',
-                                                            title: 'Terms and Conditions',
-                                                        });
+                                                        navigation.navigate(
+                                                            'WebViewScreen',
+                                                            {
+                                                                url: 'https://serviceondoors.com/Terms-And-Conditions',
+                                                                title: 'Terms and Conditions',
+                                                            },
+                                                        );
                                                     }}>
                                                     Terms and Conditions
                                                 </Text>

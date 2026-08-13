@@ -1,5 +1,5 @@
 import { call, select } from 'redux-saga/effects';
-import { clientPostHandler } from '../../services/request';
+import { clientRestHandler } from '../../services/request';
 import { RootState } from '../../../store';
 import projectEnv from '../../services/env';
 import { showToast } from '../../utils/common';
@@ -38,16 +38,15 @@ function* GetWorkReportForVendorApi(
 
         const userType = (actionParam.userType || GlobalState.userType || '').trim().toUpperCase();
         const isAdmin = userType === 'A' || userType === 'ADMIN';
-        const url = isAdmin ? projectEnv.getWorkReportForAdminUrl : projectEnv.getReportForVendorUrl;
+        // New REST API: GET /admin/work-report or /vendor/work-report?from=&to=
+        // (JWT; the user is derived from the token, so no UserID is sent).
+        const url = isAdmin
+            ? projectEnv.adminWorkReportRestUrl
+            : projectEnv.vendorWorkReportRestUrl;
 
-        const dataObj = {
-            FromDate: actionParam.fromDate,
-            ToDate: actionParam.toDate,
-            UserID: GlobalState.userId,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: url,
-            data: dataObj,
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: `${url}?from=${actionParam.fromDate}&to=${actionParam.toDate}`,
+            method: 'GET',
         });
 
         yield GetWorkReportForVendorApi_Response(
@@ -56,6 +55,20 @@ function* GetWorkReportForVendorApi(
         );
     } catch (error) {
         console.error('Error in GetWorkReportForVendorApi:', error);
+        showToast({
+            type: 'error',
+            text1: 'Failed to fetch report',
+            visibilityTime: 2000,
+        });
+        actionParam.callBack({
+            ongoing: 0,
+            denied: 0,
+            completed: 0,
+            follow: 0,
+            reCompleted: 0,
+            reComplaint: 0,
+            totalRevenue: 0,
+        });
     }
 }
 
@@ -64,64 +77,50 @@ function* GetWorkReportForVendorApi_Response(
     callBack: (data: TReportData) => void,
 ) {
     try {
-        if (response && response.body) {
-            const responseData = response.body;
+        // Body is the work-report array directly (same field names as before).
+        const parsedData = response?.body;
 
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
+        const reportData: TReportData = {
+            ongoing: 0,
+            denied: 0,
+            completed: 0,
+            follow: 0,
+            reCompleted: 0,
+            reComplaint: 0,
+            totalRevenue: 0,
+        };
 
-                const reportData: TReportData = {
-                    ongoing: 0,
-                    denied: 0,
-                    completed: 0,
-                    follow: 0,
-                    reCompleted: 0,
-                    reComplaint: 0,
-                    totalRevenue: 0,
-                };
+        if (Array.isArray(parsedData) && parsedData.length > 0) {
+            parsedData.forEach((item: any) => {
+                const leadStatus = item.LeadStatus || '';
+                const total = parseInt(item.Total || '0', 10);
+                const totalAmt = parseFloat(item.TotalAmt || '0');
 
-                if (Array.isArray(parsedData) && parsedData.length > 0) {
-                    parsedData.forEach((item: any) => {
-                        const leadStatus = item.LeadStatus || '';
-                        const total = parseInt(item.Total || '0', 10);
-                        const totalAmt = parseFloat(item.TotalAmt || '0');
-
-                        // Match against potential status names from API
-                        if (leadStatus === 'Ongoing') {
-                            reportData.ongoing = total;
-                        } else if (leadStatus === 'Denied') {
-                            reportData.denied = total;
-                        } else if (leadStatus === 'Completed') {
-                            reportData.completed = total;
-                            reportData.totalRevenue = totalAmt;
-                        } else if (leadStatus === 'Follow Up' || leadStatus === 'Follow') {
-                            reportData.follow = total;
-                        } else if (leadStatus === 'Re-Completed' || leadStatus === 'ReCompleted') {
-                            reportData.reCompleted = total;
-                        } else if (leadStatus === 'Re-Complaint' || leadStatus === 'ReComplaint') {
-                            reportData.reComplaint = total;
-                        }
-                    });
+                // Match against potential status names from API
+                if (leadStatus === 'Ongoing') {
+                    reportData.ongoing = total;
+                } else if (leadStatus === 'Denied') {
+                    reportData.denied = total;
+                } else if (leadStatus === 'Completed') {
+                    reportData.completed = total;
+                    reportData.totalRevenue = totalAmt;
+                } else if (leadStatus === 'Follow Up' || leadStatus === 'Follow') {
+                    reportData.follow = total;
+                } else if (leadStatus === 'Re-Completed' || leadStatus === 'ReCompleted') {
+                    reportData.reCompleted = total;
+                } else if (leadStatus === 'Re-Complaint' || leadStatus === 'ReComplaint') {
+                    reportData.reComplaint = total;
                 }
-
-                callBack(reportData);
-            } else {
-                callBack({
-                    ongoing: 0,
-                    denied: 0,
-                    completed: 0,
-                    follow: 0,
-                    reCompleted: 0,
-                    reComplaint: 0,
-                    totalRevenue: 0,
-                });
-                showToast({
-                    type: 'error',
-                    text1: 'No report data found',
-                    visibilityTime: 2000,
-                });
-            }
+            });
+        } else {
+            showToast({
+                type: 'error',
+                text1: 'No report data found',
+                visibilityTime: 2000,
+            });
         }
+
+        callBack(reportData);
     } catch (error) {
         console.error('Error in GetWorkReportForVendorApi_Response:', error);
         callBack({

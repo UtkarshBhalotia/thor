@@ -13,6 +13,11 @@ export const GlobalInitialState: IGlobalInitialState = {
     profileLocked: '',
     validateGST: '',
     isOnline: true,
+    altMobile: '',
+    address: '',
+    countryId: '',
+    cityId: '',
+    roleId: null,
 };
 
 export const GlobalReducer = (

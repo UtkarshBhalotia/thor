@@ -13,6 +13,12 @@ type IGlobalInitialState = {
     profileLocked: string;
     validateGST: string;
     isOnline: boolean;
+    // Added with the new REST partner-login response.
+    altMobile?: string;
+    address?: string;
+    countryId?: number | string;
+    cityId?: number | string;
+    roleId?: number | string | null;
 };
 
 type TGlobalReducerAction = {

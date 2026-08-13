@@ -15,7 +15,11 @@ import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import { bookingStyles } from '../../assets/css/bookingStyles';
 import ServiceCard from '../dashboard/components/ServiceCard';
 import AcceptLeadConfirmationModal from '../../components/AcceptLeadConfirmationModal';
-import { NavigationProp, useNavigation, useRoute } from '@react-navigation/native';
+import {
+    NavigationProp,
+    useNavigation,
+    useRoute,
+} from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { AppDispatch, RootState } from '../../../store';
 import { connect } from 'react-redux';
@@ -33,13 +37,36 @@ type BookingStatus =
     | 'Complaint';
 type TabFilter = 'All' | BookingStatus;
 
-const TAB_CONFIG: Record<BookingStatus, { icon: string; style: any; text: string }> = {
+const TAB_CONFIG: Record<
+    BookingStatus,
+    { icon: string; style: any; text: string }
+> = {
     New: { icon: 'flash', style: bookingStyles.tabNew, text: 'New' },
-    Ongoing: { icon: 'construct', style: bookingStyles.tabOngoing, text: 'Ongoing' },
-    'Follow Up': { icon: 'call', style: bookingStyles.tabFollowUp, text: 'Follow Up' },
-    Denied: { icon: 'close-circle', style: bookingStyles.tabDenied, text: 'Denied' },
-    Completed: { icon: 'checkmark-circle', style: bookingStyles.tabCompleted, text: 'Completed' },
-    Complaint: { icon: 'alert-circle', style: bookingStyles.tabComplaint, text: 'Complaint' },
+    Ongoing: {
+        icon: 'construct',
+        style: bookingStyles.tabOngoing,
+        text: 'Ongoing',
+    },
+    'Follow Up': {
+        icon: 'call',
+        style: bookingStyles.tabFollowUp,
+        text: 'Follow Up',
+    },
+    Denied: {
+        icon: 'close-circle',
+        style: bookingStyles.tabDenied,
+        text: 'Denied',
+    },
+    Completed: {
+        icon: 'checkmark-circle',
+        style: bookingStyles.tabCompleted,
+        text: 'Completed',
+    },
+    Complaint: {
+        icon: 'alert-circle',
+        style: bookingStyles.tabComplaint,
+        text: 'Complaint',
+    },
 };
 
 const Booking = (props: any) => {
@@ -92,7 +119,7 @@ const Booking = (props: any) => {
     ];
 
     const handleAcceptService = (serviceId: string) => {
-        const lead = assignedServices.find((item) => item.LeadID === serviceId);
+        const lead = assignedServices.find((item) => item.leadId === serviceId);
         if (lead) {
             setSelectedLead(lead);
             acceptModalRef.current?.present();
@@ -104,7 +131,7 @@ const Booking = (props: any) => {
             setIsAcceptingLead(true);
             const amountToSend = data.amount || selectedLead.LeadAmount || '';
             props.bookingActions('Accept_Lead_By_Vendor_Api', {
-                leadId: selectedLead.LeadID,
+                leadId: selectedLead.leadId,
                 amount: amountToSend,
                 callBack: (success: boolean, message: string) => {
                     setIsAcceptingLead(false);
@@ -133,13 +160,13 @@ const Booking = (props: any) => {
     };
 
     const handleDeniedLead = (leadId: string, reason: string) => {
-        const lead = assignedServices.find((item) => item.LeadID === leadId);
+        const lead = assignedServices.find((item) => item.leadId === leadId);
         if (lead) {
             setIsDenyingLead(true);
             props.bookingActions('Deny_Lead_By_Vendor_Api', {
                 leadId: leadId,
                 reason: reason,
-                amount: lead.LeadAmount || '',
+                amount: lead.leadAmount || '',
                 callBack: (success: boolean, message: string) => {
                     setIsDenyingLead(false);
                     if (success) {
@@ -256,17 +283,13 @@ const Booking = (props: any) => {
         });
     };
 
-    const handleFetchDeniedReasons = (
-        callBack: (data: any[]) => void,
-    ) => {
+    const handleFetchDeniedReasons = (callBack: (data: any[]) => void) => {
         props.bookingActions('Get_Denied_Reason_List_Api', {
             callBack: callBack,
         });
     };
 
-    const handleFetchFollowUpReasons = (
-        callBack: (data: any[]) => void,
-    ) => {
+    const handleFetchFollowUpReasons = (callBack: (data: any[]) => void) => {
         props.bookingActions('Get_FollowUp_Reason_List_Api', {
             callBack: callBack,
         });
@@ -281,32 +304,35 @@ const Booking = (props: any) => {
     }) => (
         <ServiceCard
             key={index}
-            leadId={item.LeadID}
-            leadNo={item.LeadNo || item.ComplaintNo || item.No}
-            leadType={item.ServiceTypeName || item.ComplaintType || item.ServiceType}
-            leadAmt={item.LeadAmount || item.CustomerAmt}
-            leadStatus={item.LeadStatus}
-            leadDate={item.LeadDate}
-            leadCity={item.CityName + ', ' + item.StateName}
-            leadDescription={item.Desc || item.Description || item.PartsDesc}
-            leadBrand={`${item.BrandName} (${item.ModelName})`}
-            deniedReason={item.Reason}
-            deniedDate={item.DeniedDate}
-            deniedStatus={item.DeniedStatus}
-            completedDate={item.CompletedDate}
-            completedAmout={item.CustomerAmount || item.CustomerAmt}
-            reComplaintId={item.ComplaintID}
-            customerName={item.CustomerName}
-            customerMobile={item.MobileNo}
-            customerAddress={item.Address}
-            acceptLeadDate={item.AcceptDate}
-            onAccept={() => handleAcceptService(item.LeadID)}
+            leadId={item.leadId}
+            leadNo={item.leadNo}
+            leadType={item.serviceTypeName}
+            leadAmt={item.leadAmount}
+            leadStatus={item.leadStatus}
+            leadDate={item.leadDate}
+            leadCity={item.cityName + ', ' + item.stateName}
+            leadDescription={item.desc || item.partsDesc}
+            leadBrand={`${item.brandName} (${item.modelName})`}
+            deniedReason={item.reason}
+            deniedDate={item.deniedDate}
+            deniedStatus={item.deniedStatus}
+            completedDate={item.completedDate}
+            completedAmout={item.customerAmount || item.customerAmt}
+            reComplaintId={item.complaintId}
+            customerName={item.customerName}
+            customerMobile={item.customerMobile}
+            reComplaintDate={item.reComplaintDate}
+            customerAddress={item.customerAddress}
+            acceptLeadDate={item.acceptLeadDate}
+            onAccept={() => handleAcceptService(item.leadId)}
             onDenied={handleDeniedLead}
-            onCompleted={(data) => handleCompletedLead(item.LeadID, data, item.LeadStatus)}
+            onCompleted={(data) =>
+                handleCompletedLead(item.leadId, data, item.leadStatus)
+            }
             onFollowUp={(data: {
                 nextFollowUpDate: Date;
                 followUpDetails: string;
-            }) => handleFollowUpLead(item.LeadID, data)}
+            }) => handleFollowUpLead(item.leadId, data)}
             onCustomerDetailsClick={handleCustomerDetailsClick}
             onFetchDeniedReasons={handleFetchDeniedReasons}
             onFetchFollowUpReasons={handleFetchFollowUpReasons}
@@ -336,12 +362,16 @@ const Booking = (props: any) => {
                 transparent={true}
                 animationType="none"
                 visible={isLoading}
-                onRequestClose={() => { }}>
+                onRequestClose={() => {}}>
                 <View style={bookingStyles.loaderOverlay}>
                     <ActivityIndicator size="large" color="#5F60B9" />
                 </View>
             </Modal>
-            <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent={true} />
+            <StatusBar
+                backgroundColor="transparent"
+                barStyle="dark-content"
+                translucent={true}
+            />
 
             {/* Header */}
             <View style={bookingStyles.header}>
@@ -382,7 +412,9 @@ const Booking = (props: any) => {
                                         isActive && bookingStyles.tabTextActive,
                                     ]}>
                                     {config.text}
-                                    {isActive ? ` (${assignedServices.length})` : ''}
+                                    {isActive
+                                        ? ` (${assignedServices.length})`
+                                        : ''}
                                 </Text>
                             </TouchableOpacity>
                         );
@@ -408,11 +440,11 @@ const Booking = (props: any) => {
                 leadDetails={
                     selectedLead
                         ? {
-                            leadNo: selectedLead.LeadNo,
-                            leadType: selectedLead.ServiceTypeName,
-                            leadAmount: selectedLead.LeadAmount,
-                            leadDate: selectedLead.LeadDate,
-                        }
+                              leadNo: selectedLead.leadNo,
+                              leadType: selectedLead.serviceTypeName,
+                              leadAmount: selectedLead.leadAmount,
+                              leadDate: selectedLead.leadDate,
+                          }
                         : undefined
                 }
                 isLoading={isAcceptingLead}

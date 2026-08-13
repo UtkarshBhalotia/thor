@@ -1,8 +1,20 @@
-import { call, select } from 'redux-saga/effects';
-import { clientPostHandler } from '../../../services/request';
+import { call } from 'redux-saga/effects';
+import { clientRestHandler } from '../../../services/request';
 import projectEnv from '../../../services/env';
 import { showToast } from '../../../utils/common';
-import { RootState } from '../../../../store';
+import { IResponseParam } from '../login/type';
+import {
+    TUserRegisterConditionParamActionName,
+    IUserRegisterActionConditionParam,
+    TUserGetServiceTypesParam,
+    TUserGetCountryListParam,
+    TUserGetStateListParam,
+    TUserGetCityListParam,
+    TUserGetVendorDetailsByIDParam,
+    TUserVendorRegistrationParam,
+    TUserUpdateVendorProfileParam,
+    TUserMapCityListByVendorParam,
+} from './type';
 
 export function* conditionActions<
     T extends TUserRegisterConditionParamActionName,
@@ -57,16 +69,30 @@ export function* conditionActions<
 }
 
 function* VendorRegistrationApi(actionParam: TUserVendorRegistrationParam) {
-    console.log('VendorAPI');
-
     try {
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.vendorRegistrationUrl,
+        // New REST API: POST /vendor-registration (anon). Success = 2xx;
+        // duplicate email/mobile rejects with 409.
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorRegistrationRestUrl,
+            method: 'POST',
+            anon: true,
             data: actionParam.data,
         });
 
         yield VendorRegistrationApi_Response(response, actionParam.callBack);
-    } catch (error) { }
+    } catch (error: any) {
+        // clientRestHandler rejects on non-2xx (409 = duplicate email/mobile).
+        console.log('VendorRegistrationApi error', error);
+        const msg =
+            error?.status === 409
+                ? error?.body?.message ||
+                  error?.body?.error?.message ||
+                  'This email or mobile number is already registered.'
+                : error?.body?.message ||
+                  error?.body?.error?.message ||
+                  'Registration failed. Please try again later.';
+        actionParam.callBack({ status: 'error', msg });
+    }
 }
 
 function* VendorRegistrationApi_Response(
@@ -74,28 +100,34 @@ function* VendorRegistrationApi_Response(
     callBack: (data: any) => void,
 ) {
     try {
-        if (response.body.status === 'success') {
-            const responseData = response.body;
-            callBack(responseData);
-        } else if (response.body.status === 'error') {
-            callBack(response.body);
-        } else {
-            callBack(null);
-        }
+        // Reaching here means a 2xx response — registration succeeded.
+        const body = response?.body || {};
+        callBack({
+            status: 'success',
+            msg: body.message || 'Registration successful',
+            ...body,
+        });
     } catch (error) {
-        callBack(null);
+        callBack({
+            status: 'error',
+            msg: 'Registration failed. Please try again later.',
+        });
     }
 }
 
 function* GetServiceTypesApi(actionParam: TUserGetServiceTypesParam) {
     try {
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getAllServiceTypeListUrl,
-            data: {},
+        // New REST API: GET /service-types (anon). Body is the array directly.
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.serviceTypesRestUrl,
+            method: 'GET',
+            anon: true,
         });
 
         yield GetServiceTypesApi_Response(response, actionParam.callBack);
-    } catch (error) { }
+    } catch (error) {
+        actionParam.callBack([]);
+    }
 }
 
 function* GetServiceTypesApi_Response(
@@ -103,20 +135,15 @@ function* GetServiceTypesApi_Response(
     callBack: (data: any[]) => void,
 ) {
     try {
-        if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-            } else {
-                callBack([]);
-                showToast({
-                    type: 'error',
-                    text1: 'No service types found',
-                    visibilityTime: 2000,
-                });
-            }
+        if (response && Array.isArray(response.body)) {
+            callBack(response.body);
+        } else {
+            callBack([]);
+            showToast({
+                type: 'error',
+                text1: 'No service types found',
+                visibilityTime: 2000,
+            });
         }
     } catch (error) {
         callBack([]);
@@ -125,13 +152,17 @@ function* GetServiceTypesApi_Response(
 
 function* GetCountryListApi(actionParam: TUserGetCountryListParam) {
     try {
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getAllCountryListUrl,
-            data: {},
+        // New REST API: GET /countries (anon). Body is the array directly.
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.countriesRestUrl,
+            method: 'GET',
+            anon: true,
         });
 
         yield GetCountryListApi_Response(response, actionParam.callBack);
-    } catch (error) { }
+    } catch (error) {
+        actionParam.callBack([]);
+    }
 }
 
 function* GetCountryListApi_Response(
@@ -139,20 +170,15 @@ function* GetCountryListApi_Response(
     callBack: (data: any[]) => void,
 ) {
     try {
-        if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-            } else {
-                callBack([]);
-                showToast({
-                    type: 'error',
-                    text1: 'No country list found',
-                    visibilityTime: 2000,
-                });
-            }
+        if (response && Array.isArray(response.body)) {
+            callBack(response.body);
+        } else {
+            callBack([]);
+            showToast({
+                type: 'error',
+                text1: 'No country list found',
+                visibilityTime: 2000,
+            });
         }
     } catch (error) {
         callBack([]);
@@ -161,16 +187,17 @@ function* GetCountryListApi_Response(
 
 function* GetStateListApi(actionParam: TUserGetStateListParam) {
     try {
-        const dataObj = {
-            CountryID: actionParam.countryId,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getStateListUrl,
-            data: dataObj,
+        // New REST API: GET /states?countryId= (anon). Body is the array directly.
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: `${projectEnv.statesRestUrl}?countryId=${actionParam.countryId}`,
+            method: 'GET',
+            anon: true,
         });
 
         yield GetStateListApi_Response(response, actionParam.callBack);
-    } catch (error) { }
+    } catch (error) {
+        actionParam.callBack([]);
+    }
 }
 
 function* GetStateListApi_Response(
@@ -178,20 +205,15 @@ function* GetStateListApi_Response(
     callBack: (data: any[]) => void,
 ) {
     try {
-        if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-            } else {
-                callBack([]);
-                showToast({
-                    type: 'error',
-                    text1: 'No state list found',
-                    visibilityTime: 2000,
-                });
-            }
+        if (response && Array.isArray(response.body)) {
+            callBack(response.body);
+        } else {
+            callBack([]);
+            showToast({
+                type: 'error',
+                text1: 'No state list found',
+                visibilityTime: 2000,
+            });
         }
     } catch (error) {
         callBack([]);
@@ -200,16 +222,17 @@ function* GetStateListApi_Response(
 
 function* GetCityListApi(actionParam: TUserGetCityListParam) {
     try {
-        const dataObj = {
-            StateID: actionParam.stateId,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getCityListUrl,
-            data: dataObj,
+        // New REST API: GET /cities?stateId= (anon). Body is the array directly.
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: `${projectEnv.citiesRestUrl}?stateId=${actionParam.stateId}`,
+            method: 'GET',
+            anon: true,
         });
 
         yield GetCityListApi_Response(response, actionParam.callBack);
-    } catch (error) { }
+    } catch (error) {
+        actionParam.callBack([]);
+    }
 }
 
 function* GetCityListApi_Response(
@@ -217,20 +240,15 @@ function* GetCityListApi_Response(
     callBack: (data: any[]) => void,
 ) {
     try {
-        if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-            } else {
-                callBack([]);
-                showToast({
-                    type: 'error',
-                    text1: 'No city list found',
-                    visibilityTime: 2000,
-                });
-            }
+        if (response && Array.isArray(response.body)) {
+            callBack(response.body);
+        } else {
+            callBack([]);
+            showToast({
+                type: 'error',
+                text1: 'No city list found',
+                visibilityTime: 2000,
+            });
         }
     } catch (error) {
         callBack([]);
@@ -239,16 +257,22 @@ function* GetCityListApi_Response(
 
 function* GetVendorDetailsByIDApi(actionParam: TUserGetVendorDetailsByIDParam) {
     try {
-        const dataObj = {
-            UserID: actionParam.UserID,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getVendorDetailsByIDUrl,
-            data: dataObj,
+        // New REST API: GET /vendor/profile (JWT; user derived from token, so
+        // UserID is no longer sent).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorProfileRestUrl,
+            method: 'GET',
         });
 
         yield GetVendorDetailsByIDApi_Response(response, actionParam.callBack);
-    } catch (error) { }
+    } catch (error) {
+        showToast({
+            type: 'error',
+            text1: 'Failed to fetch profile details',
+            visibilityTime: 2000,
+        });
+        actionParam.callBack(null);
+    }
 }
 
 function* GetVendorDetailsByIDApi_Response(
@@ -256,106 +280,83 @@ function* GetVendorDetailsByIDApi_Response(
     callBack: (data: any) => void,
 ) {
     try {
-        if (response && response.body) {
-            const responseData = response.body;
+        const body = response?.body;
+        // Body is the profile payload directly. Accept either a single object
+        // or a one-element array and hand the caller a plain object.
+        const details = Array.isArray(body) ? body[0] : body;
 
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-            } else {
-                callBack(null);
-                showToast({
-                    type: 'error',
-                    text1: 'No vendor details found',
-                    visibilityTime: 2000,
-                });
-            }
+        if (details) {
+            callBack(details);
+        } else {
+            callBack(null);
+            showToast({
+                type: 'error',
+                text1: 'No vendor details found',
+                visibilityTime: 2000,
+            });
         }
     } catch (error) {
         callBack(null);
     }
 }
+
 function* UpdateVendorProfileApi(actionParam: TUserUpdateVendorProfileParam) {
     try {
+        // New REST API: PUT /vendor/profile (JWT; user derived from token).
         const dataObj = {
-            UserID: actionParam.UserID,
-            CompanyName: actionParam.CompanyName,
-            GSTNo: actionParam.GSTNo,
-            MobileNo: actionParam.MobileNo,
-            Address: actionParam.Address,
+            companyName: actionParam.companyName,
+            gstNo: actionParam.gstNo,
+            mobileNo: actionParam.mobileNo,
+            address: actionParam.address,
         };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.updateVendorProfileUrl,
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorProfileRestUrl,
+            method: 'PUT',
             data: dataObj,
         });
 
-        yield UpdateVendorProfileApi_Response(response, actionParam.callBack);
-    } catch (error) {
-        actionParam.callBack(null);
-    }
-}
-
-function* UpdateVendorProfileApi_Response(
-    response: IResponseParam,
-    callBack: (data: any) => void,
-) {
-    try {
-        if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d === "1") {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-            } else {
-                callBack(null);
-                showToast({
-                    type: 'error',
-                    text1: 'Failed to update profile',
-                    visibilityTime: 2000,
-                });
-            }
-        } else {
-            callBack(null);
-        }
-    } catch (error) {
-        callBack(null);
+        // clientRestHandler resolves only on 2xx.
+        actionParam.callBack(
+            true,
+            response?.body?.message || 'Profile updated successfully',
+        );
+    } catch (error: any) {
+        const message =
+            error?.body?.message ||
+            error?.body?.error?.message ||
+            'Failed to update profile';
+        showToast({
+            type: 'error',
+            text1: message,
+            visibilityTime: 2000,
+        });
+        actionParam.callBack(false, message);
     }
 }
 
 function* MapCityListByVendorApi(actionParam: TUserMapCityListByVendorParam) {
     try {
+        // New REST API: POST /vendor/service-locations (JWT). The mapping is now
+        // a real JSON array instead of the old stringified `jsonString` param.
         const dataObj = {
-            UserID: actionParam.UserID,
-            jsonString: actionParam.jsonString,
+            locations: actionParam.locations,
         };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.mapCityListByVendorUrl,
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorServiceLocationsRestUrl,
+            method: 'POST',
             data: dataObj,
         });
 
-        yield MapCityListByVendorApi_Response(response, actionParam.callBack);
-    } catch (error) {
-        actionParam.callBack(null);
-    }
-}
-
-function* MapCityListByVendorApi_Response(
-    response: IResponseParam,
-    callBack: (data: any) => void,
-) {
-    try {
-        if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d === '1') {
-                callBack(responseData.d);
-            } else {
-                callBack(null);
-            }
-        } else {
-            callBack(null);
-        }
-    } catch (error) {
-        callBack(null);
+        // clientRestHandler resolves only on 2xx.
+        actionParam.callBack(
+            true,
+            response?.body?.message || 'Service locations updated successfully',
+        );
+    } catch (error: any) {
+        const message =
+            error?.body?.message ||
+            error?.body?.error?.message ||
+            'Failed to update service locations';
+        actionParam.callBack(false, message);
     }
 }

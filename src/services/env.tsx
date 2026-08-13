@@ -1,4 +1,4 @@
-export const ENV: 'dev' | 'prod' = 'prod';
+export const ENV: 'dev' | 'prod' = 'dev';
 
 export const BASE_ENV = {
     dev: {
@@ -18,14 +18,27 @@ export const NEW_URL = {
     },
 };
 
+// New REST API (JWT based). Endpoints being migrated off the ASMX/PHP services
+// point here. See "Old ASMX method" migration doc.
+export const REST_URL = {
+    dev: {
+        API_HOST: 'https://crm.roexpertindia.com/api/mobile',
+    },
+    prod: {
+        API_HOST: 'https://crm.roexpertindia.com/api/mobile',
+    },
+};
+
 export const BaseUrl = BASE_ENV[ENV].API_HOST;
 export const NewBaseUrl = NEW_URL[ENV].API_HOST;
+export const RestBaseUrl = REST_URL[ENV].API_HOST;
 export const Comp_State_ID = 8;
-export const APP_VERSION = '2.1';
+export const APP_VERSION = '2.0';
 
 const apiListing = {
     loginUrl: `${BaseUrl}ValidateMobileUser`,
-    loginUrlPartner: `${BaseUrl}ValidateMobileUserPartner`,
+    // Migrated to new REST API (JWT). POST { email, password, FCMTokenID } -> { token, user }
+    loginUrlPartner: `${RestBaseUrl}/partner/login`,
     registerUrl: `${BaseUrl}InsertUserMaster`,
     getStateListUrl: `${BaseUrl}GetAllActiveStateList`,
     getCityListUrl: `${BaseUrl}GetAllActiveCityList`,
@@ -80,6 +93,76 @@ const apiListing = {
     // RazorPay new API's
     createOrderIDUrl: `${NewBaseUrl}/create_orderid_for_razorpay`,
     verifySignatureUrl: `${NewBaseUrl}/verify_signature_from_razorpay`,
+
+    // ---- New REST API (JWT, HTTP-status based). Migration in progress. ----
+    // Dashboard module. Same field names as the old responses, but returned as
+    // plain JSON in the body (no `.d` / `{status,data}` wrapper) and success is
+    // signalled by the HTTP status code.
+    vendorBalanceRestUrl: `${RestBaseUrl}/vendor/balance`,
+    vendorSecurityDepositRestUrl: `${RestBaseUrl}/vendor/security-deposit`,
+    vendorAllTypeBalanceRestUrl: `${RestBaseUrl}/vendor/all-type-balance`,
+    vendorOngoingLeadsRestUrl: `${RestBaseUrl}/vendor/leads/ongoing`,
+    // GET `/{leadId}` for the detail. The booking actions live underneath it:
+    // POST `/{leadId}/accept|deny|complete|follow-up|recomplaint-complete`.
+    vendorLeadDetailRestUrl: `${RestBaseUrl}/vendor/lead`,
+    vendorWorkReportRestUrl: `${RestBaseUrl}/vendor/work-report`, // ?from=&to=
+    appVersionRestUrl: `${RestBaseUrl}/app-version`,
+    // Anon. POST { mobileNo } -> 2xx, SMS sent to the registered mobile.
+    forgotPasswordRestUrl: `${RestBaseUrl}/forgot-password`,
+
+    // ---- Sign-up / register module (anon, HTTP-status based). ----
+    serviceTypesRestUrl: `${RestBaseUrl}/service-types`,
+    countriesRestUrl: `${RestBaseUrl}/countries`,
+    statesRestUrl: `${RestBaseUrl}/states`, // ?countryId=
+    citiesRestUrl: `${RestBaseUrl}/cities`, // ?stateId=
+    vendorRegistrationRestUrl: `${RestBaseUrl}/vendor-registration`,
+
+    // ---- Wallet module (JWT, HTTP-status based). User derived from token. ----
+    // Balance reuses `vendorBalanceRestUrl` (GET /vendor/balance).
+    // Insert security deposit reuses `vendorSecurityDepositRestUrl` (POST /vendor/security-deposit).
+    vendorMinRechargeRestUrl: `${RestBaseUrl}/vendor/min-recharge`,
+    vendorRechargeRestUrl: `${RestBaseUrl}/vendor/recharge`,
+    vendorRechargeDetailsRestUrl: `${RestBaseUrl}/vendor/recharge-details`, // ?from=&to=
+    vendorPayuHashRestUrl: `${RestBaseUrl}/vendor/payu-hash`,
+    razorpayOrderRestUrl: `${RestBaseUrl}/vendor/razorpay/order`,
+    razorpayVerifyRestUrl: `${RestBaseUrl}/vendor/razorpay/verify`,
+
+    // ---- Profile module (JWT, HTTP-status based). User derived from token. ----
+    // GET  -> vendor profile details, PUT -> update the editable fields.
+    vendorProfileRestUrl: `${RestBaseUrl}/vendor/profile`,
+    // POST { locations: [{ stateId, cityId }] } -> replaces the vendor's
+    // mapped service locations (was the `jsonString` MapCityListByVendor call).
+    vendorServiceLocationsRestUrl: `${RestBaseUrl}/vendor/service-locations`,
+
+    // ---- More section (JWT, HTTP-status based). User derived from token. ----
+    // POST { oldPassword, newPassword } -> 2xx; 401 = wrong current password.
+    changePasswordRestUrl: `${RestBaseUrl}/vendor/change-password`,
+    // Report screen. Vendors use `vendorWorkReportRestUrl`; admins use this one.
+    adminWorkReportRestUrl: `${RestBaseUrl}/admin/work-report`, // ?from=&to=
+    // Tax invoice. GET ?month=&year= -> { HeadTable, ... } (same shape as before).
+    vendorInvoiceRestUrl: `${RestBaseUrl}/vendor/invoice`,
+    // Document verification. GET -> upload statuses, POST -> upload/replace.
+    vendorDocumentsRestUrl: `${RestBaseUrl}/vendor/document-status`,
+    //Document Upload
+    vendorDocumentUploadRestUrl: `${RestBaseUrl}/vendor/document-update`,
+
+    // ---- Booking module (JWT, HTTP-status based). User derived from token. ----
+    // One list endpoint per tab; "Ongoing" reuses `vendorOngoingLeadsRestUrl`.
+    vendorNewLeadsRestUrl: `${RestBaseUrl}/vendor/leads/new`,
+    vendorFollowUpLeadsRestUrl: `${RestBaseUrl}/vendor/leads/followup`,
+    vendorDeniedLeadsRestUrl: `${RestBaseUrl}/vendor/leads/denied`,
+    vendorCompletedLeadsRestUrl: `${RestBaseUrl}/vendor/leads/completed`,
+    vendorComplaintLeadsRestUrl: `${RestBaseUrl}/vendor/leads/recomplaint`,
+    // Master data for the deny / follow-up sheets. Bodies are the arrays
+    // directly (no stringified JSON payload as in the old PHP endpoints).
+    deniedReasonsRestUrl: `${RestBaseUrl}/denied-reasons`,
+    followUpReasonsRestUrl: `${RestBaseUrl}/followup-reasons`,
+
+    // ---- Admin section (JWT, HTTP-status based). Admin from the token. ----
+    adminLeadsRestUrl: `${RestBaseUrl}/admin/leads`, // ?from=&to=
+    adminLeadHistoryRestUrl: `${RestBaseUrl}/admin/lead-history`, // ?leadNo=&mobileNo=
+    adminPartnersRestUrl: `${RestBaseUrl}/admin/partners`, // ?stateId=&cityId=&serviceType=
+    // Admin work report lives above as `adminWorkReportRestUrl`.
 };
 
 const projectEnv = {

@@ -51,10 +51,10 @@ const ServiceLocation = (props: any) => {
         props.registerActions('Get_Country_List_Api', {
             callBack: (data: any[]) => {
                 const india = data.find(
-                    (c: any) => c.CountryName.toLowerCase() === 'india',
+                    (c: any) => c.countryName?.toLowerCase() === 'india',
                 );
                 if (india) {
-                    loadStateList(india.CountryID);
+                    loadStateList(india.countryId);
                 }
             },
         });
@@ -65,8 +65,8 @@ const ServiceLocation = (props: any) => {
             countryId: countryId,
             callBack: (data: any[]) => {
                 const stateData = data.map((item: any) => ({
-                    StateID: item.StateID,
-                    StateName: item.StateName || item.Name || item,
+                    StateID: item.stateId,
+                    StateName: item.stateName || item.Name || item,
                 }));
                 setStates(stateData);
             },
@@ -78,8 +78,8 @@ const ServiceLocation = (props: any) => {
             stateId: stateId,
             callBack: (data: any[]) => {
                 const checkboxData = data.map((item: any) => {
-                    const name = item.CityName || item.Name || item;
-                    const id = item.CityID || item.ID || item;
+                    const name = item.cityName || item.Name || item;
+                    const id = item.cityId || item.ID || item;
                     // Check if this city was previously selected
                     const previous = (initialCheckboxes || []).find(c => c.name === name);
                     return {
@@ -123,29 +123,22 @@ const ServiceLocation = (props: any) => {
         const checkedCities = formData.cityCheckboxes.filter((c: any) => c.isChecked);
         const cityString = checkedCities.map((c: any) => c.name).join(', ');
 
-        // Format jsonString: "[{\"StateID\":\"8\",\"CityID\":\"8\"}]"
-        const mappingArray = checkedCities.map((c: any) => ({
-            StateID: String(stateId),
-            CityID: String(c.id)
+        // New REST API takes a real JSON array instead of the old stringified
+        // "[{\"StateID\":\"8\",\"CityID\":\"8\"}]" param.
+        const locations = checkedCities.map((c: any) => ({
+            stateId: String(stateId),
+            cityId: String(c.id),
         }));
-        const jsonString = JSON.stringify(mappingArray);
 
-        const userId = globalState.userId;
-        if (!userId) {
-            Alert.alert('Error', 'User ID not found');
-            return;
-        }
-
-        // Call MapCityListByVendor API
+        // New REST API: POST /vendor/service-locations (vendor from the JWT).
         props.registerActions('Map_City_List_By_Vendor_Api', {
-            UserID: userId,
-            jsonString: jsonString,
-            callBack: (response: any) => {
-                console.log('Map City List Response:', response);
-                if (response === '1') {
+            locations: locations,
+            callBack: (success: boolean, message?: string) => {
+                console.log('Map City List Response:', success, message);
+                if (success) {
                     showToast({
                         type: 'mazuSuccess',
-                        text1: 'Service locations updated successfully',
+                        text1: message || 'Service locations updated successfully',
                     });
                     // After successful API call, call the onSave callback and go back
                     onSave({
@@ -157,7 +150,7 @@ const ServiceLocation = (props: any) => {
                         navigation.goBack();
                     }, 500);
                 } else {
-                    Alert.alert('Error', 'Failed to update service locations');
+                    Alert.alert('Error', message || 'Failed to update service locations');
                 }
             }
         });

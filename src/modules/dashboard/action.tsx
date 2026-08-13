@@ -1,9 +1,19 @@
-import { call, select } from 'redux-saga/effects';
-import { clientPostHandler } from '../../services/request';
-import { RootState } from '../../../store';
+import { call } from 'redux-saga/effects';
+import { clientRestHandler } from '../../services/request';
 import projectEnv from '../../services/env';
 import { showToast } from '../../utils/common';
-import { TUserDashboardConditionParamActionName, IUserDashboardActionConditionParam, TUserWalletBalanceParam, TUserTotalSecurityDepositParam, TUserGetAllTypeVendorBalanceParam, TUserGetOnGoingServicesListParam, TUserGetLeadDetailByLeadIdParam, TUserGetWorkReportForVendorParam, TUserCheckVendorCompatibilityVersionParam, IResponseParam } from './type';
+import {
+    TUserDashboardConditionParamActionName,
+    IUserDashboardActionConditionParam,
+    TUserWalletBalanceParam,
+    TUserTotalSecurityDepositParam,
+    TUserGetAllTypeVendorBalanceParam,
+    TUserGetOnGoingServicesListParam,
+    TUserGetLeadDetailByLeadIdParam,
+    TUserGetWorkReportForVendorParam,
+    TUserCheckVendorCompatibilityVersionParam,
+    IResponseParam,
+} from './type';
 
 export function* conditionActions<
     T extends TUserDashboardConditionParamActionName,
@@ -59,22 +69,17 @@ export function* conditionActions<
 
 function* Wallet_Balance_Api(actionParam: TUserWalletBalanceParam) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-        const dataObj = {
-            UserID: GlobalState.userId,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.walletBalanceUrl,
-            data: dataObj,
+        // New REST API: GET /api/mobile/vendor/balance (JWT; user derived from token).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorBalanceRestUrl,
+            method: 'GET',
         });
 
         yield UserAuth_Wallet_Balance_Api_Response(
             response,
             actionParam.callBack,
         );
-    } catch (error) { }
+    } catch (error) {}
 }
 
 function* UserAuth_Wallet_Balance_Api_Response(
@@ -83,49 +88,27 @@ function* UserAuth_Wallet_Balance_Api_Response(
 ) {
     try {
         if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-
-                showToast({
-                    type: 'success',
-                    text1: 'Login Successfully',
-                    visibilityTime: 2000,
-                });
-            } else {
-                showToast({
-                    type: 'error',
-                    text1: 'Wrong Username or Password',
-                    visibilityTime: 2000,
-                });
-            }
+            // Body is the balance payload directly (same field names as before).
+            callBack(response.body);
         }
-    } catch (error) { }
+    } catch (error) {}
 }
 
 function* Total_Security_Deposit_Api(
     actionParam: TUserTotalSecurityDepositParam,
 ) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-
-        const dataObj = {
-            UserID: GlobalState.userId,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.totalSecurityDepositUrl,
-            data: dataObj,
+        // New REST API: GET /api/mobile/vendor/security-deposit (JWT).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorSecurityDepositRestUrl,
+            method: 'GET',
         });
 
         yield Total_Security_Deposit_Api_Response(
             response,
             actionParam.callBack,
         );
-    } catch (error) { }
+    } catch (error) {}
 }
 
 function* Total_Security_Deposit_Api_Response(
@@ -134,48 +117,38 @@ function* Total_Security_Deposit_Api_Response(
 ) {
     try {
         if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                const [{ DepositeAmt, MaintenanceAmt }] = parsedData;
-                //array destructuring
-
-                callBack({ DepositeAmt, MaintenanceAmt });
-            } else {
-                showToast({
-                    type: 'error',
-                    text1: '',
-                    visibilityTime: 2000,
-                });
-            }
+            // Body is an array of { DepositeAmt, MaintenanceAmt } (same shape).
+            const [{ DepositeAmt, MaintenanceAmt }] = response.body;
+            callBack({ DepositeAmt, MaintenanceAmt });
         }
-    } catch (error) { }
+    } catch (error) {}
 }
 
 function* Get_All_Type_Vendor_Balance_Api(
     actionParam: TUserGetAllTypeVendorBalanceParam,
 ) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-        const dataObj = {
-            data: [{
-                userid: GlobalState.userId,
-            }],
-        };
-
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getAllTypeVendorBalanceUrl,
-            data: dataObj,
+        // New REST API: GET /vendor/all-type-balance (JWT).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorAllTypeBalanceRestUrl,
+            method: 'GET',
         });
 
         yield Get_All_Type_Vendor_Balance_Api_Response(
             response,
             actionParam.callBack,
         );
-    } catch (error) { }
+    } catch (error) {
+        // Network/parse failure — still fire the callback so the caller's
+        // load chain (and its in-flight guard) resolves.
+        actionParam.callBack({
+            walletBalance: '0',
+            securityDeposit: '0',
+            systemCharges: '0',
+            totalNewLead: 0,
+            totalOngoingLead: 0,
+        });
+    }
 }
 
 function* Get_All_Type_Vendor_Balance_Api_Response(
@@ -185,19 +158,20 @@ function* Get_All_Type_Vendor_Balance_Api_Response(
         securityDeposit: string;
         systemCharges: string;
         totalNewLead: number;
-        totalOngoingLead: number;
+        totalOngoingLead: number | string;
     }) => void,
 ) {
     try {
-        if (response.body.status === 'success') {
-            const responseData = response.body.data.response;
+        if (response && response.body) {
+            // Fields now sit directly on the body (same names as before).
+            const responseData = response.body;
 
             // Extract balance data from the API response
-            const walletBalance = String(responseData.SBalance || 0);
-            const securityDeposit = String(responseData.SDepositeAmt || 0);
-            const systemCharges = String(responseData.SMaintenanceAmt || 0);
-            const totalNewLead = Number(responseData.ToltalNewLead || 0);
-            const totalOngoingLead = Number(responseData.TotalOngoingLead || 0);
+            const walletBalance = String(responseData.balance || 0);
+            const securityDeposit = String(responseData.depositeAmt || 0);
+            const systemCharges = String(responseData.maintenanceAmt || 0);
+            const totalNewLead = Number(responseData.totalNewLead || 0);
+            const totalOngoingLead = Number(responseData.totalOngoingLead || 0);
 
             callBack({
                 walletBalance,
@@ -206,8 +180,9 @@ function* Get_All_Type_Vendor_Balance_Api_Response(
                 totalNewLead,
                 totalOngoingLead,
             });
-
-        } else if (response.body.status === 'error') {
+        } else {
+            // Blank/empty body — return zeros so the callback still fires
+            // and the dashboard load chain continues.
             callBack({
                 walletBalance: '0',
                 securityDeposit: '0',
@@ -215,37 +190,38 @@ function* Get_All_Type_Vendor_Balance_Api_Response(
                 totalNewLead: 0,
                 totalOngoingLead: 0,
             });
-            showToast({
-                type: 'error',
-                text1: 'Something Went Wrong. Please Try Again Later.',
-                visibilityTime: 2000,
-            });
         }
-    } catch (error) { }
+    } catch (error) {
+        callBack({
+            walletBalance: '0',
+            securityDeposit: '0',
+            systemCharges: '0',
+            totalNewLead: 0,
+            totalOngoingLead: 0,
+        });
+        showToast({
+            type: 'error',
+            text1: 'Something Went Wrong. Please Try Again Later.',
+            visibilityTime: 2000,
+        });
+    }
 }
 
 function* GetOnGoingServicesListApi(
     actionParam: TUserGetOnGoingServicesListParam,
 ) {
-    console.log('GetOnGoingServicesListApi');
-
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-        const dataObj = {
-            UserID: GlobalState.userId,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getAllOngoingLeadForVendorUrl,
-            data: dataObj,
+        // New REST API: GET /api/mobile/vendor/ongoing-leads (JWT).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorOngoingLeadsRestUrl,
+            method: 'GET',
         });
 
         yield GetOnGoingServicesListApi_Response(
             response,
             actionParam.callBack,
         );
-    } catch (error) { }
+    } catch (error) {}
 }
 
 function* GetOnGoingServicesListApi_Response(
@@ -254,41 +230,60 @@ function* GetOnGoingServicesListApi_Response(
 ) {
     try {
         if (response && response.body) {
-            const responseData = response.body;
+            // The REST API returns camelCase keys (e.g. leadId, leadNo) but
+            // the dashboard UI expects PascalCase (LeadID, LeadNo, etc.).
+            // Map each item so the rest of the codebase stays unchanged.
+            const rawList = Array.isArray(response.body)
+                ? response.body
+                : [response.body];
 
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-            } else {
-                showToast({
-                    type: 'error',
-                    text1: '',
-                    visibilityTime: 2000,
-                });
-            }
+            const mapped = rawList.map((item: any) => ({
+                LeadID: String(item.leadId ?? item.LeadID ?? ''),
+                LeadNo: item.leadNo ?? item.LeadNo ?? '',
+                ServiceTypeName:
+                    item.serviceTypeName ?? item.ServiceTypeName ?? '',
+                LeadStatus: item.leadStatus ?? item.LeadStatus ?? '',
+                LeadDate: item.leadDate ?? item.LeadDate ?? '',
+                BrandName: item.brandName ?? item.BrandName ?? '',
+                ModelName: item.modelName ?? item.ModelName ?? '',
+                Desc: item.desc ?? item.Desc ?? '',
+                LeadAmount: String(item.leadAmount ?? item.LeadAmount ?? ''),
+                StateName: item.stateName ?? item.StateName ?? '',
+                CityName: item.cityName ?? item.CityName ?? '',
+                CustomerName:
+                    item.customerName ?? item.CustomerName ?? '',
+                MobileNo: item.mobileNo ?? item.MobileNo ?? '',
+                Address: item.address ?? item.Address ?? '',
+                AcceptDate: item.acceptDate ?? item.AcceptDate ?? '',
+                // Keep any extra fields the UI might reference
+                customerName:
+                    item.customerName ?? item.CustomerName ?? '',
+                mobileNo: item.mobileNo ?? item.MobileNo ?? '',
+            }));
+
+            callBack(mapped);
+        } else {
+            // Blank/empty body — fire the callback with an empty list so the
+            // caller (and the loader) always resolves.
+            callBack([]);
         }
-    } catch (error) { }
+    } catch (error) {
+        callBack([]);
+    }
 }
 
 function* GetLeadDetailByLeadIdApi(
     actionParam: TUserGetLeadDetailByLeadIdParam,
 ) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-
-        const dataObj = {
-            LeadID: actionParam.leadId,
-            AcceptByID: GlobalState.userId,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getLeadDetailByLeadIdForVendorUrl,
-            data: dataObj,
+        // New REST API: GET /vendor/lead/{leadId} (JWT; ownership derived from token).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: `${projectEnv.vendorLeadDetailRestUrl}/${actionParam.leadId}`,
+            method: 'GET',
         });
 
         yield GetLeadDetailByLeadIdApi_Response(response, actionParam.callBack);
-    } catch (error) { }
+    } catch (error) {}
 }
 
 function* GetLeadDetailByLeadIdApi_Response(
@@ -297,46 +292,38 @@ function* GetLeadDetailByLeadIdApi_Response(
 ) {
     try {
         if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-            } else {
-                callBack(null);
-                showToast({
-                    type: 'error',
-                    text1: 'No lead details found',
-                    visibilityTime: 2000,
-                });
-            }
+            // Body is the lead detail object directly (same field names).
+            callBack(response.body);
+        } else {
+            callBack(null);
+            showToast({
+                type: 'error',
+                text1: 'No lead details found',
+                visibilityTime: 2000,
+            });
         }
-    } catch (error) { }
+    } catch (error) {}
 }
 
 function* GetWorkReportForVendorApi(
     actionParam: TUserGetWorkReportForVendorParam,
 ) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-
-        const dataObj = {
-            FromDate: actionParam.fromDate,
-            ToDate: actionParam.toDate,
-            UserID: GlobalState.userId,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getReportForVendorUrl,
-            data: dataObj,
+        // New REST API: GET /vendor/work-report?from=&to= (JWT).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: `${projectEnv.vendorWorkReportRestUrl}?from=${actionParam.fromDate}&to=${actionParam.toDate}`,
+            method: 'GET',
+            // params: {
+            //     from: actionParam.fromDate,
+            //     to: actionParam.toDate,
+            // },
         });
 
         yield GetWorkReportForVendorApi_Response(
             response,
             actionParam.callBack,
         );
-    } catch (error) { }
+    } catch (error) {}
 }
 
 function* GetWorkReportForVendorApi_Response(
@@ -345,51 +332,44 @@ function* GetWorkReportForVendorApi_Response(
 ) {
     try {
         if (response && response.body) {
-            const responseData = response.body;
+            // Body is the work-report array directly (same field names).
+            const parsedData = response.body;
 
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
+            // Analyze the response and extract ongoing, new, and revenue data
+            let ongoing = 0;
+            let newLeads = 0;
+            let revenue = 0;
 
-                // Analyze the response and extract ongoing, new, and revenue data
-                let ongoing = 0;
-                let newLeads = 0;
-                let revenue = 0;
+            if (Array.isArray(parsedData) && parsedData.length > 0) {
+                // Iterate through the array to find data by LeadStatus
+                parsedData.forEach((item: any) => {
+                    const leadStatus = item.LeadStatus || '';
+                    const total = parseInt(item.Total || '0', 10);
+                    const totalAmt = parseFloat(item.TotalAmt || '0');
 
-                if (Array.isArray(parsedData) && parsedData.length > 0) {
-                    // Iterate through the array to find data by LeadStatus
-                    parsedData.forEach((item: any) => {
-                        const leadStatus = item.LeadStatus || '';
-                        const total = parseInt(item.Total || '0', 10);
-                        const totalAmt = parseFloat(item.TotalAmt || '0');
-
-                        if (leadStatus === 'Ongoing') {
-                            ongoing = total;
-                        } else if (leadStatus === 'New') {
-                            newLeads = total;
-                        } else if (leadStatus === 'Completed') {
-                            // Revenue is the TotalAmt from Completed leads
-                            revenue = totalAmt;
-                        }
-                    });
-                }
-
-                callBack({
-                    ongoing,
-                    new: newLeads,
-                    revenue,
-                });
-            } else {
-                callBack({
-                    ongoing: 0,
-                    new: 0,
-                    revenue: 0,
-                });
-                showToast({
-                    type: 'error',
-                    text1: 'No report data found',
-                    visibilityTime: 2000,
+                    if (leadStatus === 'Ongoing') {
+                        ongoing = total;
+                    } else if (leadStatus === 'New') {
+                        newLeads = total;
+                    } else if (leadStatus === 'Completed') {
+                        // Revenue is the TotalAmt from Completed leads
+                        revenue = totalAmt;
+                    }
                 });
             }
+
+            callBack({
+                ongoing,
+                new: newLeads,
+                revenue,
+            });
+        } else {
+            // Blank/empty body — return everything as 0.
+            callBack({
+                ongoing: 0,
+                new: 0,
+                revenue: 0,
+            });
         }
     } catch (error) {
         callBack({
@@ -403,16 +383,22 @@ function* Check_Vendor_Compatibility_Version_Api(
     actionParam: TUserCheckVendorCompatibilityVersionParam,
 ) {
     try {
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getVendorAppCompatibilityVersionUrl,
-            data: {},
+        // New REST API: GET /app-version (anon).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.appVersionRestUrl,
+            method: 'GET',
+            anon: true,
         });
 
         yield Check_Vendor_Compatibility_Version_Api_Response(
             response,
             actionParam.callBack,
         );
-    } catch (error) { }
+    } catch (error) {
+        // Network failure — fire the callback with an empty value so the
+        // caller can release its in-flight guard instead of hanging.
+        actionParam.callBack('');
+    }
 }
 
 function* Check_Vendor_Compatibility_Version_Api_Response(
@@ -420,23 +406,32 @@ function* Check_Vendor_Compatibility_Version_Api_Response(
     callBack: (d: string) => void,
 ) {
     try {
-        if (response && response.body) {
-            const responseData = response.body;
+        if (response) {
+            // Endpoint returns the version value. Accept either a JSON body
+            // (object/string) or a plain-text response.
+            const versionInfo =
+                response.body?.version ?? response.body ?? response.text;
 
-            if (responseData.d !== '') {
-               // const parsedData = JSON.parse(responseData.d);
-                // Assuming parsedData is an array and we take the first element
-                // based on how other APIs are handled in this project
-                
-                const versionInfo = responseData.d;
-                callBack(versionInfo);
+            if (
+                versionInfo !== undefined &&
+                versionInfo !== null &&
+                versionInfo !== ''
+            ) {
+                callBack(String(versionInfo));
             } else {
                 showToast({
                     type: 'error',
                     text1: 'Failed to verify app version',
                     visibilityTime: 2000,
                 });
+                // Fire the callback with an empty value so the caller can
+                // release its in-flight guard instead of hanging.
+                callBack('');
             }
+        } else {
+            callBack('');
         }
-    } catch (error) { }
+    } catch (error) {
+        callBack('');
+    }
 }

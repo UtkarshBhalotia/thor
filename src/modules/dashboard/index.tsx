@@ -52,6 +52,10 @@ const Dashboard = (props: any) => {
     const [isLoading, setIsLoading] = useState(false);
     const isInitialLoadRef = React.useRef(true);
     const lastRefreshTimeRef = React.useRef<number>(0);
+    // Guards against load() running concurrently (e.g. focus effect firing
+    // twice), which otherwise fires every dashboard API — including the work
+    // report — more than once per load.
+    const isLoadInFlightRef = React.useRef(false);
     const [selectedType, setSelectedType] = useState<'wallet' | 'security'>(
         'wallet',
     );
@@ -189,6 +193,12 @@ const Dashboard = (props: any) => {
     }, [isFocused]);
 
     const load = (showLoader: boolean = true) => {
+        // Prevent overlapping loads from firing the API chain twice.
+        if (isLoadInFlightRef.current) {
+            return;
+        }
+        isLoadInFlightRef.current = true;
+
         if (showLoader) {
             setIsLoading(true);
         }
@@ -201,14 +211,32 @@ const Dashboard = (props: any) => {
                     localVersion: APP_VERSION,
                 });
 
+                // Empty version = verification failed (endpoint/blank body).
+                // Stop here and release the guard so a later focus can retry.
+                if (!serverVersion) {
+                    if (showLoader) {
+                        setIsLoading(false);
+                    }
+                    isLoadInFlightRef.current = false;
+                    return;
+                }
+
                 if (serverVersion && serverVersion !== APP_VERSION) {
+                    console.log(
+                        '[DASH] version mismatch -> STOPPING chain. server:',
+                        JSON.stringify(serverVersion),
+                        'local:',
+                        JSON.stringify(APP_VERSION),
+                    );
                     setNeedsUpdate(true);
                     if (showLoader) {
                         setIsLoading(false);
                     }
+                    isLoadInFlightRef.current = false;
                     return;
                 }
 
+                console.log('[DASH] version ok -> calling balance api');
                 // Proceed with regular dashboard loading if version matches
                 props.dashboardActions('Get_All_Type_Vendor_Balance_Api', {
                     callBack: (data: {
@@ -218,6 +246,9 @@ const Dashboard = (props: any) => {
                         totalNewLead: number;
                         totalOngoingLead: number;
                     }) => {
+                        console.log(
+                            '[DASH] balance callback fired -> calling ongoing services api',
+                        );
                         setWalletBalance(data.walletBalance);
                         setTotalSecurityDeposit({
                             DepositeAmt: data.securityDeposit,
@@ -237,6 +268,7 @@ const Dashboard = (props: any) => {
                                     if (showLoader) {
                                         setIsLoading(false);
                                     }
+                                    isLoadInFlightRef.current = false;
                                 },
                             },
                         );

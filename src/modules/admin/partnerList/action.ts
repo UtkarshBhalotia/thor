@@ -1,5 +1,5 @@
 import { call, put } from 'redux-saga/effects';
-import { clientPostHandler } from '../../../services/request';
+import { clientRestHandler } from '../../../services/request';
 import projectEnv from '../../../services/env';
 import { TPartnerListActionName, IPartnerListActionParam, TGetUserListByCityStateParam } from './type';
 
@@ -18,25 +18,18 @@ function* GetUserListByCityStateApi(actionParam: TGetUserListByCityStateParam): 
     try {
         yield put({ type: 'PARTNER_LIST_LOADING' });
 
-        const response: any = yield call(clientPostHandler, {
-            url: projectEnv.getUserListByCityAndStateUrl,
-            data: {
-                StateID: actionParam.data.StateID,
-                CityID: actionParam.data.CityID,
-                ServiceType: actionParam.data.ServiceType,
-            },
+        // New REST API: GET /admin/partners?stateId=&cityId=&serviceType= (JWT).
+        const response: any = yield call(clientRestHandler, {
+            url: `${projectEnv.adminPartnersRestUrl}?stateId=${actionParam.data.StateID}&cityId=${actionParam.data.CityID}&serviceType=${actionParam.data.ServiceType}`,
+            method: 'GET',
         });
 
-        if (response && response.body && response.body.d) {
-            const parsedData = JSON.parse(response.body.d);
-            // Assuming parsedData is the array or contains the array under a key like 'Table'
-            const data = (parsedData && Array.isArray(parsedData)) ? parsedData : (parsedData.Table || []);
-            yield put({ type: 'PARTNER_LIST_SUCCESS', payload: data });
-            if (actionParam.callBack) actionParam.callBack(data);
-        } else {
-            yield put({ type: 'PARTNER_LIST_FAIL' });
-            if (actionParam.callBack) actionParam.callBack([]);
-        }
+        // Body is the partner array directly (same field names as before).
+        const body = response?.body;
+        const data = Array.isArray(body) ? body : body?.Table || [];
+
+        yield put({ type: 'PARTNER_LIST_SUCCESS', payload: data });
+        if (actionParam.callBack) actionParam.callBack(data);
     } catch (error) {
         yield put({ type: 'PARTNER_LIST_FAIL' });
         if (actionParam.callBack) actionParam.callBack([]);

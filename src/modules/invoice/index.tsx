@@ -7,7 +7,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { clientPostHandler } from '../../services/request';
+import { clientRestHandler } from '../../services/request';
 import projectEnv from '../../services/env';
 import { showToast } from '../../utils/common';
 import { RootStackParamList } from '../../navigations/navigation';
@@ -26,8 +26,8 @@ const YEARS = Array.from({ length: 11 }, (_, i) => {
 const Invoice = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
     const globalState = useSelector((state: RootState) => state.globalState);
-    const userId = globalState.userId;
-    
+
+
     const isAdmin = globalState?.userType === 'A';
     const statusBarColor = isAdmin ? '#086364' : '#F8F9FA';
     const headerBgColor = isAdmin ? '#0A8485' : '#F8F9FA';
@@ -44,53 +44,47 @@ const Invoice = () => {
     const handleSubmit = async () => {
         setIsLoading(true);
         try {
-            const dataObj = {
-                UserID: userId,
-                Month: selectedMonth,
-                Year: selectedYear,
-            };
-
-            const response: any = await clientPostHandler({
-                url: projectEnv.getInvoiceDetailsUrl,
-                data: dataObj,
+            // New REST API: GET /vendor/invoice?month=&year= (JWT; the vendor is
+            // derived from the token). The body is the invoice payload directly.
+            const response: any = await clientRestHandler({
+                url: `${projectEnv.vendorInvoiceRestUrl}?month=${selectedMonth}&year=${selectedYear}`,
+                method: 'GET',
             });
 
-            if (response && response.body) {
-                const responseData = response.body;
-                if (responseData.d && responseData.d !== '') {
-                    const parsedData = JSON.parse(responseData.d);
-                    console.log('Invoice API Response:', parsedData);
-                    
-                    if (parsedData && parsedData.HeadTable && parsedData.HeadTable.length > 0) {
-                        const htmlContent = generateInvoiceHtml(parsedData);
-                        navigation.navigate('WebViewScreen', { 
-                            title: `Tax Invoice - ${parsedData.HeadTable[0].InvoiceNo || 'Report'}`, 
-                            html: htmlContent 
-                        });
-                    } else {
-                        showToast({
-                            type: 'info',
-                            text1: 'Info',
-                            text2: 'No invoice records found for this duration.',
-                        });
-                    }
-                } else {
-                    showToast({
-                        type: 'info',
-                        text1: 'Info',
-                        text2: 'No invoice data found for selected duration.',
-                    });
-                }
+            const parsedData = response?.body;
+            console.log('Invoice API Response:', parsedData);
+
+            if (parsedData && parsedData.HeadTable && parsedData.HeadTable.length > 0) {
+                const htmlContent = generateInvoiceHtml(parsedData);
+                navigation.navigate('WebViewScreen', {
+                    title: `Tax Invoice - ${parsedData.HeadTable[0].InvoiceNo || 'Report'}`,
+                    html: htmlContent
+                });
             } else {
-                throw new Error('Invalid response');
+                showToast({
+                    type: 'info',
+                    text1: 'Info',
+                    text2: 'No invoice records found for this duration.',
+                });
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Invoice fetch error:', error);
-            showToast({
-                type: 'error',
-                text1: 'Error',
-                text2: 'Failed to fetch invoice details',
-            });
+            // 404 means there is simply no invoice for the selected month/year.
+            if (error?.status === 404) {
+                showToast({
+                    type: 'info',
+                    text1: 'Info',
+                    text2: 'No invoice records found for this duration.',
+                });
+            } else {
+                showToast({
+                    type: 'error',
+                    text1: 'Error',
+                    text2:
+                        error?.body?.message ||
+                        'Failed to fetch invoice details',
+                });
+            }
         } finally {
             setIsLoading(false);
         }

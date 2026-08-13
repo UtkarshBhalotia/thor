@@ -40,6 +40,7 @@ interface ServiceCardProps {
     completedDate?: string;
     completedAmout?: string;
     reComplaintId?: string;
+    reComplaintDate?: string;
     // Customer details
     customerName?: string;
     customerMobile?: string;
@@ -67,12 +68,8 @@ interface ServiceCardProps {
         leadId: string,
         callBack: (data: any) => void,
     ) => void;
-    onFetchDeniedReasons?: (
-        callBack: (data: any[]) => void,
-    ) => void;
-    onFetchFollowUpReasons?: (
-        callBack: (data: any[]) => void,
-    ) => void;
+    onFetchDeniedReasons?: (callBack: (data: any[]) => void) => void;
+    onFetchFollowUpReasons?: (callBack: (data: any[]) => void) => void;
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({
@@ -91,6 +88,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     completedDate,
     completedAmout,
     reComplaintId,
+    reComplaintDate,
     customerName,
     customerMobile,
     customerAddress,
@@ -124,25 +122,36 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     const deniedModalRef = useRef<BottomSheetModal>(null);
     const completedModalRef = useRef<BottomSheetModal>(null);
     const followUpModalRef = useRef<BottomSheetModal>(null);
-    const [deniedReasons, setDeniedReasons] = useState<{ id: string | number; reason: string }[]>([]);
+    const [deniedReasons, setDeniedReasons] = useState<
+        { id: string | number; reason: string }[]
+    >([]);
     const [isLoadingDeniedReasons, setIsLoadingDeniedReasons] = useState(false);
-    const [followUpReasons, setFollowUpReasons] = useState<{ id: string | number; reason: string }[]>([]);
-    const [isLoadingFollowUpReasons, setIsLoadingFollowUpReasons] = useState(false);
+    const [followUpReasons, setFollowUpReasons] = useState<
+        { id: string | number; reason: string }[]
+    >([]);
+    const [isLoadingFollowUpReasons, setIsLoadingFollowUpReasons] =
+        useState(false);
 
     const handleFollowUpPress = () => {
         if (onFetchFollowUpReasons) {
             setIsLoadingFollowUpReasons(true);
             followUpModalRef.current?.present();
             onFetchFollowUpReasons((data: any[]) => {
-                const reasons = data?.map((item: any, index: number) => {
-                    if (typeof item === 'string') {
-                        return { id: index, reason: item };
-                    }
-                    return {
-                        id: item.ID || item.id || index,
-                        reason: item.ResionName || item.Reason || item.reason || item.name || '',
-                    };
-                }) || [];
+                const reasons =
+                    data?.map((item: any, index: number) => {
+                        if (typeof item === 'string') {
+                            return { id: index, reason: item };
+                        }
+                        return {
+                            id: item.ID || item.id || index,
+                            reason:
+                                item.ResionName ||
+                                item.Reason ||
+                                item.reason ||
+                                item.name ||
+                                '',
+                        };
+                    }) || [];
                 setFollowUpReasons(reasons);
                 setIsLoadingFollowUpReasons(false);
             });
@@ -161,20 +170,28 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     };
 
     const handleDeniedPress = () => {
-        console.log('handleDeniedPress called', { hasFetch: !!onFetchDeniedReasons });
+        console.log('handleDeniedPress called', {
+            hasFetch: !!onFetchDeniedReasons,
+        });
         if (onFetchDeniedReasons) {
             setIsLoadingDeniedReasons(true);
             deniedModalRef.current?.present();
             onFetchDeniedReasons((data: any[]) => {
-                const reasons = data?.map((item: any, index: number) => {
-                    if (typeof item === 'string') {
-                        return { id: index, reason: item };
-                    }
-                    return {
-                        id: item.ID || item.id || index,
-                        reason: item.ResionName || item.Reason || item.reason || item.name || '',
-                    };
-                }) || [];
+                const reasons =
+                    data?.map((item: any, index: number) => {
+                        if (typeof item === 'string') {
+                            return { id: index, reason: item };
+                        }
+                        return {
+                            id: item.ID || item.id || index,
+                            reason:
+                                item.ResionName ||
+                                item.Reason ||
+                                item.reason ||
+                                item.name ||
+                                '',
+                        };
+                    }) || [];
                 setDeniedReasons(reasons);
                 setIsLoadingDeniedReasons(false);
             });
@@ -223,13 +240,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         if (!isCustomerDetailsExpanded && onCustomerDetailsClick) {
             onCustomerDetailsClick(leadId, (data: any) => {
-                if (data && data.length > 0) {
-                    const detail = data[0];
+                if (data && Object.keys(data).length > 0) {
                     setCustomerDetails({
-                        customerName: detail.CustomerName,
-                        customerMobile: detail.MobileNo,
-                        customerAddress: detail.Address,
-                        acceptLeadDate: detail.AcceptDate,
+                        customerName: data.customerName,
+                        customerMobile: data.mobileNo,
+                        customerAddress: data.address,
+                        acceptLeadDate: data.acceptDate,
                     });
                 }
             });
@@ -280,9 +296,12 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                     icon: '✅',
                 };
             case 'Denied': {
-                const isRefunded = deniedStatus?.trim().toLowerCase() === 'amount refunded';
+                const isRefunded =
+                    deniedStatus?.trim().toLowerCase() === 'amount refunded';
                 return {
-                    badge: { backgroundColor: isRefunded ? '#E3F2FD' : '#FFEBEE' },
+                    badge: {
+                        backgroundColor: isRefunded ? '#E3F2FD' : '#FFEBEE',
+                    },
                     text: { color: isRefunded ? '#1976D2' : '#D32F2F' },
                     accent: isRefunded ? '#1976D2' : '#D32F2F',
                     icon: 'close',
@@ -354,7 +373,9 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                 <View
                     style={[
                         styles.accentStrip,
-                        isAdminView ? { backgroundColor: '#0A8485' } : { backgroundColor: statusConfig.accent },
+                        isAdminView
+                            ? { backgroundColor: '#0A8485' }
+                            : { backgroundColor: statusConfig.accent },
                     ]}
                 />
 
@@ -369,7 +390,14 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                         statusConfig.badge,
                                     ]}>
                                     {statusConfig.isVector ? (
-                                        <View style={[styles.styledIconBox, { backgroundColor: statusConfig.accent }]}>
+                                        <View
+                                            style={[
+                                                styles.styledIconBox,
+                                                {
+                                                    backgroundColor:
+                                                        statusConfig.accent,
+                                                },
+                                            ]}>
                                             <Ionicons
                                                 name={statusConfig.icon as any}
                                                 size={10}
@@ -390,7 +418,11 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                     </Text>
                                 </View>
                                 {leadStatus === 'Denied' && deniedStatus && (
-                                    <Text style={[styles.deniedSubStatus, { color: statusConfig.accent }]}>
+                                    <Text
+                                        style={[
+                                            styles.deniedSubStatus,
+                                            { color: statusConfig.accent },
+                                        ]}>
                                         {deniedStatus}
                                     </Text>
                                 )}
@@ -475,7 +507,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                 />
                                 <DetailRow
                                     label="Re-Complaint Date"
-                                    value={leadDate || '-'}
+                                    value={reComplaintDate || leadDate || '-'}
                                 />
                             </View>
                         )}
@@ -519,171 +551,277 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                         leadStatus?.trim().toLowerCase() === 'follow up' ||
                         leadStatus?.trim().toLowerCase() === 'followup' ||
                         leadStatus?.trim().toLowerCase() === 'follow-up' ||
-                        leadStatus?.trim().toLowerCase() === 're-complaint') && (
-                            <>
-                                <View style={styles.divider} />
+                        leadStatus?.trim().toLowerCase() ===
+                            're-complaint') && (
+                        <>
+                            <View style={styles.divider} />
 
-                                {isHistoryView && (
-                                    <View style={[styles.customerDetailsContainer, { paddingBottom: 8 }]}>
+                            {isHistoryView && (
+                                <View
+                                    style={[
+                                        styles.customerDetailsContainer,
+                                        { paddingBottom: 8 },
+                                    ]}>
+                                    <View style={styles.customerDetailRow}>
+                                        <Text
+                                            style={styles.customerDetailLabel}>
+                                            Partner Name
+                                        </Text>
+                                        <Text
+                                            style={styles.customerDetailValue}>
+                                            {partnerName || '-'}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.customerDetailRow}>
+                                        <Text
+                                            style={styles.customerDetailLabel}>
+                                            Partner Mobile
+                                        </Text>
+                                        <View
+                                            style={
+                                                styles.customerMobileValueContainer
+                                            }>
+                                            {partnerMobile && (
+                                                <TouchableOpacity
+                                                    onPress={() =>
+                                                        handleCallPress(
+                                                            partnerMobile,
+                                                        )
+                                                    }
+                                                    style={[
+                                                        styles.callIconButton,
+                                                        {
+                                                            backgroundColor:
+                                                                '#0A8485',
+                                                        },
+                                                    ]}>
+                                                    <Ionicons
+                                                        name="call"
+                                                        size={14}
+                                                        color="#FFFFFF"
+                                                    />
+                                                </TouchableOpacity>
+                                            )}
+                                            <Text
+                                                style={
+                                                    styles.customerMobileValue
+                                                }>
+                                                {partnerMobile || '-'}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View
+                                        style={[
+                                            styles.divider,
+                                            { marginBottom: 0, marginTop: 8 },
+                                        ]}
+                                    />
+                                </View>
+                            )}
+
+                            {/* Expandable Customer Details */}
+                            <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={toggleCustomerDetails}
+                                style={styles.customerDetailsToggle}>
+                                <Text
+                                    style={[
+                                        styles.customerDetailsToggleText,
+                                        isAdminView && { color: '#0A8485' },
+                                    ]}>
+                                    {isCustomerDetailsExpanded
+                                        ? 'Hide Customer Details'
+                                        : 'View Customer Details'}
+                                </Text>
+                                <Ionicons
+                                    name={
+                                        isCustomerDetailsExpanded
+                                            ? 'chevron-up'
+                                            : 'chevron-down'
+                                    }
+                                    size={14}
+                                    style={[
+                                        styles.customerDetailsArrow,
+                                        isAdminView && { color: '#0A8485' },
+                                    ]}
+                                />
+                            </TouchableOpacity>
+
+                            {isCustomerDetailsExpanded && (
+                                <>
+                                    <View
+                                        style={styles.customerDetailsContainer}>
                                         <View style={styles.customerDetailRow}>
-                                            <Text style={styles.customerDetailLabel}>Partner Name</Text>
-                                            <Text style={styles.customerDetailValue}>{partnerName || '-'}</Text>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailLabel
+                                                }>
+                                                Customer Name
+                                            </Text>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailValue
+                                                }>
+                                                {customerDetails.customerName ||
+                                                    '-'}
+                                            </Text>
                                         </View>
                                         <View style={styles.customerDetailRow}>
-                                            <Text style={styles.customerDetailLabel}>Partner Mobile</Text>
-                                            <View style={styles.customerMobileValueContainer}>
-                                                {partnerMobile && (
+                                            <Text
+                                                style={
+                                                    styles.customerDetailLabel
+                                                }>
+                                                Customer Mobile
+                                            </Text>
+                                            <View
+                                                style={
+                                                    styles.customerMobileValueContainer
+                                                }>
+                                                {customerDetails.customerMobile && (
                                                     <TouchableOpacity
-                                                        onPress={() => handleCallPress(partnerMobile)}
+                                                        onPress={() =>
+                                                            handleCallPress(
+                                                                customerDetails.customerMobile,
+                                                            )
+                                                        }
                                                         style={[
                                                             styles.callIconButton,
-                                                            { backgroundColor: '#0A8485' }
+                                                            isAdminView && {
+                                                                backgroundColor:
+                                                                    '#0A8485',
+                                                            },
                                                         ]}>
-                                                        <Ionicons name="call" size={14} color="#FFFFFF" />
+                                                        <Ionicons
+                                                            name="call"
+                                                            size={14}
+                                                            color="#FFFFFF"
+                                                        />
                                                     </TouchableOpacity>
                                                 )}
-                                                <Text style={styles.customerMobileValue}>{partnerMobile || '-'}</Text>
+                                                <Text
+                                                    style={
+                                                        styles.customerMobileValue
+                                                    }>
+                                                    {customerDetails.customerMobile ||
+                                                        '-'}
+                                                </Text>
                                             </View>
                                         </View>
-                                        <View style={[styles.divider, { marginBottom: 0, marginTop: 8 }]} />
+                                        <View style={styles.customerDetailRow}>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailLabel
+                                                }>
+                                                Customer Address
+                                            </Text>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailValue
+                                                }>
+                                                {customerDetails.customerAddress ||
+                                                    '-'}
+                                            </Text>
+                                        </View>
+
+                                        <View style={styles.customerDetailRow}>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailLabel
+                                                }>
+                                                Accept Lead Date
+                                            </Text>
+                                            <Text
+                                                style={
+                                                    styles.customerDetailValue
+                                                }>
+                                                {customerDetails.acceptLeadDate ||
+                                                    '-'}
+                                            </Text>
+                                        </View>
                                     </View>
-                                )}
 
-                                {/* Expandable Customer Details */}
-                                <TouchableOpacity
-                                    activeOpacity={0.7}
-                                    onPress={toggleCustomerDetails}
-                                    style={styles.customerDetailsToggle}>
-                                    <Text style={[styles.customerDetailsToggleText, isAdminView && { color: '#0A8485' }]}>
-                                        {isCustomerDetailsExpanded ? 'Hide Customer Details' : 'View Customer Details'}
-                                    </Text>
-                                    <Ionicons
-                                        name={isCustomerDetailsExpanded ? 'chevron-up' : 'chevron-down'}
-                                        size={14}
-                                        style={[styles.customerDetailsArrow, isAdminView && { color: '#0A8485' }]}
-                                    />
-                                </TouchableOpacity>
-
-                                {isCustomerDetailsExpanded && (
-                                    <>
-                                        <View
-                                            style={styles.customerDetailsContainer}>
-                                            <View style={styles.customerDetailRow}>
-                                                <Text
-                                                    style={
-                                                        styles.customerDetailLabel
-                                                    }>
-                                                    Customer Name
-                                                </Text>
-                                                <Text
-                                                    style={
-                                                        styles.customerDetailValue
-                                                    }>
-                                                    {customerDetails.customerName ||
-                                                        '-'}
-                                                </Text>
-                                            </View>
-                                            <View style={styles.customerDetailRow}>
-                                                <Text
-                                                    style={
-                                                        styles.customerDetailLabel
-                                                    }>
-                                                    Customer Mobile
-                                                </Text>
-                                                <View style={styles.customerMobileValueContainer}>
-                                                    {customerDetails.customerMobile && (
-                                                        <TouchableOpacity
-                                                            onPress={() =>
-                                                                handleCallPress(
-                                                                    customerDetails.customerMobile,
-                                                                )
-                                                            }
-                                                            style={[
-                                                                styles.callIconButton,
-                                                                isAdminView && { backgroundColor: '#0A8485' }
-                                                            ]}>
-                                                            <Ionicons
-                                                                name="call"
-                                                                size={14}
-                                                                color="#FFFFFF"
-                                                            />
-                                                        </TouchableOpacity>
-                                                    )}
-                                                    <Text
-                                                        style={
-                                                            styles.customerMobileValue
-                                                        }>
-                                                        {customerDetails.customerMobile ||
-                                                            '-'}
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                            <View style={styles.customerDetailRow}>
-                                                <Text
-                                                    style={
-                                                        styles.customerDetailLabel
-                                                    }>
-                                                    Customer Address
-                                                </Text>
-                                                <Text
-                                                    style={
-                                                        styles.customerDetailValue
-                                                    }>
-                                                    {customerDetails.customerAddress ||
-                                                        '-'}
-                                                </Text>
-                                            </View>
-
-
-                                            <View style={styles.customerDetailRow}>
-                                                <Text
-                                                    style={
-                                                        styles.customerDetailLabel
-                                                    }>
-                                                    Accept Lead Date
-                                                </Text>
-                                                <Text
-                                                    style={
-                                                        styles.customerDetailValue
-                                                    }>
-                                                    {customerDetails.acceptLeadDate ||
-                                                        '-'}
-                                                </Text>
-                                            </View>
-                                        </View>
-
-                                        {/* Three Action Buttons - Shown after customer details expanded */}
-                                        {!isAdminView && (
+                                    {/* Three Action Buttons - Shown after customer details expanded */}
+                                    {!isAdminView && (
                                         <View style={styles.ongoingButtonsRow}>
                                             {!isReComplaint && (
                                                 <>
                                                     <TouchableOpacity
                                                         activeOpacity={0.8}
-                                                        onPress={handleFollowUpPress}
-                                                        style={styles.followUpBtn}>
-                                                        <View style={styles.btnContentWithIcon}>
-                                                            <View style={[styles.styledIconBox, { backgroundColor: '#7B1FA2' }]}>
-                                                                <Ionicons name="call" size={10} color="#FFFFFF" />
+                                                        onPress={
+                                                            handleFollowUpPress
+                                                        }
+                                                        style={
+                                                            styles.followUpBtn
+                                                        }>
+                                                        <View
+                                                            style={
+                                                                styles.btnContentWithIcon
+                                                            }>
+                                                            <View
+                                                                style={[
+                                                                    styles.styledIconBox,
+                                                                    {
+                                                                        backgroundColor:
+                                                                            '#7B1FA2',
+                                                                    },
+                                                                ]}>
+                                                                <Ionicons
+                                                                    name="call"
+                                                                    size={10}
+                                                                    color="#FFFFFF"
+                                                                />
                                                             </View>
                                                             <Text
-                                                                style={styles.followUpBtnText}>
-                                                                {leadStatus?.trim().toLowerCase() === 'follow up' || 
-                                                                    leadStatus?.trim().toLowerCase() === 'followup' || 
-                                                                    leadStatus?.trim().toLowerCase() === 'follow-up' 
-                                                                    ? 'Next Follow Up' 
+                                                                style={
+                                                                    styles.followUpBtnText
+                                                                }>
+                                                                {leadStatus
+                                                                    ?.trim()
+                                                                    .toLowerCase() ===
+                                                                    'follow up' ||
+                                                                leadStatus
+                                                                    ?.trim()
+                                                                    .toLowerCase() ===
+                                                                    'followup' ||
+                                                                leadStatus
+                                                                    ?.trim()
+                                                                    .toLowerCase() ===
+                                                                    'follow-up'
+                                                                    ? 'Next Follow Up'
                                                                     : 'Follow Up'}
                                                             </Text>
                                                         </View>
                                                     </TouchableOpacity>
                                                     <TouchableOpacity
                                                         activeOpacity={0.8}
-                                                        onPress={handleDeniedPress}
-                                                        style={styles.deniedBtn}>
-                                                        <View style={styles.btnContentWithIcon}>
-                                                            <View style={[styles.styledIconBox, { backgroundColor: '#D32F2F' }]}>
-                                                                <Ionicons name="close" size={10} color="#FFFFFF" />
+                                                        onPress={
+                                                            handleDeniedPress
+                                                        }
+                                                        style={
+                                                            styles.deniedBtn
+                                                        }>
+                                                        <View
+                                                            style={
+                                                                styles.btnContentWithIcon
+                                                            }>
+                                                            <View
+                                                                style={[
+                                                                    styles.styledIconBox,
+                                                                    {
+                                                                        backgroundColor:
+                                                                            '#D32F2F',
+                                                                    },
+                                                                ]}>
+                                                                <Ionicons
+                                                                    name="close"
+                                                                    size={10}
+                                                                    color="#FFFFFF"
+                                                                />
                                                             </View>
-                                                            <Text style={styles.deniedBtnText}>
+                                                            <Text
+                                                                style={
+                                                                    styles.deniedBtnText
+                                                                }>
                                                                 Denied
                                                             </Text>
                                                         </View>
@@ -695,16 +833,18 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                                 onPress={handleCompletedPress}
                                                 style={styles.completedBtn}>
                                                 <Text
-                                                    style={styles.completedBtnText}>
+                                                    style={
+                                                        styles.completedBtnText
+                                                    }>
                                                     ✓ Completed
                                                 </Text>
                                             </TouchableOpacity>
                                         </View>
-                                        )}
-                                    </>
-                                )}
-                            </>
-                        )}
+                                    )}
+                                </>
+                            )}
+                        </>
+                    )}
                 </View>
             </View>
 

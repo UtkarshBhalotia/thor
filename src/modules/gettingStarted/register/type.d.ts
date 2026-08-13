@@ -36,8 +36,8 @@ type TUserGetCityListParam = {
     callBack: (data: any[]) => void;
 };
 
+// Vendor is derived from the JWT — no UserID in the request.
 type TUserGetVendorDetailsByIDParam = {
-    UserID: string | number;
     callBack: (data: any) => void;
 };
 
@@ -47,18 +47,21 @@ type TUserVendorRegistrationParam = {
 };
 
 type TUserUpdateVendorProfileParam = {
-    UserID: string | number;
-    CompanyName: string;
-    GSTNo: string;
-    MobileNo: string;
-    Address: string;
-    callBack: (response: any) => void;
+    companyName: string;
+    gstNo: string;
+    mobileNo: string;
+    address: string;
+    callBack: (success: boolean, message?: string) => void;
+};
+
+type TServiceLocationMapping = {
+    stateId: string | number;
+    cityId: string | number;
 };
 
 type TUserMapCityListByVendorParam = {
-    UserID: string | number;
-    jsonString: string;
-    callBack: (response: any) => void;
+    locations: TServiceLocationMapping[];
+    callBack: (success: boolean, message?: string) => void;
 };
 
 export type TUserRegisterConditionParamActionParam<

@@ -54,7 +54,13 @@ export type TGenerateHashkeyParam = {
     name: string;
     emailid: string;
     userid: string;
-    callBack: (success: boolean, hash: string, txnid: string, PayUKey: string, ProductDetails: string) => void;
+    callBack: (
+        success: boolean,
+        hash: string,
+        txnid: string,
+        PayUKey: string,
+        ProductDetails: string,
+    ) => void;
 };
 
 export type TCreateRazorpayOrderIdParam = {
@@ -72,23 +78,33 @@ export type TVerifyRazorpaySignatureParam = {
     callBack: (success: boolean, error?: string) => void;
 };
 
-export type TWalletConditionParamActionParam<T extends TWalletConditionParamActionName> =
-    T extends 'Wallet_Balance_Api' ? TWalletBalanceParam :
-    T extends 'Get_Recharge_History_Api' ? TGetRechargeHistoryParam :
-    T extends 'Initiate_Payment' ? TInitiatePaymentParam :
-    T extends 'Process_Payment_Response' ? TProcessPaymentResponseParam :
-    T extends 'Insert_Security_Deposit_Api' ? TInsertSecurityDepositParam :
-    T extends 'Get_Vendor_Min_Recharge_Amt_Api' ? TGetVendorMinRechargeAmtParam :
-    T extends 'Generate_Hashkey_Api' ? TGenerateHashkeyParam :
-    T extends 'Create_Razorpay_Order_Id_Api' ? TCreateRazorpayOrderIdParam :
-    T extends 'Verify_Razorpay_Signature' ? TVerifyRazorpaySignatureParam :
-    never;
+export type TWalletConditionParamActionParam<
+    T extends TWalletConditionParamActionName,
+> = T extends 'Wallet_Balance_Api'
+    ? TWalletBalanceParam
+    : T extends 'Get_Recharge_History_Api'
+    ? TGetRechargeHistoryParam
+    : T extends 'Initiate_Payment'
+    ? TInitiatePaymentParam
+    : T extends 'Process_Payment_Response'
+    ? TProcessPaymentResponseParam
+    : T extends 'Insert_Security_Deposit_Api'
+    ? TInsertSecurityDepositParam
+    : T extends 'Get_Vendor_Min_Recharge_Amt_Api'
+    ? TGetVendorMinRechargeAmtParam
+    : T extends 'Generate_Hashkey_Api'
+    ? TGenerateHashkeyParam
+    : T extends 'Create_Razorpay_Order_Id_Api'
+    ? TCreateRazorpayOrderIdParam
+    : T extends 'Verify_Razorpay_Signature'
+    ? TVerifyRazorpaySignatureParam
+    : never;
 
 export interface IRechargeHistoryItem {
-    TxnID: string;
-    Amount: string;
-    Remarks: string;
-    SDate: string;
+    txnId: string;
+    amount: string;
+    remarks: string;
+    date: string;
 }
 
 export interface IResponseParam {
@@ -104,4 +120,3 @@ export interface IPaymentInitResponse {
     transactionId?: string;
     paymentParams?: any;
 }
-

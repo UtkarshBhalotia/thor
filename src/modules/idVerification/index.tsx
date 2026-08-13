@@ -27,9 +27,6 @@ const IdVerification = () => {
     const { documents, loading } = useSelector(
         (state: RootState) => state.idVerificationState
     );
-     const { userId } = useSelector(
-        (state: RootState) => state.globalState
-    );
 
     const documentUploadModalRef = useRef<BottomSheetModal>(null);
     const [currentDocument, setCurrentDocument] = useState<IDocumentStatusItem | null>(null);
@@ -187,24 +184,23 @@ const IdVerification = () => {
         // Prepare data
         const getLocalImage = (id: string) => localImages[id];
         
+        // New REST API: a flat JSON body — the vendor comes from the JWT, so
+        // there is no UserID and no `data: [{...}]` wrapper.
         const dataObj = {
-            data: [{
-                UserID: userId,
-                ProfileImageType: "",
-                ProfileImageBase64: "", // Assuming empty as requested
-                
-                PanImageType: getImageType(getLocalImage('PAN')?.type),
-                PanImageBase64: getLocalImage('PAN')?.base64 || "",
-                
-                AadhaarFrontImageType: getImageType(getLocalImage('AADHAAR_FRONT')?.type),
-                AadhaarFrontImageBase64: getLocalImage('AADHAAR_FRONT')?.base64 || "",
-                
-                AadhaarBackImageType: getImageType(getLocalImage('AADHAAR_BACK')?.type),
-                AadhaarBackImageBase64: getLocalImage('AADHAAR_BACK')?.base64 || "",
-                
-                GstFileType: getImageType(getLocalImage('GST')?.type),
-                GstFileBase64: getLocalImage('GST')?.base64 || "",
-            }]
+            profileImageType: "",
+            profileImageBase64: "", // Assuming empty as requested
+
+            panImageType: getImageType(getLocalImage('PAN')?.type),
+            panImageBase64: getLocalImage('PAN')?.base64 || "",
+
+            aadhaarFrontImageType: getImageType(getLocalImage('AADHAAR_FRONT')?.type),
+            aadhaarFrontImageBase64: getLocalImage('AADHAAR_FRONT')?.base64 || "",
+
+            aadhaarBackImageType: getImageType(getLocalImage('AADHAAR_BACK')?.type),
+            aadhaarBackImageBase64: getLocalImage('AADHAAR_BACK')?.base64 || "",
+
+            gstFileType: getImageType(getLocalImage('GST')?.type),
+            gstFileBase64: getLocalImage('GST')?.base64 || "",
         };
 
         dispatch({
@@ -213,8 +209,8 @@ const IdVerification = () => {
                 actionName: 'Upload_Document_Api',
                 actionParam: {
                     data: dataObj,
-                    callBack: (response: any) => {
-                         if(response?.status === 'success') {
+                    callBack: (success: boolean) => {
+                         if(success) {
                              // Refresh list
                              setLocalImages({}); // Clear local images
                               dispatch({

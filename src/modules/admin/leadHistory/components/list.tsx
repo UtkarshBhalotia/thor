@@ -11,30 +11,50 @@ interface IProps {
 }
 
 const LeadHistoryList: React.FC<IProps> = ({ data, loading, hasSearched }) => {
-    const renderServiceCard = ({ item, index }: { item: any; index: number }) => (
+    console.log('LeadHistoryList');
+
+    const renderServiceCard = ({
+        item,
+        index,
+    }: {
+        item: any;
+        index: number;
+    }) => (
         <ServiceCard
             key={index}
             leadId={item.LeadID}
             leadNo={item.LeadNo || item.ComplaintNo || item.No}
-            leadType={item.ServiceTypeName || item.ComplaintType || item.ServiceType}
+            leadType={
+                item.ServiceTypeName || item.ComplaintType || item.ServiceType
+            }
             leadAmt={item.LeadAmount || item.CustomerAmt}
             leadStatus={item.LeadStatus}
             leadDate={item.LeadDate}
-            leadCity={item.CityName ? (item.CityName + ', ' + item.StateName) : ''}
-            leadDescription={item.ShortDesc || item.Desc || item.Description || item.PartsDesc}
+            leadCity={
+                item.CityName ? item.CityName + ', ' + item.StateName : ''
+            }
+            leadDescription={
+                item.ShortDesc ||
+                item.Desc ||
+                item.Description ||
+                item.PartsDesc
+            }
             leadBrand={`${item.BrandName} (${item.ModelName})`}
             deniedReason={item.DeniedReason || item.Reason}
             deniedDate={item.DeniedDate}
             deniedStatus={item.DeniedStatus}
             completedDate={item.CompletedDate}
-            completedAmout={item.CompletedAmount || item.CustomerAmount || item.CustomerAmt}
+            completedAmout={
+                item.CompletedAmount || item.CustomerAmount || item.CustomerAmt
+            }
             reComplaintId={item.ComplaintID || item.LeadID}
-            customerName={item.CustomerName}
-            customerMobile={item.MobileNo}
-            customerAddress={item.Address}
-            acceptLeadDate={item.AcceptDate}
-            partnerName={item.PatnerName}
-            partnerMobile={item.PatnerMobileNo}
+            reComplaintDate={item.ReComplaintDate || item.reComplaintDate}
+            customerName={item.customerName}
+            customerMobile={item.mobileNo}
+            customerAddress={item.address}
+            acceptLeadDate={item.acceptDate}
+            partnerName={item.patnerName}
+            partnerMobile={item.patnerMobileNo}
             isAdminView={true}
             isHistoryView={true}
         />
@@ -50,8 +70,8 @@ const LeadHistoryList: React.FC<IProps> = ({ data, loading, hasSearched }) => {
                 {hasSearched ? 'No History Found' : 'Search Lead History'}
             </Text>
             <Text style={dashboardStyles.emptyStateDescription}>
-                {hasSearched 
-                    ? 'We couldn\'t find any records matching your search criteria.' 
+                {hasSearched
+                    ? "We couldn't find any records matching your search criteria."
                     : 'Enter a Lead Number or Mobile Number to search for history.'}
             </Text>
         </View>
@@ -59,9 +79,23 @@ const LeadHistoryList: React.FC<IProps> = ({ data, loading, hasSearched }) => {
 
     if (loading) {
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F6FA' }}>
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: '#F5F6FA',
+                }}>
                 <ActivityIndicator size="large" color="#0A8485" />
-                <Text style={{ marginTop: 12, fontSize: 14, color: '#0A8485', fontWeight: '500' }}>Fetching history...</Text>
+                <Text
+                    style={{
+                        marginTop: 12,
+                        fontSize: 14,
+                        color: '#0A8485',
+                        fontWeight: '500',
+                    }}>
+                    Fetching history...
+                </Text>
             </View>
         );
     }
@@ -70,7 +104,9 @@ const LeadHistoryList: React.FC<IProps> = ({ data, loading, hasSearched }) => {
         <FlatList
             data={data}
             renderItem={renderServiceCard}
-            keyExtractor={(item, index) => item.LeadID ? item.LeadID.toString() : index.toString()}
+            keyExtractor={(item, index) =>
+                item.LeadID ? item.LeadID.toString() : index.toString()
+            }
             style={{ backgroundColor: '#F5F6FA' }}
             contentContainerStyle={bookingStyles.listContainer}
             showsVerticalScrollIndicator={false}

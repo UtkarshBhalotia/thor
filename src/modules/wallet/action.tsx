@@ -1,5 +1,5 @@
 import { call, select } from 'redux-saga/effects';
-import { clientPostHandler } from '../../services/request';
+import { clientRestHandler } from '../../services/request';
 import { RootState } from '../../../store';
 import projectEnv from '../../services/env';
 import { showToast } from '../../utils/common';
@@ -81,55 +81,43 @@ function* Insert_Security_Deposit_Api(
     actionParam: TInsertSecurityDepositParam,
 ) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-
+        // New REST API: POST /vendor/security-deposit (JWT; user from token).
         const dataObj = {
-            SecurityID: '0',
-            UserID: GlobalState.userId,
-            Amount: actionParam.amount,
-            TxnID: actionParam.txnId,
-            Remarks: 'Razorpay Payment Gateway',
-            AddByUserID: GlobalState.userId,
+            amount: actionParam.amount,
+            txnId: actionParam.txnId,
+            remarks: 'Razorpay Payment Gateway',
         };
 
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.insertSecurityDepositUrl,
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorSecurityDepositRestUrl,
+            method: 'POST',
             data: dataObj,
         });
 
-        if (response && response.status === 200) {
-            // Assuming success if status is 200. Check response body if needed.
-            // Typically response.body.d would contain "1" or success message for these ASMX services
-            actionParam.callBack(true, 'Security deposit updated successfully');
-        } else {
-            actionParam.callBack(
-                false,
-                response.message || 'Failed to update security deposit',
-            );
-        }
-    } catch (error) {
+        // clientRestHandler resolves only on 2xx.
+        actionParam.callBack(
+            true,
+            response?.body?.message || 'Security deposit updated successfully',
+        );
+    } catch (error: any) {
         showToast({
             type: 'error',
             text1: 'Failed to update security deposit',
             visibilityTime: 2000,
         });
-        actionParam.callBack(false, 'Security deposit update failed');
+        actionParam.callBack(
+            false,
+            error?.body?.message || 'Security deposit update failed',
+        );
     }
 }
 
 function* Wallet_Balance_Api(actionParam: TWalletBalanceParam) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-        const dataObj = {
-            UserID: GlobalState.userId,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.walletBalanceUrl,
-            data: dataObj,
+        // New REST API: GET /vendor/balance (JWT; user from token).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorBalanceRestUrl,
+            method: 'GET',
         });
 
         yield Wallet_Balance_Api_Response(response, actionParam.callBack);
@@ -139,6 +127,7 @@ function* Wallet_Balance_Api(actionParam: TWalletBalanceParam) {
             text1: 'Failed to fetch wallet balance',
             visibilityTime: 2000,
         });
+        actionParam.callBack('0');
     }
 }
 
@@ -147,46 +136,27 @@ function* Wallet_Balance_Api_Response(
     callBack: (balance: string) => void,
 ) {
     try {
-        if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                callBack(parsedData);
-            } else {
-                showToast({
-                    type: 'error',
-                    text1: 'Unable to fetch wallet balance',
-                    visibilityTime: 2000,
-                });
-            }
-        }
+        const body = response?.body;
+        // Body is the balance payload directly (plain JSON). Accept either a
+        // { balance } object or a scalar value.
+        const balance = body && typeof body === 'object' ? body.balance : body;
+        callBack(String(balance ?? '0'));
     } catch (error) {
         showToast({
             type: 'error',
             text1: 'Error processing wallet balance',
             visibilityTime: 2000,
         });
+        callBack('0');
     }
 }
 
 function* Get_Recharge_History_Api(actionParam: TGetRechargeHistoryParam) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-        const dataObj = {
-            data: [
-                {
-                    userid: GlobalState.userId,
-                    fromdate: actionParam.fromDate,
-                    todate: actionParam.toDate,
-                },
-            ],
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getVendorRechargeDetailsUrl,
-            data: dataObj,
+        // New REST API: GET /vendor/recharge-details?from=&to= (JWT; user from token).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: `${projectEnv.vendorRechargeDetailsRestUrl}?from=${actionParam.fromDate}&to=${actionParam.toDate}`,
+            method: 'GET',
         });
 
         yield Get_Recharge_History_Api_Response(response, actionParam.callBack);
@@ -196,6 +166,7 @@ function* Get_Recharge_History_Api(actionParam: TGetRechargeHistoryParam) {
             text1: 'Failed to fetch recharge history',
             visibilityTime: 2000,
         });
+        actionParam.callBack([]);
     }
 }
 
@@ -204,16 +175,11 @@ function* Get_Recharge_History_Api_Response(
     callBack: (data: IRechargeHistoryItem[]) => void,
 ) {
     try {
-        if (response.body.status === 'success') {
-            const responseData = response.body.data.response;
-            callBack(responseData);
-        } else if (response.body.status === 'error') {
+        // Body is the recharge-history array directly (plain JSON).
+        if (response && Array.isArray(response.body)) {
+            callBack(response.body);
+        } else {
             callBack([]);
-            showToast({
-                type: 'error',
-                text1: response.body.message,
-                visibilityTime: 2000,
-            });
         }
     } catch (error) {
         showToast({
@@ -265,41 +231,30 @@ function* Initiate_Payment(actionParam: TInitiatePaymentParam) {
  */
 function* Process_Payment_Response(actionParam: TProcessPaymentResponseParam) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-
         const { paymentResponse } = actionParam;
 
         // Mock verification - in production, send response to backend for verification
         // Backend should verify hash and transaction status with PayUMoney
         if (paymentResponse && paymentResponse.status === 'success') {
+            // New REST API: POST /vendor/recharge (JWT; user from token).
             const dataObj = {
-                RechargeID: '0',
-                UserID: GlobalState.userId,
-                Amount: paymentResponse.amount,
-                TxnID: paymentResponse.txnid,
-                Remarks: 'Wallet Recharge',
-                AddByUserID: GlobalState.userId,
+                amount: paymentResponse.amount,
+                txnId: paymentResponse.txnid,
+                remarks: 'Wallet Recharge',
             };
 
-            const response: IResponseParam = yield call(clientPostHandler, {
-                url: projectEnv.insertRechargeDetailsUrl,
+            const response: IResponseParam = yield call(clientRestHandler, {
+                url: projectEnv.vendorRechargeRestUrl,
+                method: 'POST',
                 data: dataObj,
             });
 
-            if (response && response.status === 200) {
-                actionParam.callBack(
-                    true,
+            // clientRestHandler resolves only on 2xx.
+            actionParam.callBack(
+                true,
+                response?.body?.message ||
                     'Payment completed and wallet updated successfully',
-                );
-            } else {
-                actionParam.callBack(
-                    false,
-                    response.message ||
-                        'Payment success but failed to update wallet',
-                );
-            }
+            );
         } else {
             actionParam.callBack(
                 false,
@@ -320,15 +275,10 @@ function* Get_Vendor_Min_Recharge_Amt_Api(
     actionParam: TGetVendorMinRechargeAmtParam,
 ) {
     try {
-        const GlobalState: IGlobalInitialState = yield select(
-            (state: RootState) => state.globalState,
-        );
-        const dataObj = {
-            UserID: GlobalState.userId,
-        };
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.getVendorMinRechargeAmtUrl,
-            data: dataObj,
+        // New REST API: GET /vendor/min-recharge (JWT; user from token).
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorMinRechargeRestUrl,
+            method: 'GET',
         });
 
         yield Get_Vendor_Min_Recharge_Amt_Api_Response(
@@ -350,23 +300,13 @@ function* Get_Vendor_Min_Recharge_Amt_Api_Response(
     callBack: (minAmount: string) => void,
 ) {
     try {
-        if (response && response.body) {
-            const responseData = response.body;
-
-            if (responseData.d !== '') {
-                const parsedData = JSON.parse(responseData.d);
-                const minAmount =
-                    parsedData.MinAmount ||
-                    parsedData.minAmount ||
-                    parsedData ||
-                    '0';
-                callBack(minAmount.toString());
-            } else {
-                callBack('0');
-            }
-        } else {
-            callBack('0');
-        }
+        const body = response?.body;
+        // Body is plain JSON. Accept { minAmount } object or a scalar value.
+        const minAmount =
+            body && typeof body === 'object'
+                ? body.minRechargeAmt ?? body.minRechargeAmt ?? '0'
+                : body ?? '0';
+        callBack(String(minAmount));
     } catch (error) {
         showToast({
             type: 'error',
@@ -378,43 +318,41 @@ function* Get_Vendor_Min_Recharge_Amt_Api_Response(
 }
 
 function* Generate_Hashkey_Api(actionParam: TGenerateHashkeyParam) {
-    console.log('generateHashKeyAPi');
-
     try {
+        // New REST API: POST /vendor/payu-hash (JWT; user from token).
         const dataObj = {
-            data: [
-                {
-                    amount: parseFloat(actionParam.amount).toFixed(2),
-                    name: actionParam.name,
-                    emailid: actionParam.emailid,
-                    userid: actionParam.userid.toString(),
-                },
-            ],
+            amount: parseFloat(actionParam.amount).toFixed(2),
+            name: actionParam.name,
+            emailid: actionParam.emailid,
         };
 
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.generate_hashkey_for_rechargeUrl,
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.vendorPayuHashRestUrl,
+            method: 'POST',
             data: dataObj,
         });
 
-        if (response && response.body && response.body.status === 'success') {
-            const hash = response.body.data.response.HashKey;
-            const txnid = response.body.data.response.TxnID;
-            const PayUKey = response.body.data.response.PayUKey;
-            const ProductDetails = response.body.data.response.ProductDetails;
+        // clientRestHandler resolves only on 2xx. Body is plain JSON.
+        const body = response?.body || {};
+        const hash = body.hashKey ?? body.HashKey;
+        const txnid = body.txnId ?? body.TxnID;
+        const PayUKey = body.payUKey ?? body.PayUKey;
+        const ProductDetails = body.productDetails ?? body.ProductDetails;
+
+        if (hash) {
             actionParam.callBack(true, hash, txnid, PayUKey, ProductDetails);
         } else {
             showToast({
                 type: 'error',
-                text1: response.body?.msg || 'Failed to generate hash key',
+                text1: 'Failed to generate hash key',
                 visibilityTime: 2000,
             });
             actionParam.callBack(false, '', '', '', '');
         }
-    } catch (error) {
+    } catch (error: any) {
         showToast({
             type: 'error',
-            text1: 'Error generating hash key',
+            text1: error?.body?.message || 'Error generating hash key',
             visibilityTime: 2000,
         });
         actionParam.callBack(false, '', '', '', '');
@@ -425,42 +363,36 @@ function* Create_Razorpay_Order_Id_Api(
     actionParam: TCreateRazorpayOrderIdParam,
 ) {
     try {
+        // New REST API: POST /vendor/razorpay/order (JWT; user from token).
         const dataObj = {
-            data: [
-                {
-                    userid: actionParam.userId,
-                    amount: actionParam.amount,
-                    payment_type: actionParam.payment_type,
-                },
-            ],
+            amount: actionParam.amount,
+            paymentType: actionParam.payment_type,
         };
 
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.createOrderIDUrl,
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.razorpayOrderRestUrl,
+            method: 'POST',
             data: dataObj,
         });
 
-        if (response && response.body) {
-            const json = response.body.data.response;
-            const orderId = json?.order_id;
+        // clientRestHandler resolves only on 2xx. Body is plain JSON.
+        const body = response?.body || {};
+        const orderId = body.orderId ?? body.order_id;
 
-            if (orderId) {
-                actionParam.callBack(true, orderId);
-            } else {
-                actionParam.callBack(
-                    false,
-                    undefined,
-                    'Order ID missing in response',
-                );
-            }
+        if (orderId) {
+            actionParam.callBack(true, orderId);
         } else {
-            actionParam.callBack(false, undefined, 'Order creation failed');
+            actionParam.callBack(
+                false,
+                undefined,
+                'Order ID missing in response',
+            );
         }
     } catch (error: any) {
         actionParam.callBack(
             false,
             undefined,
-            error?.message || 'Order creation failed',
+            error?.body?.message || error?.message || 'Order creation failed',
         );
     }
 }
@@ -469,34 +401,29 @@ function* Verify_Razorpay_Signature(
     actionParam: TVerifyRazorpaySignatureParam,
 ) {
     try {
+        // New REST API: POST /vendor/razorpay/verify (JWT; user from token).
         const dataObj = {
-            data: [
-                {
-                    order_id: actionParam.orderId,
-                    payment_id: actionParam.paymentId,
-                    signature: actionParam.signature,
-                    payment_type: actionParam.payment_type,
-                },
-            ],
+            order_id: actionParam.orderId,
+            payment_id: actionParam.paymentId,
+            signature: actionParam.signature,
+            payment_type: actionParam.payment_type,
         };
 
-        const response: IResponseParam = yield call(clientPostHandler, {
-            url: projectEnv.verifySignatureUrl,
+        const response: IResponseParam = yield call(clientRestHandler, {
+            url: projectEnv.razorpayVerifyRestUrl,
+            method: 'POST',
             data: dataObj,
         });
 
-        if (response && response.body && response.body.status === 'success') {
-            actionParam.callBack(true);
-        } else {
-            actionParam.callBack(
-                false,
-                response.body?.message || 'Signature verification failed',
-            );
-        }
+        // clientRestHandler resolves only on 2xx — verification succeeded.
+        void response;
+        actionParam.callBack(true);
     } catch (error: any) {
         actionParam.callBack(
             false,
-            error?.message || 'Signature verification failed',
+            error?.body?.message ||
+                error?.message ||
+                'Signature verification failed',
         );
     }
 }

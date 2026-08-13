@@ -8,7 +8,7 @@ export type TIdVerificationConditionParamActionName =
 
 export interface IUploadDocumentParam {
     data: any;
-    callBack: (response: any) => void;
+    callBack: (success: boolean, message?: string) => void;
 }
 
 export interface IIdVerificationActionConditionParam<
