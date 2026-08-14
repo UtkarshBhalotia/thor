@@ -531,15 +531,23 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                                     activeOpacity={0.8}
                                     onPress={onAccept}
                                     style={styles.acceptButtonWrapper}>
+                                    {/*
+                                     * The gradient is absolutely positioned
+                                     * behind the label rather than wrapping it.
+                                     * react-native-linear-gradient has no Fabric
+                                     * support, so under the New Architecture its
+                                     * children do not contribute to its measured
+                                     * height and the button collapses on iOS.
+                                     */}
                                     <LinearGradient
                                         colors={['#6366F1', '#5F60B9']}
                                         start={{ x: 0, y: 0 }}
                                         end={{ x: 1, y: 0 }}
-                                        style={styles.acceptButton}>
-                                        <Text style={styles.acceptButtonText}>
-                                            ✓ Accept Lead
-                                        </Text>
-                                    </LinearGradient>
+                                        style={StyleSheet.absoluteFill}
+                                    />
+                                    <Text style={styles.acceptButtonText}>
+                                        ✓ Accept Lead
+                                    </Text>
                                 </TouchableOpacity>
                             </View>
                         </>
@@ -972,11 +980,9 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
     acceptButtonWrapper: {
+        height: 46,
         borderRadius: 10,
         overflow: 'hidden',
-    },
-    acceptButton: {
-        paddingVertical: 12,
         alignItems: 'center',
         justifyContent: 'center',
     },

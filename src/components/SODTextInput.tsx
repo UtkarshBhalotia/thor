@@ -1,5 +1,5 @@
-import React, { forwardRef, useState, useEffect } from 'react';
-import { Platform, Text, TextInput, View } from 'react-native';
+import React, { forwardRef, useState } from 'react';
+import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Common from '../assets/css/common';
 import SODText from '../assets/css/SODText';
@@ -35,21 +35,6 @@ const SODTextInput = forwardRef(
         >(undefined);
         const [height, setHeight] = useState<number>(minHeight);
 
-        // Initialize height based on value when component loads or value changes
-        useEffect(() => {
-            if (autoExpand && value && !secureTextEntry) {
-                // Estimate height based on content
-                const lines = value.split('\n').length;
-                const estimatedHeight = Math.max(
-                    minHeight,
-                    lines * 20 + 16,
-                );
-                setHeight(estimatedHeight);
-            } else if (!autoExpand) {
-                setHeight(minHeight);
-            }
-        }, [value, autoExpand, secureTextEntry, minHeight]);
-
         const handleChangeText = (text: string) => {
             let filteredText = text;
             if (disallowUnicode) {
@@ -62,14 +47,20 @@ const SODTextInput = forwardRef(
 
         return (
             <View style={Common.py12}>
-                <LinearGradient
-                    colors={gradientColors}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={{
-                        borderRadius: 6,
-                        padding: 2, // This creates the border effect
-                    }}>
+                {/*
+                 * A plain View owns the border geometry and the gradient sits
+                 * behind it. react-native-linear-gradient has no Fabric support,
+                 * so when it wraps the input directly its own padding is left
+                 * out of the size it is given on iOS and the bottom edge of the
+                 * border disappears.
+                 */}
+                <View style={styles.inputBorder}>
+                    <LinearGradient
+                        colors={gradientColors}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={StyleSheet.absoluteFill}
+                    />
                     <TextInput
                         ref={ref}
                         returnKeyType="done"
@@ -98,13 +89,20 @@ const SODTextInput = forwardRef(
                         }}
                         onChangeText={handleChangeText}
                         onContentSizeChange={(event) => {
-                            if (autoExpand && !secureTextEntry) {
-                                const newHeight = Math.max(
-                                    minHeight,
-                                    event.nativeEvent.contentSize.height + 16,
-                                );
-                                setHeight(newHeight);
+                            if (!autoExpand || secureTextEntry) {
+                                return;
                             }
+                            // Adopt the reported content height as-is. Adding a
+                            // padding offset here made every measurement pass
+                            // report a taller frame than the last, so the field
+                            // grew without bound instead of settling.
+                            const measured = Math.max(
+                                minHeight,
+                                event.nativeEvent.contentSize.height,
+                            );
+                            setHeight((prev) =>
+                                Math.abs(measured - prev) < 1 ? prev : measured,
+                            );
                         }}
                         onBlur={() => {
                             // Handle existing onBlur logic
@@ -122,10 +120,14 @@ const SODTextInput = forwardRef(
                         value={value}
                         secureTextEntry={secureTextEntry}
                         maxLength={maxlength}
-                        multiline={!secureTextEntry}
+                        // Only the auto-expanding variant is a text area. A
+                        // single-line input centres its text vertically on its
+                        // own, whereas a multiline one lays out from the top
+                        // and ignores textAlignVertical on iOS.
+                        multiline={autoExpand && !secureTextEntry}
                         autoFocus={autoFocus}
                         editable={isEditable}
-                        scrollEnabled={autoExpand ? false : false}
+                        scrollEnabled={autoExpand ? false : undefined}
                         keyboardType={keyboard}
                         selection={selectionState}
                         autoCapitalize={autoCapitalize}
@@ -149,7 +151,7 @@ const SODTextInput = forwardRef(
                             Common.py8,
                         ]}
                     />
-                </LinearGradient>
+                </View>
                 {errorMsg ? (
                     <Text style={[{ color: '#C50F1F' }, Common.textRight]}>
                         {errorMsg}
@@ -161,5 +163,13 @@ const SODTextInput = forwardRef(
         );
     },
 );
+
+const styles = StyleSheet.create({
+    inputBorder: {
+        borderRadius: 6,
+        padding: 2, // This creates the border effect
+        overflow: 'hidden', // Clips the gradient to the rounded corners
+    },
+});
 
 export default SODTextInput;

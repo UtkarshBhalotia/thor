@@ -36,7 +36,7 @@ export const Comp_State_ID = 8;
 export const APP_VERSION = '2.0';
 
 const apiListing = {
-    loginUrl: `${BaseUrl}ValidateMobileUser`,
+    loginUrl: `${RestBaseUrl}/login`,
     // Migrated to new REST API (JWT). POST { email, password, FCMTokenID } -> { token, user }
     loginUrlPartner: `${RestBaseUrl}/partner/login`,
     registerUrl: `${BaseUrl}InsertUserMaster`,

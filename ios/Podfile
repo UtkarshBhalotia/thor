@@ -17,6 +17,15 @@ end
 target 'Dooda' do
   config = use_native_modules!
 
+  # Firebase 12.x ships Swift pods that import these C/ObjC pods. As static
+  # libraries they need module maps, otherwise the Swift pods can't be integrated.
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'FirebaseCoreExtension', :modular_headers => true
+  pod 'FirebaseInstallations', :modular_headers => true
+  pod 'GoogleDataTransport', :modular_headers => true
+  pod 'nanopb', :modular_headers => true
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

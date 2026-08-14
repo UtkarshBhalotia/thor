@@ -38,8 +38,6 @@ export function* conditionActions<T extends TUserLoginConditionParamActionName>(
 }
 
 function* UserAuth_login_Api(param: TUserLoginParam) {
-    console.log('UserAuth_login');
-
     try {
         const dataObj = {
             email: param.email,
@@ -48,13 +46,11 @@ function* UserAuth_login_Api(param: TUserLoginParam) {
         };
         // New REST API: POST /api/mobile/partner/login (anon, JWT in response).
         const response: IResponseParam = yield call(clientRestHandler, {
-            url: `${projectEnv.loginUrlPartner}`,
+            url: `${projectEnv.loginUrl}`,
             method: 'POST',
             anon: true,
             data: dataObj,
         });
-
-        console.log(response, '@@@@@@@@@@@response');
 
         yield UserAuth_login_Api_Response(
             response,
