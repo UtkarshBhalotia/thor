@@ -22,10 +22,10 @@ export const NEW_URL = {
 // point here. See "Old ASMX method" migration doc.
 export const REST_URL = {
     dev: {
-        API_HOST: 'https://crm.roexpertindia.com/api/mobile',
+        API_HOST: 'https://api.roexpertindia.com/api/mobile',
     },
     prod: {
-        API_HOST: 'https://crm.roexpertindia.com/api/mobile',
+        API_HOST: 'https://api.roexpertindia.com/api/mobile',
     },
 };
 

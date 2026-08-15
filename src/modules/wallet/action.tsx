@@ -403,10 +403,10 @@ function* Verify_Razorpay_Signature(
     try {
         // New REST API: POST /vendor/razorpay/verify (JWT; user from token).
         const dataObj = {
-            order_id: actionParam.orderId,
-            payment_id: actionParam.paymentId,
+            orderId: actionParam.orderId,
+            paymentId: actionParam.paymentId,
             signature: actionParam.signature,
-            payment_type: actionParam.payment_type,
+            paymentType: actionParam.payment_type,
         };
 
         const response: IResponseParam = yield call(clientRestHandler, {
