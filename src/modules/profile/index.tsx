@@ -70,7 +70,7 @@ const Profile = (props: any) => {
             state: '',
             city: '',
             cityCheckboxes: [], // For multi-select
-            ProfileLocked: 0,
+            ProfileLocked: false,
             ValidateGST: 0,
         },
     });
@@ -88,21 +88,21 @@ const Profile = (props: any) => {
     const validateGST = watch('ValidateGST');
 
     // Calculate editable states based on flags
-    const isCompanyNameEditable = profileLocked === 0 && validateGST === 0;
-    const isMobileEditable = profileLocked === 0;
-    const isAddressEditable = profileLocked === 0;
-    const isGSTINEditable = profileLocked === 0 && validateGST === 0;
-    const isStateEditable = profileLocked === 0;
-    const isCityEditable = profileLocked === 0;
+    const isCompanyNameEditable = profileLocked === false && validateGST === 0;
+    const isMobileEditable = profileLocked === false;
+    const isAddressEditable = profileLocked === false;
+    const isGSTINEditable = profileLocked === false && validateGST === 0;
+    const isStateEditable = profileLocked === false;
+    const isCityEditable = profileLocked === false;
 
     // Update button is enabled only if ProfileLocked is 0 (user can edit at least some fields)
-    const isUpdateButtonEnabled = profileLocked === 0 && !submitting;
+    const isUpdateButtonEnabled = profileLocked === false && !submitting;
 
     // Load vendor details every time the profile screen comes into focus
     useFocusEffect(
         useCallback(() => {
             loadVendorDetails();
-        }, [])
+        }, []),
     );
 
     const loadVendorDetails = () => {
@@ -217,11 +217,15 @@ const Profile = (props: any) => {
             state: watchedValues.state,
             city: watchedValues.city,
             citiesWithCheckbox: watchedValues.cityCheckboxes,
-            onSave: (data: { state: string; city: string; citiesWithCheckbox: any[] }) => {
+            onSave: (data: {
+                state: string;
+                city: string;
+                citiesWithCheckbox: any[];
+            }) => {
                 setValue('state', data.state);
                 setValue('city', data.city);
                 setValue('cityCheckboxes', data.citiesWithCheckbox as any);
-            }
+            },
         });
     };
 
@@ -285,7 +289,10 @@ const Profile = (props: any) => {
                     };
 
                     // Persist to AsyncStorage
-                    const { setItem, STORAGE_KEYS } = require('../../utils/storage');
+                    const {
+                        setItem,
+                        STORAGE_KEYS,
+                    } = require('../../utils/storage');
                     await setItem(STORAGE_KEYS.USER_INFO, updatedUserInfo);
 
                     // Update Redux Global State
@@ -330,7 +337,11 @@ const Profile = (props: any) => {
 
     return (
         <SafeAreaView style={profileStyles.container} edges={['top']}>
-            <StatusBar backgroundColor="transparent" barStyle="dark-content" translucent={true} />
+            <StatusBar
+                backgroundColor="transparent"
+                barStyle="dark-content"
+                translucent={true}
+            />
             <View style={profileStyles.headerContainer}>
                 <TouchableOpacity
                     style={profileStyles.backButton}
@@ -343,12 +354,16 @@ const Profile = (props: any) => {
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={profileStyles.scrollContent}>
-                
-                {profileLocked === 1 && (
+                {profileLocked === true && (
                     <View style={profileStyles.lockedMessageContainer}>
-                        <Ionicons name="lock-closed" size={20} color="#D32F2F" />
+                        <Ionicons
+                            name="lock-closed"
+                            size={20}
+                            color="#D32F2F"
+                        />
                         <Text style={profileStyles.lockedMessageText}>
-                            Profile is Locked. Please contact admin to update details.
+                            Profile is Locked. Please contact admin to update
+                            details.
                         </Text>
                     </View>
                 )}
@@ -358,8 +373,12 @@ const Profile = (props: any) => {
                     <View style={profileStyles.profilePhotoContainer}>
                         <TouchableOpacity
                             style={profileStyles.profilePhotoButton}
-                            onPress={profileLocked === 0 ? handleProfilePhotoUpload : undefined}
-                            activeOpacity={profileLocked === 0 ? 0.7 : 1}>
+                            onPress={
+                                profileLocked === false
+                                    ? handleProfilePhotoUpload
+                                    : undefined
+                            }
+                            activeOpacity={profileLocked === true ? 0.7 : 1}>
                             {profileImage ? (
                                 <Image
                                     source={{ uri: profileImage }}
@@ -389,7 +408,7 @@ const Profile = (props: any) => {
                                 </Text>
                             </View>
                         </TouchableOpacity>
-                        {profileImage && profileLocked === 0 && (
+                        {profileImage && profileLocked === false && (
                             <TouchableOpacity
                                 style={profileStyles.removePhotoButton}
                                 onPress={handleRemovePhoto}>
@@ -490,13 +509,20 @@ const Profile = (props: any) => {
                         <TouchableOpacity
                             style={[
                                 profileStyles.locationCTA,
-                                profileLocked === 1 && profileStyles.disabledButton,
+                                profileLocked === true &&
+                                    profileStyles.disabledButton,
                             ]}
-                            onPress={profileLocked === 0 ? handleNavigateToLocationSelection : undefined}
-                            disabled={profileLocked === 1}
+                            onPress={
+                                profileLocked === false
+                                    ? handleNavigateToLocationSelection
+                                    : undefined
+                            }
+                            disabled={profileLocked === true}
                             activeOpacity={0.7}>
                             <View style={profileStyles.locationCTALeft}>
-                                <Text style={profileStyles.locationCTATitle}>Service Locations</Text>
+                                <Text style={profileStyles.locationCTATitle}>
+                                    Service Locations
+                                </Text>
                                 <Text
                                     numberOfLines={1}
                                     style={
@@ -512,7 +538,11 @@ const Profile = (props: any) => {
                             <Ionicons
                                 name="chevron-forward"
                                 size={20}
-                                color={profileLocked === 1 ? '#8F8F8F' : '#5F60B9'}
+                                color={
+                                    profileLocked === true
+                                        ? '#8F8F8F'
+                                        : '#5F60B9'
+                                }
                             />
                         </TouchableOpacity>
 
@@ -521,7 +551,7 @@ const Profile = (props: any) => {
                             style={[
                                 profileStyles.updateButton,
                                 (!isUpdateButtonEnabled || submitting) &&
-                                profileStyles.disabledButton,
+                                    profileStyles.disabledButton,
                             ]}
                             onPress={handleSubmit(handleUpdateProfile)}
                             disabled={!isUpdateButtonEnabled || submitting}>

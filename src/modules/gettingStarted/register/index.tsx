@@ -659,7 +659,7 @@ const Register = (props: any) => {
                 countryId: Number(countryData?.CountryID || 0),
                 stateId: Number(stateData?.StateID || 0),
                 cityId: Number(cityData?.CityID || 0),
-                isActive: true,
+                isActive: false,
 
                 fcmTokenId: (await getFcmToken()) || '',
 

@@ -10,7 +10,7 @@ type IGlobalInitialState = {
     isActive: string;
     fcmToken: string;
     minRechargeAmount: string;
-    profileLocked: string;
+    profileLocked: boolean;
     validateGST: string;
     isOnline: boolean;
     // Added with the new REST partner-login response.
@@ -30,8 +30,7 @@ type TGlobalReducerType = 'GLOBAL_STATE_MUTATE' | 'GLOBAL_RESET';
 
 type TGlobalReducerValue<T extends TGlobalReducerType> =
     T extends 'GLOBAL_STATE_MUTATE'
-    ? IGlobalInitialState
-    : T extends 'GLOBAL_RESET'
-    ? void
-    : never;
-
+        ? IGlobalInitialState
+        : T extends 'GLOBAL_RESET'
+        ? void
+        : never;

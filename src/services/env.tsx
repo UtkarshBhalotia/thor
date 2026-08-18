@@ -54,7 +54,7 @@ const apiListing = {
     getAllCompletedLeadForVendorUrl: `${BaseUrl}GetAllCompletedLeadForVendor`,
     getAllComplaintLeadForVendorUrl: `${BaseUrl}GetAllReComplaintLeadForVendor`,
     forgotPasswordUrl: `${BaseUrl}ForgotPasswordForVendor`,
-    getReportForVendorUrl: `${BaseUrl}GetWorkReportForVendor`,
+    getReportForVendorUrl: `${BaseUrl}  `,
     getLeadDetailByLeadIdForVendorUrl: `${BaseUrl}GetLeadDetailsByLeadIDForVendor`,
     acceptLeadByVendorUrl: `${BaseUrl}AcceptLeadByVendor`,
     insertRechargeDetailsUrl: `${BaseUrl}InsertRechargeDetails`,
@@ -132,7 +132,7 @@ const apiListing = {
     vendorProfileRestUrl: `${RestBaseUrl}/vendor/profile`,
     // POST { locations: [{ stateId, cityId }] } -> replaces the vendor's
     // mapped service locations (was the `jsonString` MapCityListByVendor call).
-    vendorServiceLocationsRestUrl: `${RestBaseUrl}/vendor/service-locations`,
+    vendorServiceLocationsRestUrl: `${RestBaseUrl}/vendor/map-cities`,
 
     // ---- More section (JWT, HTTP-status based). User derived from token. ----
     // POST { oldPassword, newPassword } -> 2xx; 401 = wrong current password.

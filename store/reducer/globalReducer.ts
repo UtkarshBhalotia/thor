@@ -10,7 +10,7 @@ export const GlobalInitialState: IGlobalInitialState = {
     isActive: '',
     fcmToken: '',
     minRechargeAmount: '',
-    profileLocked: '',
+    profileLocked: false,
     validateGST: '',
     isOnline: true,
     altMobile: '',

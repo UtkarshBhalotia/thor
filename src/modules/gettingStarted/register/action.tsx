@@ -339,7 +339,7 @@ function* MapCityListByVendorApi(actionParam: TUserMapCityListByVendorParam) {
         // New REST API: POST /vendor/service-locations (JWT). The mapping is now
         // a real JSON array instead of the old stringified `jsonString` param.
         const dataObj = {
-            locations: actionParam.locations,
+            maps: actionParam.locations,
         };
         const response: IResponseParam = yield call(clientRestHandler, {
             url: projectEnv.vendorServiceLocationsRestUrl,
