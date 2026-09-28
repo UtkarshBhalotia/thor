@@ -8,6 +8,42 @@ import { Image } from 'react-native';
 import { ENV } from './env';
 
 /**
+ * Normalize a mobile number to the `+(country code)(number)` form Razorpay
+ * asks for in `prefill.contact`.
+ *
+ * A bare 10-digit number does populate the field, but checkout still stops on
+ * its "Enter payer's number" screen instead of going straight to the payment
+ * methods -- the prefill only counts as complete with the country code on it.
+ * Numbers that do not look like an Indian mobile are passed through untouched
+ * so checkout can ask for them as before.
+ */
+const toIndianE164 = (contact: string): string => {
+    if (!contact) {
+        return '';
+    }
+
+    const trimmed = contact.trim();
+    // Strip spaces, dashes and brackets; the leading "+" is handled below.
+    const digits = trimmed.replace(/\D/g, '');
+
+    if (trimmed.startsWith('+')) {
+        return `+${digits}`;
+    }
+    if (digits.length === 10) {
+        return `+91${digits}`;
+    }
+    // 91XXXXXXXXXX without the "+", and the 0-prefixed STD form.
+    if (digits.length === 12 && digits.startsWith('91')) {
+        return `+${digits}`;
+    }
+    if (digits.length === 11 && digits.startsWith('0')) {
+        return `+91${digits.slice(1)}`;
+    }
+
+    return trimmed;
+};
+
+/**
  * Razorpay Payment Gateway Service
  */
 export const RazorpayService = {
@@ -45,7 +81,7 @@ export const RazorpayService = {
                 name: config.APP_NAME,
                 prefill: {
                     email: options.email,
-                    contact: options.contact,
+                    contact: toIndianE164(options.contact),
                     name: options.name,
                 },
                 method: {
